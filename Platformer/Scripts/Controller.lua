@@ -3,6 +3,7 @@ local controller = {}
 local controllerStarted = false
 local pressedKey = {}
 local target
+local turn = 0
 
 
 -- Joka frame, katsotaan onko nämä liikkumisnapit painettuna alas.
@@ -11,9 +12,11 @@ local function monitorKeys()
 
 	if pressedKey["a"] then
 		vx = -1
+		
 	end
 	if pressedKey["d"] then
 		vx = vx + 1
+		
 	end
 	if pressedKey["w"] then
 		vy = -1
@@ -23,6 +26,9 @@ local function monitorKeys()
 	end
 	-- if target.move then
 		target:move( vx, vy )
+		if turn >= 0  then
+			-- target:scale(-1,1)
+		end
 
 	end
 -- end
@@ -47,8 +53,11 @@ local function onKeyEvent( event )
 	if pressedKey["right"] then
 		resistance = "earth"
 		buttonUpdate()
+		-- target:scale(-1,1)
 	end
-
+	if pressedKey["d"] then
+		-- turn = turn + 1
+	end	
 end
 
 

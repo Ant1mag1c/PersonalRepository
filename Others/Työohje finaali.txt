@@ -1,0 +1,42 @@
+--------------------------------------------------------
+                    Asennukset ja Säädöt
+
+IPC
+
+KOPPAKONE
+
+PESTERI
+
+LAVAUS-SOLU
+
+
+
+
+
+--------------------------------------------------------
+                    Ongelma tilanteet
+
+KOPPAKONE
+
+    -Kotelot eivät aukea
+    -Luminenssi ei toimi
+        -Tarkista kameran korkeus(Kulkee liimaläpän alla)
+        -Tarkasta luminenssin parametrit(Käsiajolla milloin
+            kuvaus alkaa ja päättyy. Valon oltava kotelon sisällä
+            tämän aikana )
+
+    -Ohjeet jäävät rulliin jumiin
+        -Poistetaan ohjeet takapuolelta. Rullien pyöritys itseään kohti
+        -Paine puhallus
+        -
+    -Leimaus on huonoa
+    -Kotelot ruttaantuvat
+    -Kotelot eivät tule etiketiltä
+
+
+
+
+
+
+
+--------------------------------------------------------

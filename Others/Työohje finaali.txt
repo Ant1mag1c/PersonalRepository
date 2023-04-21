@@ -18,19 +18,23 @@ LAVAUS-SOLU
 
 KOPPAKONE
 
-    -Kotelot eiv√§t aukea
+    -Kotelot eiv‰t aukea
     -Luminenssi ei toimi
-        -Tarkista kameran korkeus(Kulkee liimal√§p√§n alla)
-        -Tarkasta luminenssin parametrit(K√§siajolla milloin
-            kuvaus alkaa ja p√§√§ttyy. Valon oltava kotelon sis√§ll√§
-            t√§m√§n aikana )
+        -Tarkista kameran korkeus(Kulkee liimal‰p‰n alla)
+        -Tarkasta luminenssin parametrit(K‰siajolla milloin
+           kuvaus alkaa ja p‰‰ttyy. Valon oltava kotelon sis‰ll‰ 			t‰m‰n aikana
 
-    -Ohjeet j√§√§v√§t rulliin jumiin
-        -Poistetaan ohjeet takapuolelta. Rullien py√∂ritys itse√§√§n kohti
-        -Paine puhallus
+    -Ohjeet j‰‰v‰t rulliin jumiin
+        -Poistetaan ohjeet takapuolelta. Rullien pyˆritys itse‰ 		kohti. Muista j‰tt‰‰ referenssi asentoon
+        -Paineilma puhallus keloihin 
         -
     -Leimaus on huonoa
+	- Onko leimakasetti puhdas?
+	- S‰‰d‰ leimauksen kulmaa (jyrkempi parempi). Tarkista j‰lki
+
     -Kotelot ruttaantuvat
+	- Onko makasiini asetettu oikein?
+	- Ottaako jokin kiinni?
     -Kotelot eiv√§t tule etiketilt√§
 
 

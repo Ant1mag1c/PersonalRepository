@@ -1,0 +1,83 @@
+-- function closeOptions( event )
+--     if event.phase == "ended" then
+--         print( "Options closed" )
+--         display.remove( newOptions )
+--         sceneOnTop = false
+--         openMenu()
+--     end
+-- end
+
+-- function openOptions( )
+--     if sceneOnTop == false then
+--         print( "Options opened" )
+
+--         sceneOnTop = true
+--         newOptions = display.newGroup()
+
+--         local background = display.newImageRect( newOptions, "Images/options.png", 250, 300 )
+--             background.x, background.y = x, y
+
+--         local title = display.newText( newOptions, "Options", x, y-140, native.systemFont, 20 )
+
+--         local exit = display.newText( newOptions, "close", x, y+140, native.systemFont, 20 )
+--             exit:addEventListener("touch", closeOptions )
+
+--         return newOptions
+--     end
+-- end
+
+
+-------------------------------------------------------------------------------------------------------------------------
+
+
+-- local x, y = display.contentCenterX, display.contentCenterY
+
+        -- local function generateMap()
+        -- end
+
+        -- local mapBackground = display.newImageRect( "Images/map.png", 480, 320  )
+        -- mapBackground.x, mapBackground.y = x, y
+
+        -- local menuText = display.newText( "Menu", x-200, y+140, native.systemFont, 20 )
+        -- menuText:setFillColor(0,0,0)
+        -- menuText:addEventListener( "touch", function( event )
+                                            --     if event.phase == "ended" then openMenu() end
+                                            -- end )
+
+
+        -- local function createTile(name, tileX, tileY,  font, size)
+        --     local newTile = display.newText(name, x, y, font, size)
+        --     newTile:setFillColor(0,0,0)
+        --     newTile.x = tileX
+        --     newTile.y = tileY
+        --     newTile.name = name
+        --     newTile.font = font
+        --     newTile.size = size
+
+        --     return newTile
+        -- end
+
+        -- --Tämä funktio vie pelaajan taistelu sceneen generoi viholliset jotka ovat pelaajaa vastassa
+        -- local function enterBattle( event )
+        --     if event.phase == "ended" and sceneOnTop == false then
+        --         composer.gotoScene( "battle", { time=500, effect="crossFade" } )
+
+
+        --     end
+        -- end
+
+
+
+        -- local shopTile = createTile( "Shop", 120, 220, native.systemFont, 16 )
+        --     -- shopTile:addEventListener( "touch", openShop )
+
+
+        -- local eventTile = createTile( "Event", 180, 210, native.systemFont, 16 )
+        --     -- eventTile:addEventListener( "touch", openEvent )
+
+
+        -- local battleTile = createTile( "Battle", 240, 190, native.systemFont, 16 )
+        --     -- battleTile:addEventListener( "touch", enterBattle )
+
+
+        -- timer.performWithDelay(200, function()print(sceneOnTop)end, 100000  )

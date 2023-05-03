@@ -5,29 +5,45 @@ local scene = composer.newScene()
 -- Code outside of the scene event functions below will only be executed ONCE unless
 -- the scene is removed entirely (not recycled) via "composer.removeScene()"
 -- -----------------------------------------------------------------------------------
-
+local userdata = require("Scripts.userdata")
 local screen = require("Scripts.screen")
 
 local dataHandler = require("Scripts.dataHandler")
-local eventData = dataHandler.getData( "Data/events.tsv" )
+local eventData = dataHandler.getData( "events.tsv" )
 local options = {}
+local actions = {}
+local result = {}
+local popupTitle = {}
+
+
+asdasd
+-- Handler that gets notified when the alert closes
+local function onComplete( event )
+	if ( event.action == "clicked" ) then
+		composer.hideOverlay( "fade", 100 )
+		print("Player money: ", userdata.player.money)
+		print("Player sisuMax: ", userdata.player.sisuMax)
+		-- print("Player sisu: ", userdata.player.sisu)
+	end
+end
 
 local function chooseOption(event)
 	local target = event.target
 	if event.phase == "ended" then
-		if title ~= "evil treasure" then
-			print(event.target.id)
-			composer.hideOverlay( "fade", 100 )
-			-- print("hidden")
 
-		end
+		-- Luo globaali taulukko johon laitetaan pelaajan data
+		-- Sitten muokataan sitä, tallennetaan data ja poistetaan se
+		_G.tempData = userdata.player
+		local s = string.gsub( target.action, "($)", "_G.tempData." )
+		local f = loadstring(s)
+		f()
 
-		-- if title ~= "evil treasure" then
-		-- 	if target == options[1] then
-		-- 	-- Evil treasure tilanteessa pelaajalle tulee mahdollinen kirous
-		-- 	print("You might be cursed")
-		-- 	end
-		-- end
+		_G.tempData = nil
+		userdata.save()
+
+		-- Avaa ponnahdusikkunan annetuilla tiedoilla
+		local alert = native.showAlert( target.popupTitle, target.result, { "OK" }, onComplete )
+
 	end
 	return true
 end
@@ -42,104 +58,130 @@ function scene:create( event )
 	local sceneParams = event.params or {}
 	local eventType = sceneParams.type
 	print( "Luodaan tapahtuma: " .. eventType )
+
+	if not userdata.player then
+		userdata.new()
+	end
+
 	local background = display.newRect( sceneGroup, screen.centerX, screen.centerY, screen.width, screen.height )
 	background:setFillColor(0, 0.5)
 
-	local sceneLayer = display.newRect( sceneGroup, screen.centerX, screen.centerY, screen.width/1.3, screen.height/2 )
-	sceneLayer:setFillColor(0.8, 0.8, 0.5)
+	local sceneLayer = display.newImageRect( sceneGroup, "Resources/Images/options.png", screen.width, screen.height/1.5 )
+	sceneLayer.x, sceneLayer.y = screen.centerX, screen.centerY
+
+	local imageBorder = display.newImageRect( sceneGroup, "Resources/Images/menu.png", 280, 280 )
+	imageBorder.x, imageBorder.y = screen.centerX*0.5, screen.centerY*1.1
 
 
 	local title, description, image
 
+	local thisEvent
 
+	-- Katsotaan onko eventti randomEvent vai joku muu ja annetaan parametrit sen mukaisesti
+	if sceneParams.type == "randomEvent" then
+		thisEvent = table.getRandom( eventData )
 
-
-	for k,v in pairs(sceneParams) do
-		print( k, v )
+	else
+		thisEvent = eventData[sceneParams.type]
 	end
+
+
+	-- for k,v in pairs(sceneParams) do
+	-- 	print( k, v )
+	-- end
 
 	-- Valitaan satunnainen tapahtuma, joka löytyy eventDatasta, ja luodaan sille näkymä.
-	if sceneParams.type == "randomEvent" then
-		local randomEvent = table.getRandom( eventData )
-		table.print( randomEvent )
-		title = randomEvent.title
-		description = randomEvent.description
-		image = randomEvent.image
 
+	-- table.print( thisEvent )
+	title = thisEvent.title
+	description = thisEvent.description
+	image = thisEvent.image
 
-		for i = 1,3 do
-			local option = randomEvent["option" .. i]
+	table.print(thisEvent)
 
-			if option then
-				options[#options + 1] = option
-			end
-		end
+	for i = 1,3 do
+		local _option = thisEvent["option" .. i]
+		local _action = thisEvent["action" .. i]
+		local _result = thisEvent["result" .. i]
+		local _popupTitle = thisEvent["popupTitle" .. i]
 
-	-- Luodaan joku tietty tapahtuma, joka löytyy vain koodista, ja luodaan sille näkymä.
-	else
+		if _option then
+			options[#options + 1] = _option
+			actions[#actions + 1] = _action
+			result[#result + 1] = _result
+			popupTitle[#popupTitle + 1] = _popupTitle
 
-		-- TODO: Koodaa title, description, image, options arvot
-		if sceneParams.type == "sauna" then
-			-- Saunassa pelaaja voisi healata itseään tai kasvataa max hp:ta X määrän
-
-			title = "sauna"
-			description = "You can feel the overwhelming feeling of relaxation and calmness"
-			for i = 1, 2 do
-				options[i] = i < 2 and "Heal for +50 sisu" or "Increase max sisu"
-			end
-
-
-
-		elseif sceneParams.type == "treasure" then
-			-- Aarteita voisi olla erilaisia (esim Hyvä ja paha) math.randomilla
-			-- Trasure lisää kortteja tai rahaa
-			local r = math.random() < 1 and "normal" or "evil"
-
-			if r == "normal" then
-				title = "treasure"
-				description = "You found a chest and are curious of what may you find from inside"
-				for i = 1, 2 do
-					options[i] = i < 2 and "Pick a new card" or "+30 money"
-				end
-			else
-				sceneParams.type = "evil treasure"
-				title = "evil treasure"
-				description = "You found a chest with a dark glow around it"
-				for i = 1, 2 do
-					options[i] = i < 2 and "Open the chest" or "Leave the chest be"
-
-				end
-
-			end
-
-
-			-- 	title = "shop"
-			-- 	description = "You have entered a shop "
-				-- print(sceneParams.isStore)
-
-
-		else
-			print("ERROR: Invalid scene type", sceneParams.type)
 		end
 	end
+
+	-- Luodaan joku tietty tapahtuma, joka löytyy vain koodista, ja luodaan sille näkymä.
+	-- else
+
+
+	-- 	if sceneParams.type == "sauna" then
+	-- 		-- Saunassa pelaaja voisi healata itseään tai kasvataa max hp:ta X määrän
+
+	-- 		title = "sauna"
+	-- 		description = "You can feel the overwhelming feeling of relaxation and calmness"
+
+	-- 		options[1] = "Heal for +50 sisu"
+	-- 		actions[1] = "print('Heal')"
+	-- 		result[1] = "You healed for 50 sisu!"
+	-- 		popupTitle[1] = "Getting better"
+
+	-- 		options[2] = "Increase max sisu"
+	-- 		actions[2] = "$sisuMax = $sisuMax + 50 "
+	-- 		result[2] = "Your max sisu has increased!"
+	-- 		popupTitle[2] = "Growing stronger"
+
+
+	-- 	elseif sceneParams.type == "treasure" then
+	-- 		-- Trasure lisää kortteja tai rahaa
+	-- 		title = "treasure"
+	-- 		description = "You found a chest and are curious of what may you find from inside"
+
+	-- 		options[1] = "Choose to take money"
+	-- 		actions[1] = "$money = $money + 10 "
+	-- 		result[1] = "You got +10 money!"
+	-- 		popupTitle[1] = "Wealthy"
+
+	--
+	-- 		options[2] = "Choose to take a new card"
+	-- 		actions[2] = "print('Got a Card') "
+	-- 		result[2] = "You got a new card!"
+	-- 		popupTitle[2] = "Collector"
+
+
+
+
+	-- 		-- 	title = "shop"
+	-- 		-- 	description = "You have entered a shop "
+	-- 			-- print(sceneParams.isStore)
+
+
+	-- 	else
+	-- 		print("ERROR: Invalid scene type", sceneParams.type)
+		-- end
+
+	-- end
 
 	local titleOptions =
 	{
 		text = title,
-		x = sceneLayer.x,
-		y = sceneLayer.y*0.6,
-		width = sceneLayer.x*1.5,
+		x = sceneLayer.x+10,
+		y = sceneLayer.y*0.5,
+		width = sceneLayer.x*1.63,
 		font = native.systemFont,
-		fontSize = 25,
+		fontSize = 40,
 		align = "left"
 	}
 
 	local descriptionOptions =
 	{
 		text = description,
-		x = sceneLayer.x,
-		y =  sceneLayer.y*0.8,
-		width = sceneLayer.x*1.5,
+		x = sceneLayer.x*1.33,
+		y =  sceneLayer.y*0.82,
+		width = sceneLayer.x,
 		font = native.systemFont,
 		fontSize = 25,
 		align = "left"
@@ -148,44 +190,76 @@ function scene:create( event )
 
 
 	local titleText = display.newText( titleOptions )
-	titleText:setFillColor( 1, 0, 0 )
 	sceneGroup:insert(titleText)
 
-	local descriptionText = display.newText( descriptionOptions )
-	descriptionText:setFillColor( 1, 0, 0 )
-	sceneGroup:insert(descriptionText)
+
 
 	local imageWidth, imageHeight
-	local imageX, imageY
+	local imageScale = 0.7
 
-	if title == "treasure" then
-		imageWidth, imageHeight = 200*1.5, 400*1.5
-		imageX, imageY = sceneLayer.x*0.45, sceneLayer.y*0.9
 
-	elseif title == "sauna" then
-		imageWidth, imageHeight = 200*0.7, 400*0.7
-		imageX, imageY = sceneLayer.x*0.45, sceneLayer.y*1.2
+	if title == "sauna" then
+		imageWidth, imageHeight = 300*imageScale, 600*imageScale
+
+	else
+
+		imageWidth, imageHeight = 300, 600
+
 	end
 
-	local layerImage = display.newImageRect( sceneGroup, "Resources/Images/Levels/" .. title .. ".png", imageWidth, imageHeight )
-	layerImage.x, layerImage.y = imageX, imageY
 
+	local layerImage = display.newImageRect( sceneGroup, "Resources/Images/Levels/" .. image,  imageWidth, imageHeight )
 
-	-- local sceneText = display.newText( sceneGroup, title, screen.centerX, screen.centerY-125, native.systemFont, 40 )
-	-- local infoText = display.newText( sceneGroup, description, screen.centerX, screen.centerY-50, native.systemFont, 50 )
+	--Tarkistetaan onko eventillä omaa kuvatiedostoa ja sen puuttuessa ladataan oletus
+	if not layerImage then
+		layerImage = display.newImageRect( sceneGroup, "Resources/Images/Levels/randomEvent.png", imageWidth, imageHeight )
+	end
 
+	layerImage.x, layerImage.y = imageBorder.x, imageBorder.y
 
-
+	local infoText = display.newText( descriptionOptions )
+	sceneGroup:insert( infoText )
 
 
 	for i = 1, #options do
 		local data = options[i]
-		local text = display.newText( sceneGroup, options[i], screen.centerX, screen.centerY+(i*45), native.systemFont, 30 )
+		local text = display.newText( sceneGroup, options[i], screen.centerX-70, screen.centerY+(i*60), native.systemFont, 30 )
 		text.id = options[i]
+		text.action = actions[i]
+		text.result = result[i]
+		text.popupTitle = popupTitle[i]
+		text.eventType = eventType
+
+		text.background = display.newRect( sceneGroup, text.x*1.39, text.y, 350, 35 )
+		text.background.alpha = 0.4
+		text.background:setFillColor(0.1)
+		text:toFront()
 		text:addEventListener("touch", chooseOption)
 
 	end
 
+
+	--------------------------------------------------------
+
+	-- TODO: TÄMÄ ON TESTAUS ALUE!
+	-- print(type(userdata.player.sisuMax))
+	-- userdata.player.sisuMax = 300
+	-- userdata.player.sisuCurrent = 100
+
+	-- print(userdata.player.sisuMax)
+	-- print(userdata.player.sisuCurrent)
+
+	-- if userdata.player.sisuMax > userdata.player.sisuCurrent then
+	-- 	if userdata.player.sisuCurrent < userdata.player.sisuMax - 50 then
+	-- 	  userdata.player.sisuCurrent = userdata.player.sisuCurrent + 50
+	-- 	else
+	-- 	  userdata.player.sisuCurrent = userdata.player.sisuCurrent + (userdata.player.sisuMax - userdata.player.sisuCurrent)
+	-- 	end
+	--   end
+
+
+
+	--   print(userdata.player.sisuCurrent)
 	-------------------------------------------------------
 
 	-- Debuggaus nappula, jota käyttämällä voidaan palata karttaan.

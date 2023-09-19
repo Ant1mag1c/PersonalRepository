@@ -1,6 +1,0 @@
-id	name	imageAvatar	imageBattle	imageMap	sisu	tempEnergy	defense	attack	startingCards	guaranteedCard	trait	lore
-puukkojunkkari	Puukkojunkkari	A	A	A	300	3	1	3	4	puukko	Jos puukkojunkkarin viimeinen kortti tappaa vihollisen, niin tämä kortti palaa pelaajan käteen.	Puukkojunkkarilla löytyy aina puukko taskusta.
-metsastaja	Metsästäjä	A	A	A	340	3	4	2	5	jousi	Metsästäjä voi valita 1 kortin enemmän taisteluiden lopussa pakkaansa.	Metsästäjä on metsien osaaja.
-tietaja	Tietäjä	A	A	A	250	5	2	1	7	luento	Tietäjällä on yksi kortti enemmän kädessä kuin muilla hahmoilla.	Tietäjä tietää paljon ja vähän päälle.
-seppa	Seppä	A	A	A	320	4	6	4	5	vasara	Seppä pelaa aina toisena (enemy -> player, normaalisti: player -> enemy)	Seppä osaa takoa vaikka mitä.
-kylajuoppo	Kyläjuoppo	A	A	A	1200	0	-3	1	3	random	kaikki kortit mitä juoppo saa, ovat random kortteja (ehdotus: oluella on tupla teho/hyödyt) (random kortit ja oluet synergisoivat jotenkin?)	Kyläjuoppo nauttii oluesta.

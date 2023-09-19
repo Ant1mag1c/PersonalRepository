@@ -1,2 +1,0 @@
-id	title	description	image	type	target	effect	scale	duration	energy	price	rarity	alignment
-puukko	Puukko	Puukko on hyödyllinen niin metsässä kuin pellolla. Se on myös harvinaisen terävä.	puukko.png	attack	enemy	hp	2	1	1	10	common	fields

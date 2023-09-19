@@ -1,0 +1,84 @@
+id	title	image	target	effect	intensity	duration	energy	price	firstMap	lastMap	alignment	disabled	description
+puukko	Puukko	puukko.png	enemy	hp	1	1	1	10	1	3	fields	FALSE	Puukko on hyödyllinen niin metsässä kuin pellolla. Se on myös harvinaisen terävä.
+kirves	Kirves	kirves.png	enemy	hp	1	1	1	10	1	3	fields	FALSE	
+pussilinenKivia	Pussilinen kiviä	pussilinenKivia.png	enemyAll	hp	1	1	1	10	1	3	fields	FALSE	
+ansa	Ansa	ansa.png	enemyAll	hp	1	1	1	10	1	3	fields	FALSE	
+sieni	Sieni	sieni.png	player	hp	1	1	1	10	1	3	fields	FALSE	
+kalanluinenKannel	kalanluinen kannel	kalanluinenKannel.png	enemyAll	hp	1	1	1	10	1	3	fields	FALSE	
+kuokka	Kuokka	kuokka.png	enemy	hp	1	1	1	10	1	3	fields	FALSE	
+viikate	Viikate	viikate.png	enemy	hp	1	1	1	10	1	3	fields	FALSE	
+miekka	miekka	miekka.png	enemy	hp	1	1	1	10	1	3	fields	FALSE	
+salmiakki	Salmiakki	salmiakki.png	player	hp	1	1	1	10	1	3	fields	FALSE	
+mammi	Mämmi	mammi.png	player	hp	1	1	1	10	1	3	fields	FALSE	
+verkko	Verkko	verkko.png	player	hp	1	1	1	10	1	3	fields	FALSE	
+tikari	Tikari	tikari.png	enemy	hp	1	1	1	10	1	3	fields	FALSE	
+nuija	Nuija	nuija.png	enemy	hp	1	1	1	10	1	3	fields	FALSE	
+jousi	Jousi	jousi.png	enemy	hp	1	1	1	10	1	3	fields	FALSE	
+karhunansa	Karhunansa	karhunansa.png	enemy	hp	1	1	1	10	1	3	fields	FALSE	
+maito	Maito	maito.png	player	hp	1	1	1	10	1	3	fields	FALSE	
+herne	Herne	herne.png	player	hp	1	1	1	10	1	3	fields	TRUE	Lisätään myöhemmin peliin: hahmokohtainen healing/temp energy itemi
+porkkana	Porkkana	porkkana.png	player	hp	1	1	1	10	1	3	fields	TRUE	Lisätään myöhemmin peliin: hahmokohtainen healing/temp energy itemi
+peruna	Peruna	peruna.png	player	hp	1	1	1	10	1	3	fields	TRUE	Lisätään myöhemmin peliin: hahmokohtainen healing/temp energy itemi
+lanttu	Lanttu	lanttu.png	player	hp	1	1	1	10	1	3	fields	TRUE	Lisätään myöhemmin peliin: hahmokohtainen healing/temp energy itemi
+anti-sampo	Anti-Sampo	anti-sampo.png	enemy	hp	1	1	1	10	1	3	fields	TRUE	
+juhannuskokko	Juhannuskokko	juhannuskokko.png	enemy	hp	1	1	1	10	1	3	fields	TRUE	
+ilmarisenAlasin	Ilmarisen alasin	ilmarisenAlasin.png	enemy	hp	1	1	1	10	1	3	fields	TRUE	
+kullervonKirous	Kullervon kirous	kullervonKirous.png	enemy	hp	1	1	1	10	1	3	fields	TRUE	
+louhenKultainenKehto	Louhen kultainen kehto	louhenKultainenKehto.png	player	hp	1	1	1	10	1	3	fields	TRUE	
+lemminkäisenKantele	Lemminkäisen kantele	lemminkäisenKantele.png	enemyAll	hp	1	1	1	10	1	3	fields	TRUE	
+tuonelanJousi	Tuonelan jousi	tuonelanJousi.png	enemy	hp	1	1	1	10	1	3	fields	TRUE	
+kullervonMiekka	Kullervon miekka	kullervonMiekka.png	enemy	hp	1	1	1	10	1	3	fields	TRUE	
+louhenKeihas	Louhen keihäs	louhenKeihas.png	enemy	hp	1	1	1	10	1	3	fields	TRUE	
+ukkokivenKirves	Ukko-kiven kirves	ukkokivenKirves.png	enemy	hp	1	1	1	10	1	3	fields	TRUE	
+hiidenKoiranHammas	Hiiden koiran hammas	hiidenKoiranHammas.png	enemy	hp	1	1	1	10	1	3	fields	TRUE	
+lemminkaisenMiekka	Lemminkäisen miekka	lemminkaisenMiekka.png	enemy	hp	1	1	1	10	1	3	fields	TRUE	
+joukahaisenKivi	Joukahaisen kivi	joukahaisenKivi.png	enemy	hp	1	1	1	10	1	3	fields	TRUE	
+louhenKultainenKypara	Louhen kultainen kypärä	louhenKultainenKypara.png	player	hp	1	1	1	10	1	3	fields	TRUE	
+ilmarisenTakki	Ilmarisen takki	ilmarisenTakki.png	player	hp	1	1	1	10	1	3	fields	TRUE	
+hiidenHirvenNahka	Hiiden hirven nahka	hiidenHirvenNahka.png	player	hp	1	1	1	10	1	3	fields	TRUE	
+väinölänPellavapaita	Väinölän pellavapaita	väinölänPellavapaita.png	player	hp	1	1	1	10	1	3	fields	TRUE	
+tiera	Tiera	tiera.png	player	hp	1	1	1	10	1	3	fields	TRUE	
+pohjolanNeidonVaippa	Pohjolan neidon vaippa	pohjolanNeidonVaippa.png	player	hp	1	1	1	10	1	3	fields	TRUE	
+ilmarisenPuhalllus	Ilmarisen puhalllus	ilmarisenPuhalllus.png	enemyAll	hp	1	1	1	10	1	3	fields	TRUE	
+vainamoisenKantele	Väinämöisen kantele	vainamoisenKantele.png	enemyAll	hp	1	1	1	10	1	3	fields	TRUE	
+lemminkaisenJoutsenet	Lemminkäisen joutsenet	lemminkaisenJoutsenet.png	enemy3	hp	1	1	1	10	1	3	fields	TRUE	
+tuonelanPortti	Tuonelan portti	tuonelanPortti.png	enemy	hp	1	1	1	10	1	3	fields	TRUE	
+akkavaarienTaika	Akka-vaarien taika	akkavaarienTaika.png	enemyAll	hp	1	1	1	10	1	3	fields	TRUE	
+louhenKirous	Louhen kirous	louhenKirous.png	enemy	hp	1	1	1	10	1	3	fields	TRUE	
+ukkoUkonnuoli	Ukko ukonnuoli	ukkoUkonnuoli.png	enemy	hp	1	1	1	10	1	3	fields	TRUE	
+karkkipaiva	Karkkipäivä	karkkipaiva.png	enemy	hp	1	1	1	10	1	3	fields	TRUE	
+metsanhenkienKutsu	Metsänhenkien kutsu	metsanhenkienKutsu.png	enemy	hp	1	1	1	10	1	3	forest	TRUE	Pelaaja kutsuu metsänhenkiä auttamaan häntä taistelussa. Aligmentiin perustuva mahdollisuus onnistua kutsussa. Onnistuessa, pelaajan seuraava Metsäväen Taika kortin efekti tapahtuu kahdesti tämän tappelun aikana.
+luonnonkivienHeitto	Luonnonkivien heitto	luonnonkivienHeitto.png	enemy	hp	1	1	1	10	1	3	forest	TRUE	Pelaaja heittää vanhoja, kivenkovia pähkinöitä vihollisia päin. Tekee perus määrän vahinkoa kaikkiin vihollisiin.
+metsanVarjot	Metsän varjot	metsanVarjot.png	enemy	hp	1	1	1	10	1	3	forest	TRUE	Pelaaja piiloutuu varjoihin, jotta pystyisi väistämään vihollisen hyökkäyksiä kunnes tappelu loppuu. Hyökkääminen poistaa pelaajan piilosta. Piilosta poistava hyökkäys tekee enemmän vahinkoa vihollisiin, jos tappelu tapahtuu metsässä.
+elaintenAvustus	Eläinten avustus	elaintenAvustus.png	enemy	hp	1	1	1	10	1	3	forest	TRUE	Pelaaja komentaa metsän eläimiä vihollisen kimppuun. Tekee ison määrän vahinkoa yhteen viholliseen.
+metsanTaikajuuri	Metsän taikajuuri	metsanTaikajuuri.png	enemy	hp	1	1	1	10	1	3	forest	TRUE	Pelaaja syö metsästä löytämänsä taikapuun juuren. Tämä antaa pelaajalle satunnaisen buffin (esim. hyökkäys-boosti, puolustus-boosti, pienempi sisun käyttö jnp.)
+puidenSuoja	Puiden suoja	puidenSuoja.png	enemy	hp	1	1	1	10	1	3	forest	TRUE	Pelaaja nostattaa väliaikaisesti puun eteensä suojatakseen itsensä vihollisten hyökkäyksiltä. Puu lähtee pois pelaajan seuraavan vuoron alussa. Tämä puu myös on hyödytön tuleen perustuvia hyökkäyksiä vastaan ja menee pois kun sellainen käytetään siihen.
+metsanHenkienVihanpuuska	Metsän henkien vihanpuuska	metsanHenkienVihanpuuska.png	enemy	hp	1	1	1	10	1	3	forest	TRUE	Metsän henget ovat yhtäkkiä raivona. Tämä tekee suuren määrän vahinkoa pelaajaan ja kaikkiin vihollisiin, kun juuret lyö kaikkia maasta noustessaan samalla kun lehdet silpoilee lentäen ympäriinsä.
+metsanTuulenKutsu	Metsän tuulen kutsu	metsanTuulenKutsu.png	enemy	hp	1	1	1	10	1	3	forest	TRUE	Pelaaja kutsuu metsän tuulia auttamaan häntä taistelussa. Aligmentiin perustuva mahdollisuus onnistua kutsussa. Onnistuessa, tuulet vie yhden vastustajista pois tappelusta väliaikaisesti, ja se tulee takaisin tappeluun tietyn määrän vuoroja jälkeen. Jos kaikki muut viholliset ovat poissa tappelusta ennen kuin tämä vihollinen tulee takaisin, se ei tule enää takaisin.
+luonnonVoima	Luonnon voima 	luonnonVoima.png	enemy	hp	1	1	1	10	1	3	forest	TRUE	Pelaaja väliaikaisesti saa lisävoimaa suoraan luonnosta. Pelaajan seuraava hyökkäys nykyisen vuoron ajan yhtä vihollista vastaan tekee moninkertaisesti enemmän vahinkoa.
+metsanTaikakivi	Metsän taikakivi	metsanTaikakivi.png	enemy	hp	1	1	1	10	1	3	forest	TRUE	Taianomainen iso kivilohkare jyrää kaikkia vihollisia päin tehden ison määrän vahinkoa kaikkiin vihollisiin, tappaen heti kaikki pienet viholliset vahingon tekemisen sijan.
+metsanVarjotanssi	Metsän varjotanssi	metsanVarjotanssi.png	enemy	hp	1	1	1	10	1	3	forest	TRUE	Lopun tappelun ajan, pelaajalla on joko mahdollisuus saada tai riski menettää “Metsän varjot” taian efekti oman vuoronsa lopussa. Mahdollisuuden suuruus on 50/50.
+vesipatsas	Vesipatsas	vesipatsas.png	enemy	hp	1	1	1	10	1	3	forest	TRUE	Pelaaja nostaa vihollisen ilmaan nostattaen vesipylvään sen jalkojen alta. Tämä hyökkäys tekee aina 30% tämän vihollisen maksimi hp:sta vahinkonaan.
+vedenkaarmeenKirous	Vedenkäärmeen kirous	vedenkaarmeenKirous.png	enemy	hp	1	1	1	10	1	3	forest	TRUE	Vedestä muodostuneet käärmeet kietoutuvat kaikkien vihollisten ympäri, skipaten heidän seuraavan vuoron. Kasvipohjaiset viholliset imevät vaan veden itseensä tehden tästä taiasta hyödyttömän heitä vastaan.
+vedenpinnanVaaristyma	Vedenpinnan vääristymä	vedenpinnanVaaristyma.png	enemy	hp	1	1	1	10	1	3	forest	TRUE	Kentälle tulee lätäköitä luoden illuusioita jotka näyttää pelaajalta. Viholliset pelästyvät ja alkavat käyttää vain itsensä buffaus -liikkeitä parin vuoron ajan. Ja jos ne ei osaa sellaisia, niin ne eivät tee sitten mitään.
+vedenalaisetPyorteet	Vedenalaiset pyörteet	vedenalaisetPyorteet.png	enemy	hp	1	1	1	10	1	3	forest	TRUE	Vihollisten jalkojen alta ilmestyy vesi pyörteitä. Viholliset alkaa voida pahoin jolloin kaikki heidän hyökkäykset lyö vain minimi vahingolla parin vuoron ajan.
+kalojenHyokkaus	Kalojen hyökkäys	kalojenHyokkaus.png	enemy	hp	1	1	1	10	1	3	forest	TRUE	Kasa kaloja lentää vihollista päin käyttäen kehoaan aseena, tehden paljon vahinkoa yhteen viholliseen. Pelaaja saa 1-3 Kalanruoto-kortteja nykyiseen käteensä tämän vuoron ajaksi sen mukaan kun kuinka paljon vahinkoa tämä hyökkäys teki viholliselle laskematta liikavahinkoa (mitä enemmän vahinkoa, sitä enemmän kortteja).  Kalanruoto: Pelaaja heitää vihollista kalanruodolla, aiheuttaen viholliselle verenvuotoa.
+vedenalainenRajahdys	Vedenalainen räjähdys	vedenalainenRajahdys.png	enemy	hp	1	1	1	10	1	3	forest	TRUE	Pelaaja luo lätäkön viholliset keskelle joka räjähtää, tehden vahinkoa kaikkiin vihollisiin. Jos tappelu tapahtuu vedessä, koko vesimassa räjähtää, tehden PALJON vahinkoa pelaajaan että vihollisiin. Kentällä oleva vesi haihtuu tämän jälkeen.
+sumunVerho	Sumun verho	sumunVerho.png	enemy	hp	1	1	1	10	1	3	forest	TRUE	Pelaajan ympärille tulee suuret määrät sumua. Tämä puolustaa pelaajaa debuffeiltä parin vuoron ajaksi.
+tulipatsas	tulipatsas	tulipatsas.png	enemy	hp	1	1	1	10	1	3	forest	TRUE	
+tulisateet	tulisateet	tulisateet.png	enemy	hp	1	1	1	10	1	3	forest	TRUE	
+tulipallo	tulipallo	tulipallo.png	enemy	hp	1	1	1	10	1	3	forest	TRUE	
+tulitorni	tulitorni	tulitorni.png	enemy	hp	1	1	1	10	1	3	forest	TRUE	
+liekkikeihas	liekkikeihas	liekkikeihas.png	enemy	hp	1	1	1	10	1	3	forest	TRUE	
+tulivirta	tulivirta	tulivirta.png	enemy	hp	1	1	1	10	1	3	forest	TRUE	
+tuulenpuuska	tuulenpuuska	tuulenpuuska.png	enemy	hp	1	1	1	10	1	3	forest	TRUE	
+myrskynSilma	myrskynSilma	myrskynSilma.png	enemy	hp	1	1	1	10	1	3	forest	TRUE	
+pilvienPeitto	pilvienPeitto	pilvienPeitto.png	enemy	hp	1	1	1	10	1	3	forest	TRUE	
+huumaavaTuoksu	huumaavaTuoksu	huumaavaTuoksu.png	enemy	hp	1	1	1	10	1	3	forest	TRUE	
+taivaanValo	taivaanValo	taivaanValo.png	enemy	hp	1	1	1	10	1	3	forest	TRUE	
+ilmanVarina	ilmanVarina	ilmanVarina.png	enemy	hp	1	1	1	10	1	3	forest	TRUE	
+madonlakki	madonlakki	madonlakki.png	enemy	hp	1	1	1	10	1	3	forest	TRUE	
+valkokarpassieni	valkokarpassieni	valkokarpassieni.png	enemy	hp	1	1	1	10	1	3	forest	TRUE	
+ritsa	ritsa	ritsa.png	enemy	hp	1	1	1	10	1	3	forest	TRUE	
+luento	Luento	luento.png	enemy	hp	1	1	1	10	1	3	fields	FALSE	Erikoiskortti: pelaaja tekee niin paljon vahinkoa kuin tällä on kortteja kädessä. (Voi päivittää/löytyä eri versioita, esim. opari, kandi, maisteri tai tohtorin väitöskirja, jne.)
+vasara	Vasara	vasara.png	enemy	hp	1	1	1	10	1	3	fields	FALSE	

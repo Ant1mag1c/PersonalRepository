@@ -68,51 +68,74 @@ local function movePlayer(event)
                     prevNode = target
                     currentNeighbours = prevNode.connected
 
-					player.x = prevNode.x + prevNode.width
-					player.y = prevNode.y
+
+
+                    --  Luodaan pelaajalle liikkumi animaatio
+
+                    zoomOutParams = {time = 500, xScale = 0.75, yScale = 0.75+0.1, onComplete=function()  transition.to( player, zoomInParams )  end  }
+                    zoomInParams = {time = 500, xScale = 0.75-0.1, yScale = 0.75-0.1, onComplete=function()  transition.to( player, zoomOutParams )   end }
+
+                    transition.to( player, zoomInParams )
+
+                    -- TODO: Selvitä ongelma ja lisää move cost mekanismi
+
+                    -- userdata.player.sisuCurrent = userdata.player.sisuCurrent - userdata.player.moveCost
+                    -- userdata.save()
+
+                    -- TODO: Pelaaja liikkuu samalla nopeudella jokaisen matkan joka tekee lyhyistä väleistä turhan pitkäkestoisia
+                    -- Kehitä kaava ylläpitämään sama nopeus joka etäisyydellä
+                    transition.to(player, {time=2000, x=prevNode.x, y=prevNode.y, onComplete=function() transition.cancel(player)
+
+
+                        for i = 1, #nodeList do
+                            if nodeList[i].row < currentRow then
+                                darkenLevel( nodeList[i] )
+                            end
+                        end
+                        for i = 1, #pathList do
+                            if pathList[i].row <= currentRow then
+                                pathList[i]:setStrokeColor( 0.5, 0.5 )
+                            end
+                        end
+
+                        local levelType = target.type
+
+                        local options = {
+                            isModal = true,
+                            effect = "fade",
+                            time = 250,
+                            params = {
+                                terrain = target.terrain,
+                                type = levelType,
+                                path = target.path,
+                                row = target.row,
+                                level = target.level,
+                            }
+                        }
+
+                        local overlayScene
+                        if levelType == "store" then
+                            overlayScene = "scenes.deck"
+                            options.params.isStore = true
+
+                        elseif levelType == "sauna" or levelType == "treasure" or levelType == "randomEvent" then
+                            overlayScene = "scenes.event"
+
+                        end
+
+                        if overlayScene then
+                            composer.showOverlay( overlayScene, options )
+                        else
+                            composer.gotoScene( "scenes.battle", options )
+                        end
+
+                    end
+                })
+                    -- player.x = prevNode.x + prevNode.width
+					-- player.y = prevNode.y
 
 					-- Tummenna taakse jääneet kentät ja polut, jotta pelaaja näkee mihin suuntaan hän voi liikkua.
-					for i = 1, #nodeList do
-						if nodeList[i].row < currentRow then
-							darkenLevel( nodeList[i] )
-						end
-					end
-					for i = 1, #pathList do
-						if pathList[i].row <= currentRow then
-							pathList[i]:setStrokeColor( 0.5, 0.5 )
-						end
-					end
 
-                    local levelType = target.type
-
-                    local options = {
-						isModal = true,
-						effect = "fade",
-						time = 250,
-						params = {
-							terrain = target.terrain,
-							type = levelType,
-							path = target.path,
-							row = target.row,
-							level = target.level,
-						}
-                    }
-
-					local overlayScene
-					if levelType == "store" then
-						overlayScene = "scenes.deck"
-						options.params.isStore = true
-
-                    elseif levelType == "sauna" or levelType == "treasure" or levelType == "randomEvent" then
-						overlayScene = "scenes.event"
-
-					end
-
-					if overlayScene then
-						composer.showOverlay( overlayScene, options )
-                    else
-                        composer.gotoScene( "scenes.battle", options )
-                    end
                 end
 			end
 		end
@@ -955,6 +978,7 @@ function map.start( parent, sceneParams )
 		player.xScale, player.yScale = subscale, subscale
 		player.x = prevNode.x + prevNode.width
 		player.y = prevNode.y
+
 
 	end
 end

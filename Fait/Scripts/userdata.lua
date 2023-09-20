@@ -44,6 +44,7 @@ function userdata.new(params)
     userdata.player.maxCardsHand = tonumber( defaultStats.maxCardsHand )
     userdata.player.cardPerTurn = tonumber( defaultStats.cardPerTurn )
 
+
     -- Annetaan pelaajalle kortit
     local quaranteedCard = params.guaranteedCard or userdata.player.guaranteedCard
     local cardCount = tonumber( params.startingCards or userdata.player.startingCards )

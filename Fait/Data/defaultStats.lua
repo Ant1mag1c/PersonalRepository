@@ -5,5 +5,6 @@ return {
     maxCardsDeck = 30,
     maxCardsHand = 5,
     cardPerTurn = 3,
+    moveCost = 5
 
 }

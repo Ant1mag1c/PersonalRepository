@@ -6,6 +6,15 @@ local characterData = dataHandler.getData( "playerCharacters.tsv" )
 local cardData = dataHandler.getData( "cards.tsv" )
 local defaultStats = require("Data.defaultStats")
 
+
+
+function userdata.takeDamage(target, value)
+    target = target - value
+    return target
+    -- print(target)
+
+end
+
 function userdata.save()
     loadsave.save( userdata.player, "userdata.json", "cardevala" )
 
@@ -44,6 +53,8 @@ function userdata.new(params)
     userdata.player.maxCardsHand = tonumber( defaultStats.maxCardsHand )
     userdata.player.cardPerTurn = tonumber( defaultStats.cardPerTurn )
 
+    userdata.moveCost = 10
+
 
     -- Annetaan pelaajalle kortit
     local quaranteedCard = params.guaranteedCard or userdata.player.guaranteedCard
@@ -64,6 +75,8 @@ function userdata.new(params)
         userdata.player.cards[i] = table.getRandom(allowedCards)
     end
 
+
 end
+
 
 return userdata

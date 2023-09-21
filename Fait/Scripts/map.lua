@@ -1,6 +1,7 @@
 local composer = require("composer")
 local screen = require("Scripts.screen")
 local userdata = require("Scripts.userdata")
+local playerStatusBar = require("Widgets.playerStatusBar")
 local map = {}
 
 -----------------------------------------------------------------------
@@ -69,6 +70,16 @@ local function movePlayer(event)
                     currentNeighbours = prevNode.connected
 
 
+                    local playerHP = userdata.player.sisuCurrent
+
+                    userdata.player.sisuCurrent = userdata.takeDamage(playerHP, 30)
+
+                    print(userdata.isBleeding)
+
+
+                    userdata.save()
+
+                    playerStatusBar.update()
 
                     --  Luodaan pelaajalle liikkumi animaatio
 
@@ -76,6 +87,8 @@ local function movePlayer(event)
                     zoomInParams = {time = 500, xScale = 0.75-0.1, yScale = 0.75-0.1, onComplete=function()  transition.to( player, zoomOutParams )   end }
 
                     transition.to( player, zoomInParams )
+
+
 
                     -- TODO: Selvitä ongelma ja lisää move cost mekanismi
 

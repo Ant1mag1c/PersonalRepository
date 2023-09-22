@@ -27,9 +27,6 @@ local function chooseOption(event)
 		if not optionChosen then
 			optionChosen = true
 			target.action()
-			local playerHP = userdata.player.sisuCurrent
-
-			userdata.takeDamage(playerHP, 30)
 			userdata.save()
 			-- Päivitetään ruudun yläreunassa olevat pelaajan statsit,
 			-- sillä ne todennäköisesti muuttuivat eventin seurauksena.

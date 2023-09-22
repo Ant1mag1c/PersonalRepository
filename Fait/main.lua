@@ -37,7 +37,7 @@ end
 -- Ladataan ja prosessoidaan kaikki tsv-data tiedostot.
 local dataHandler = require("Scripts.dataHandler")
 dataHandler.getData( "cards.tsv" )
-dataHandler.getData( "events.tsv" )
+-- dataHandler.getData( "events.tsv" )
 dataHandler.getData( "enemies.tsv" )
 dataHandler.getData( "elites.tsv" )
 dataHandler.getData( "bosses.tsv" )
@@ -45,16 +45,14 @@ dataHandler.getData( "playerCharacters.tsv" )
 
 local composer = require("composer")
 -- DEV: vaihda composer.gotoScene("scenes.mainMenu") -> composer.gotoScene("scenes.testattavanScenenNimi")
-composer.gotoScene("scenes.mainMenu")
+-- composer.gotoScene("scenes.mainMenu")
 -- composer.gotoScene("scenes.battle")
 
 -- composer.gotoScene("scenes.event", {
 --     params = {
---         type = "sauna",
+--         type = "poppamies",
 --         terrain = "field",
---         level = 2,
---         row = 1,
---         path = 2
+
 --     }
 -- })
 

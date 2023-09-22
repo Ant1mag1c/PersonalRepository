@@ -70,14 +70,22 @@ local function movePlayer(event)
                     currentNeighbours = prevNode.connected
 
 
+
+
+                    -- Julkistetaan liikkumiselle olennaisisa muuttujia liikkumiselle ja annetaan
+                    -- pelaajalle moveCost joka tulee maksaa ennen jokaista liikkumista kartalla
                     local playerHP = userdata.player.sisuCurrent
+                    local moveCost = userdata.moveCost
+                    local isBleeding = userdata.isBleeding
+                    local bleedPenalty = userdata.bleedPenalty
 
-                    userdata.player.sisuCurrent = userdata.takeDamage(playerHP, 30)
+                    -- TODO: Luo repeat until loop joka laskee bleedCounttia yhden alaspäin joka liikkeessä
 
-                    print(userdata.isBleeding)
-
-
-                    userdata.save()
+                    if not isBleeding then
+                        userdata.player.sisuCurrent = userdata.takeDamage(playerHP, moveCost)
+                    else
+                        userdata.player.sisuCurrent = userdata.takeDamage(playerHP, bleedPenalty)
+                    end
 
                     playerStatusBar.update()
 
@@ -87,13 +95,6 @@ local function movePlayer(event)
                     zoomInParams = {time = 500, xScale = 0.75-0.1, yScale = 0.75-0.1, onComplete=function()  transition.to( player, zoomOutParams )   end }
 
                     transition.to( player, zoomInParams )
-
-
-
-                    -- TODO: Selvitä ongelma ja lisää move cost mekanismi
-
-                    -- userdata.player.sisuCurrent = userdata.player.sisuCurrent - userdata.player.moveCost
-                    -- userdata.save()
 
                     -- TODO: Pelaaja liikkuu samalla nopeudella jokaisen matkan joka tekee lyhyistä väleistä turhan pitkäkestoisia
                     -- Kehitä kaava ylläpitämään sama nopeus joka etäisyydellä
@@ -144,8 +145,7 @@ local function movePlayer(event)
 
                     end
                 })
-                    -- player.x = prevNode.x + prevNode.width
-					-- player.y = prevNode.y
+
 
 					-- Tummenna taakse jääneet kentät ja polut, jotta pelaaja näkee mihin suuntaan hän voi liikkua.
 

@@ -15,6 +15,8 @@ local userdata = require("Scripts.userdata")
 
 return {
 
+
+
     -- ["event.name"] = {
     --     id = "",
     --     title = "",
@@ -202,17 +204,18 @@ return {
         title = "Lynx Bite",
         image = "jokuKuva.png",
         imageSize = {imageWidth = 300, imageHeight = 600, anchorY = 0.55},
-        description = "Lynx appears from the shadows and attacks you. Your quick manoeuvres allow you to either lose 10 sisu and gain the condition (Open Wound) or send one card into the cemetery.",
+        description = "Lynx appears from the shadows and attacks you. Your quick manoeuvres allow you to either lose 10 sisu and gain bleed for 5 turns or send one card into the cemetery.",
         event = {
             {
-                option = "Send a card of choise into a cemetery",
+                option = "Remove a Card",
                 action = function() return end,
                 result = 1
             },
 
             {
-                option = "Lose 10 sisu and gain (Open wound) aligment",
-                action = function() return end,
+                option = "Take damage and gain bleed",
+                action = function() userdata.player.sisuCurrent = userdata.player.sisuCurrent - 10
+                                        userdata.bleedCount = userdata.bleedCount + 5 end,
                 result = "You lost 10 sisu and your're now bleeding"
             }
         }
@@ -234,151 +237,151 @@ return {
     --     }
     -- },
 
-    ["makkaraperunat"] = {
-            -- id = "",
-            title = "Sausage Potatoes",
-            image = "jokuKuva.png",
-            imageSize = {imageWidth = 300, imageHeight = 600, anchorY = 0.55},
-            description = "Your deepest desires manifest a serving of loaded sausage potatoes in your hands. Your hunger is satiated and you heal 100 sisu.",
-            event = {
+    -- ["makkaraperunat"] = {
+    --         -- id = "",
+    --         title = "Sausage Potatoes",
+    --         image = "jokuKuva.png",
+    --         imageSize = {imageWidth = 300, imageHeight = 600, anchorY = 0.55},
+    --         description = "Your deepest desires manifest a serving of loaded sausage potatoes in your hands. Your hunger is satiated and you heal 100 sisu.",
+    --         event = {
 
-                {
-                    option = "Eat sausage potatoes",
-                    action = function() userdata.player.sisuCurrent = math.min(userdata.player.sisuMax, userdata.player.sisuCurrent + 100) end,
-                    result = "You healed for +100"
-                }
-            }
-        },
+    --             {
+    --                 option = "Eat sausage potatoes",
+    --                 action = function() userdata.player.sisuCurrent = math.min(userdata.player.sisuMax, userdata.player.sisuCurrent + 100) end,
+    --                 result = "You healed for +100"
+    --             }
+    --         }
+    --     },
 
-    ["avanto"] = {
-        -- id = "",
-        title = "Hole in the ice",
-        image = "jokuKuva.png",
-        imageSize = {imageWidth = 300, imageHeight = 600, anchorY = 0.55},
-        description = "You spot a nicely carved hole in the ice and go swimming. The shivering cold increases your max sisu.",
-        event = {
+    -- ["avanto"] = {
+    --     -- id = "",
+    --     title = "Hole in the ice",
+    --     image = "jokuKuva.png",
+    --     imageSize = {imageWidth = 300, imageHeight = 600, anchorY = 0.55},
+    --     description = "You spot a nicely carved hole in the ice and go swimming. The shivering cold increases your max sisu.",
+    --     event = {
 
-            {
-                option = "Take a dip ",
-                action = function() userdata.player.sisuMax = userdata.player.sisuMax + 15 end,
-                result = "Your sisu has been increased +15"
-            }
-        }
-    },
-
-
-
-    ["leirinta-alue"] = {
-        -- id = "",
-        title = "Campsite",
-        image = "jokuKuva.png",
-        imageSize = {imageWidth = 300, imageHeight = 600, anchorY = 0.55},
-        description = "You are able to take a short nap. Resting at the campsite heals you a little.",
-        event = {
-
-            {
-                option = "Take a nap",
-                action = function() userdata.player.sisuCurrent = math.min(userdata.player.sisuMax, userdata.player.sisuCurrent + 15) end,
-                result = "You healed for +15"
-            }
-        }
-    },
-
-    ["ruisleipä"] = {
-        -- id = "Rye Bread",
-        title = "Rye Bread",
-        image = "jokuKuva.png",
-        imageSize = {imageWidth = 300, imageHeight = 600, anchorY = 0.55},
-        description = "You stumble upon some rye bread. Eating it increases your attack.",
-        event = {
-
-            {
-                option = "Eat the bread",
-                action = function() userdata.player.attack = userdata.player.attack + 1  end,
-                result = "Your attack has been increased +1!"
-            }
-                }
-    },
-
-    ["poppamies"] = {
-        -- id = "poppamies",
-        title = "Shaman",
-        image = "jokuKuva.png",
-        imageSize = {imageWidth = 300, imageHeight = 600, anchorY = 0.55},
-        description = "The Shaman lets you increase your attack or defence. Choose wisely!",
-        event = {
-            {
-                option = "Train for offence",
-                action = function() userdata.player.attack = userdata.player.attack + 1  end,
-                result = "Your attack has been increased +1!"
-            },
-
-            {
-                option = "Train for defence",
-                action = function() userdata.player.defense = userdata.player.defense + 1 end,
-                result = "Your defence has been increased +1!"
-            }
-        }
-    },
-
-    ["treasure"] = {
-        -- id = "treasure",
-        title = "Treasure chest",
-        image = "treasure.png",
-        imageSize = {imageWidth = 300, imageHeight = 600, anchorY = 0.55},
-        description = "Player can choose to pick a new card to his hand or gain some money",
-        event = {
-            {
-                option = "Pick a card",
-                action = function() print("Move to pick card scene") end,
-                result = 0
-            },
-
-            {
-                option = "Gain +15 money",
-                action = function() userdata.player.money = userdata.player.money + 15 end,
-                result = "You earned some pocket money"
-            }
-        }
-    },
-
-    ["sauna"] = {
-        -- id = "sauna",
-        title = "Sauna",
-        image = "sauna.png",
-        imageSize = {imageWidth = 300*0.7, imageHeight = 600*0.7, anchorY = 0.35},
-        description = "You have entered Sauna! Choose between healing or increasing max sisu",
-        event = {
-            {
-                option = "Heal",
-                action = function() userdata.player.sisuCurrent = math.min(userdata.player.sisuMax, userdata.player.sisuCurrent + 25) end,
-                result = "You healed for +25",
-            },
-
-            {
-                option = "Increase sisu",
-                action = function() userdata.player.sisuMax = userdata.player.sisuMax + 10 end,
-                result = "Your sisu has been increased +10"
-            }
-        }
-    },
-
-    ["piima"] = {
-        -- id = "armor",
-        title = "Sour milk",
-        image = "piima.png",
-        imageSize = {imageWidth = 300, imageHeight = 600, anchorY = 0.35},
-        description = "You stumble upon some sour milk. Drinking it increases your defence.",
-        event = {
-            {
-                option = "Drink the sour milk ",
-                action = function() userdata.player.defense = userdata.player.defense + 1 end,
-                result = "Your defence has been increased +1!",
-            }
+    --         {
+    --             option = "Take a dip ",
+    --             action = function() userdata.player.sisuMax = userdata.player.sisuMax + 15 end,
+    --             result = "Your sisu has been increased +15"
+    --         }
+    --     }
+    -- },
 
 
-        }
-    },
+
+    -- ["leirinta-alue"] = {
+    --     -- id = "",
+    --     title = "Campsite",
+    --     image = "jokuKuva.png",
+    --     imageSize = {imageWidth = 300, imageHeight = 600, anchorY = 0.55},
+    --     description = "You are able to take a short nap. Resting at the campsite heals you a little.",
+    --     event = {
+
+    --         {
+    --             option = "Take a nap",
+    --             action = function() userdata.player.sisuCurrent = math.min(userdata.player.sisuMax, userdata.player.sisuCurrent + 15) end,
+    --             result = "You healed for +15"
+    --         }
+    --     }
+    -- },
+
+    -- ["ruisleipä"] = {
+    --     -- id = "Rye Bread",
+    --     title = "Rye Bread",
+    --     image = "jokuKuva.png",
+    --     imageSize = {imageWidth = 300, imageHeight = 600, anchorY = 0.55},
+    --     description = "You stumble upon some rye bread. Eating it increases your attack.",
+    --     event = {
+
+    --         {
+    --             option = "Eat the bread",
+    --             action = function() userdata.player.attack = userdata.player.attack + 1  end,
+    --             result = "Your attack has been increased +1!"
+    --         }
+    --             }
+    -- },
+
+    -- ["poppamies"] = {
+    --     -- id = "poppamies",
+    --     title = "Shaman",
+    --     image = "jokuKuva.png",
+    --     imageSize = {imageWidth = 300, imageHeight = 600, anchorY = 0.55},
+    --     description = "The Shaman lets you increase your attack or defence. Choose wisely!",
+    --     event = {
+    --         {
+    --             option = "Train for offence",
+    --             action = function() userdata.player.attack = userdata.player.attack + 1  end,
+    --             result = "Your attack has been increased +1!"
+    --         },
+
+    --         {
+    --             option = "Train for defence",
+    --             action = function() userdata.player.defense = userdata.player.defense + 1 end,
+    --             result = "Your defence has been increased +1!"
+    --         }
+    --     }
+    -- },
+
+    -- ["treasure"] = {
+    --     -- id = "treasure",
+    --     title = "Treasure chest",
+    --     image = "treasure.png",
+    --     imageSize = {imageWidth = 300, imageHeight = 600, anchorY = 0.55},
+    --     description = "Player can choose to pick a new card to his hand or gain some money",
+    --     event = {
+    --         {
+    --             option = "Pick a card",
+    --             action = function() print("Move to pick card scene") end,
+    --             result = 0
+    --         },
+
+    --         {
+    --             option = "Gain +15 money",
+    --             action = function() userdata.player.money = userdata.player.money + 15 end,
+    --             result = "You earned some pocket money"
+    --         }
+    --     }
+    -- },
+
+    -- ["sauna"] = {
+    --     -- id = "sauna",
+    --     title = "Sauna",
+    --     image = "sauna.png",
+    --     imageSize = {imageWidth = 300*0.7, imageHeight = 600*0.7, anchorY = 0.35},
+    --     description = "You have entered Sauna! Choose between healing or increasing max sisu",
+    --     event = {
+    --         {
+    --             option = "Heal",
+    --             action = function() userdata.player.sisuCurrent = math.min(userdata.player.sisuMax, userdata.player.sisuCurrent + 25) end,
+    --             result = "You healed for +25",
+    --         },
+
+    --         {
+    --             option = "Increase sisu",
+    --             action = function() userdata.player.sisuMax = userdata.player.sisuMax + 10 end,
+    --             result = "Your sisu has been increased +10"
+    --         }
+    --     }
+    -- },
+
+    -- ["piima"] = {
+    --     -- id = "armor",
+    --     title = "Sour milk",
+    --     image = "piima.png",
+    --     imageSize = {imageWidth = 300, imageHeight = 600, anchorY = 0.35},
+    --     description = "You stumble upon some sour milk. Drinking it increases your defence.",
+    --     event = {
+    --         {
+    --             option = "Drink the sour milk ",
+    --             action = function() userdata.player.defense = userdata.player.defense + 1 end,
+    --             result = "Your defence has been increased +1!",
+    --         }
+
+
+    --     }
+    -- },
 
 
 

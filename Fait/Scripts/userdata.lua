@@ -7,9 +7,12 @@ local cardData = dataHandler.getData( "cards.tsv" )
 local defaultStats = require("Data.defaultStats")
 
 
+
 function userdata.takeDamage(target, value)
     target = target - value
     return target
+    -- print(target)
+
 end
 
 function userdata.save()
@@ -49,12 +52,13 @@ function userdata.new(params)
     userdata.player.maxCardsDeck = tonumber( defaultStats.maxCardsDeck )
     userdata.player.maxCardsHand = tonumber( defaultStats.maxCardsHand )
     userdata.player.cardPerTurn = tonumber( defaultStats.cardPerTurn )
-    -- Liikkumiseen ja muuhun peliin vaikuttavia muuttujia
-    userdata.moveCost = 15
+
+    userdata.moveCost = 10
 
     userdata.isBleeding = false
     userdata.bleedCount = 0
-    userdata.bleedPenalty = 50
+    userdata.bleedPenalty = 20
+
     -- Annetaan pelaajalle kortit
     local quaranteedCard = params.guaranteedCard or userdata.player.guaranteedCard
     local cardCount = tonumber( params.startingCards or userdata.player.startingCards )
@@ -74,6 +78,8 @@ function userdata.new(params)
         userdata.player.cards[i] = table.getRandom(allowedCards)
     end
 
+
 end
+
 
 return userdata

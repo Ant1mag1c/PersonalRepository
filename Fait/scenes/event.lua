@@ -16,6 +16,8 @@ local eventData = require("Data.eventData")
 local options = {}
 local actions = {}
 local result = {}
+local bounds = {}
+-- local text
 local popupTitle = {}
 local optionChosen = false
 
@@ -79,6 +81,10 @@ function scene:create( event )
 		userdata.new()
 	end
 
+	local mouseX = 0
+	local mouseY = 0
+	local isHiglighted = false
+
 	-- Luodaan ikkuna jonka sisällä eventti näytetään
 	window = {}
 
@@ -114,6 +120,8 @@ function scene:create( event )
 			options[i] = thisEvent.event[i]
 			actions[i] = thisEvent.event[i].action
 			result[i] = thisEvent.event[i].result
+
+			options[i].text = {}
 		end
 	end
 
@@ -167,22 +175,79 @@ function scene:create( event )
 	sceneGroup:insert( infoText )
 
 	-- Luodaan eventin vaihtoehdoista omat painikkeet
+
+	local optionTextY = screen.centerY + 95
+
+
 	for i = 1, #options do
-		local text = display.newText( sceneGroup, options[i].option, screen.centerX-70, screen.centerY+(i*60), settings.userdata.font, 30 )
-		text.anchorX = 0
 
-		text.window = display.newRect( sceneGroup, text.x*1.39, text.y, 350, 35 )
-		text.window.alpha = 0.4
-		text.window:setFillColor(0.1)
+		options[i].text = display.newText( sceneGroup, options[i].option, screen.centerX-70, optionTextY, settings.userdata.font, 30 )
+		options[i].text.anchorX = 0
+		options[i].text.alpha = 0.8
 
-		text:toFront()
-		text.action = actions[i]
-		text.result = result[i]
+		options[i].text.window = display.newRect( sceneGroup, options[i].text.x, options[i].text.y, 450, 35 )
+		options[i].text.window.alpha = 0.5
+		options[i].text.window:setFillColor(0.1)
+		options[i].text.window.anchorX = 0
 
-		text:addEventListener("touch", chooseOption)
+		bounds[i] = options[i].text.window.contentBounds
+
+		options[i].text:toFront()
+		options[i].text.action = actions[i]
+		options[i].text.result = result[i]
+
+		options[i].text:addEventListener("touch", chooseOption)
+
+		optionTextY = optionTextY + 60
+
 
 	end
 
+
+
+	local function onMouseEvent(event)
+		mouseX, mouseY = event.x, event.y
+	end
+
+
+	local isHighlighted = false
+	local target
+	local prevTarget
+
+	-- TODO: Koodi ei toimi ensimmäisen optionin kohdalla..
+	-- Selvitä miksi
+	-- local function highlightOption()
+
+	-- 	for i = 1, #options do
+	-- 		if bounds[i].xMin < mouseX and bounds[i].xMax > mouseX and
+	-- 			bounds[i].yMin < mouseY and bounds[i].yMax > mouseY then
+
+	-- 			isHighlighted = true
+	-- 			target = options[i].text
+	-- 			target.id = i
+	-- 			target:setFillColor(1,0,0)
+
+	-- 			prevTarget = target
+
+	-- 			-- print(target.id)
+
+	-- 		else
+
+	-- 			if isHighlighted then
+	-- 				prevTarget:setFillColor(1,1,1)
+	-- 				isHighlighted = false
+	-- 			end
+
+	-- 		end
+
+	-- 	end
+	-- end
+
+	-- options[1].text:setFillColor(0,0,0)
+
+
+	Runtime:addEventListener( "mouse", onMouseEvent )
+	-- Runtime:addEventListener("enterFrame", highlightOption)
 end
 
 

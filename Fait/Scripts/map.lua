@@ -78,14 +78,31 @@ local function movePlayer(event)
                     local moveCost = userdata.moveCost
                     local isBleeding = userdata.isBleeding
                     local bleedPenalty = userdata.bleedPenalty
+                    local bleedCount = userdata.bleedCount
 
-                    -- TODO: Luo repeat until loop joka laskee bleedCounttia yhden alaspäin joka liikkeessä
+
 
                     if not isBleeding then
                         userdata.player.sisuCurrent = userdata.takeDamage(playerHP, moveCost)
-                    else
-                        userdata.player.sisuCurrent = userdata.takeDamage(playerHP, bleedPenalty)
                     end
+
+                    -- Ajetaan bleed ehto jos havaitaan pelaajan vuotavan
+                    if bleedCount > 0 then
+                        print("I'm BLEEDING for", bleedCount,  "turns")
+                        isBleeding = true
+                        bleedCount = bleedCount - 1
+                        userdata.bleedCount = bleedCount
+
+                        userdata.player.sisuCurrent = userdata.takeDamage(playerHP, bleedPenalty)
+
+                    else
+                        isBleeding = false
+
+                    end
+
+
+
+                    -- print(isBleeding, "count:", bleedCount, "/", userdata.bleedCount)
 
                     playerStatusBar.update()
 

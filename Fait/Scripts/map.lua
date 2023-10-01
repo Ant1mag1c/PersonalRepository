@@ -70,44 +70,31 @@ local function movePlayer(event)
                     currentNeighbours = prevNode.connected
 
 
-
-
                     -- Julkistetaan liikkumiselle olennaisisa muuttujia liikkumiselle ja annetaan
                     -- pelaajalle moveCost joka tulee maksaa ennen jokaista liikkumista kartalla
                     local playerHP = userdata.player.sisuCurrent
-                    local moveCost = userdata.moveCost
-                    local isBleeding = userdata.isBleeding
-                    local bleedPenalty = userdata.bleedPenalty
-                    local bleedCount = userdata.bleedCount
+                    local bleedCount = userdata.player.bleedCount
+                    local moveCost = 10
 
-
-
-                    if not isBleeding then
-                        userdata.player.sisuCurrent = userdata.takeDamage(playerHP, moveCost)
-                    end
+                    playerHP = playerHP - moveCost
 
                     -- Ajetaan bleed ehto jos havaitaan pelaajan vuotavan
                     if bleedCount > 0 then
-                        print("I'm BLEEDING for", bleedCount,  "turns")
-                        isBleeding = true
+                        local bleedDamage = math.random( userdata.bleedDmgMin, userdata.bleedDmgMax )
+
                         bleedCount = bleedCount - 1
-                        userdata.bleedCount = bleedCount
+                        playerHP = playerHP - bleedDamage
 
-                        userdata.player.sisuCurrent = userdata.takeDamage(playerHP, bleedPenalty)
-
-                    else
-                        isBleeding = false
-
+                        print("I lost " .. bleedDamage .. "hp and bleed for " .. bleedCount .. " turns ")
                     end
 
+                    userdata.player.sisuCurrent = playerHP
+                    userdata.player.bleedCount = bleedCount
 
-
-                    -- print(isBleeding, "count:", bleedCount, "/", userdata.bleedCount)
 
                     playerStatusBar.update()
 
                     --  Luodaan pelaajalle liikkumi animaatio
-
                     zoomOutParams = {time = 500, xScale = 0.75, yScale = 0.75+0.1, onComplete=function()  transition.to( player, zoomInParams )  end  }
                     zoomInParams = {time = 500, xScale = 0.75-0.1, yScale = 0.75-0.1, onComplete=function()  transition.to( player, zoomOutParams )   end }
 

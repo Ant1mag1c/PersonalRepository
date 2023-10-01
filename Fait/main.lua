@@ -48,13 +48,13 @@ local composer = require("composer")
 -- composer.gotoScene("scenes.mainMenu")
 -- composer.gotoScene("scenes.battle")
 
--- composer.gotoScene("scenes.event", {
---     params = {
---         type = "ansa",
---         terrain = "field",
+composer.gotoScene("scenes.event", {
+    params = {
+        type = "luola",
+        terrain = "field",
 
---     }
--- })
+    }
+})
 
 -- composer.gotoScene("scenes.deck", {
 --     params = {
@@ -62,4 +62,4 @@ local composer = require("composer")
 --     }
 -- })
 
-composer.gotoScene("scenes.map")
+-- composer.gotoScene("scenes.map")

@@ -177,49 +177,66 @@ return {
     --     }
     -- },
 
-    -- ["luola"] = {
-    --     id = "",
-    --     title = "Dark Cave",
-    --     image = "jokuKuva.png",
-    --     imageSize = {imageWidth = 300, imageHeight = 600, anchorY = 0.55},
-    --     description = "You spot a mysterious cave. What will you do? Explore in hopes of treasure while risking a battle or leave it be?",
-    --     event = {
-    --         {
-    --             option = "Explore the cave",
-    --             action = function()  end,
-    --             result = ""
-    --         },
-
-    --         {
-    --             option = "Exit the cave",
-    --             action = function() return end,
-    --             result = "You left the cave be"
-    --         }
-    --     }
-    -- },
-
-
-    ["ansa"] = {
-        -- id = "",
-        title = "Lynx Bite",
+    ["luola"] = {
+        id = "",
+        title = "Dark Cave",
         image = "jokuKuva.png",
         imageSize = {imageWidth = 300, imageHeight = 600, anchorY = 0.55},
-        description = "Lynx appears from the shadows and attacks you. Your quick manoeuvres allow you to either lose 10 sisu and gain bleed for 5 turns or send one card into the cemetery.",
+        description = "You spot a mysterious cave. What will you do? Explore in hopes of treasure while risking a battle or leave it be?",
         event = {
             {
-                option = "Remove a Card",
-                action = function() return end,
-                result = 1
+                option = "Explore the cave",
+                action = function()
+                    local result
+                    local chance = math.random()
+                    if chance < 0.3 then
+                        result = "Huono tuuri"
+                    else
+                        result = "hyvä tuuri"
+                    end
+
+                    return "You entered cave with chance: " .. result
+                end,
+
             },
 
             {
-                option = "Take damage and gain bleed",
-                action = function() userdata.player.sisuCurrent = userdata.player.sisuCurrent - 10
-                                        userdata.bleedCount = userdata.bleedCount + 5 end,
-                result = "You lost 10 sisu and your're now bleeding"
+                option = "Exit the cave",
+                action = function()
+                    return "You left the cave in peace"
+                end
             }
         }
     },
+
+
+    -- ["ansa"] = {
+    --     -- id = "",
+    --     title = "Lynx Bite",
+    --     image = "jokuKuva.png",
+    --     imageSize = {imageWidth = 300, imageHeight = 600, anchorY = 0.55},
+    --     description = "Lynx appears from the shadows and attacks you. Your quick manoeuvres allow you to either lose 10 sisu and gain bleed for 5 turns or send one card into the cemetery.",
+    --     event = {
+    --         {
+    --             option = "Remove a Card",
+    --             action = function() return end,
+    --             result = 1
+    --         },
+
+    --         {
+    --             option = "Take damage and gain bleed",
+    --             action = function()
+    --                 local bleedAmmount = math.random( userdata.bleedDmgMin, userdata.bleedDmgMax )
+    --                 local bleedDuration = math.random( 1, 2 )
+
+    --                 userdata.player.sisuCurrent = userdata.player.sisuCurrent - bleedAmmount
+    --                 userdata.player.bleedCount = userdata.player.bleedCount + bleedDuration
+
+    --                 return "You lost " .. bleedAmmount .. " sisu and you are now bleeding for " .. bleedDuration .. " turns."
+    --             end
+    --         }
+    --     }
+    -- },
 
     -- ["korttienHautausmaa"] = {
     --     id = "",

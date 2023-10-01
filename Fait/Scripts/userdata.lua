@@ -7,14 +7,6 @@ local cardData = dataHandler.getData( "cards.tsv" )
 local defaultStats = require("Data.defaultStats")
 
 
-
-function userdata.takeDamage(target, value)
-    target = target - value
-    return target
-    -- print(target)
-
-end
-
 function userdata.save()
     loadsave.save( userdata.player, "userdata.json", "cardevala" )
 
@@ -45,6 +37,7 @@ function userdata.new(params)
     userdata.player.sisuMax = tonumber( params.sisu or userdata.player.sisu )
     userdata.player.startingCards = tonumber( params.startingCards or userdata.player.startingCards )
     userdata.player.attack = tonumber( params.attack or userdata.player.attack )
+    userdata.player.bleedCount = userdata.bleedCount or 0
 
     -- Luodaa muita default / aloitus statseja
     userdata.player.sisuCurrent = tonumber( userdata.player.sisuMax )
@@ -53,11 +46,7 @@ function userdata.new(params)
     userdata.player.maxCardsHand = tonumber( defaultStats.maxCardsHand )
     userdata.player.cardPerTurn = tonumber( defaultStats.cardPerTurn )
 
-    userdata.moveCost = 10
-
-    userdata.isBleeding = false
-    userdata.bleedCount = 0
-    userdata.bleedPenalty = 20
+    userdata.bleedDmgMin, userdata.bleedDmgMax = 1, 5
 
     -- Annetaan pelaajalle kortit
     local quaranteedCard = params.guaranteedCard or userdata.player.guaranteedCard

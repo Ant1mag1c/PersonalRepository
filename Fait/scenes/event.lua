@@ -21,51 +21,6 @@ local bounds = {}
 local popupTitle = {}
 local optionChosen = false
 
-
--- Ajetaan pelaajan valitsemalle vaihtoehdolle eventData taulussa oleva funktio
-local function chooseOption(event)
-	local target = event.target
-	if event.phase == "ended" then
-		if not optionChosen then
-			optionChosen = true
-			target.action()
-			userdata.save()
-			-- Päivitetään ruudun yläreunassa olevat pelaajan statsit,
-			-- sillä ne todennäköisesti muuttuivat eventin seurauksena.
-			playerStatusBar.update()
-
-			-- Tarkistetaan onko valitulla vaihtoehdolla "string" muotoinen result ja jos on niin
-			-- luodaan uusi ikkuna jolla result näytetään.
-			-- Jos resultia ei ole, eventti avaa uuden näkymän esim kauppaan
-
-			window.layer:toFront()
-
-			if type(target.result) == "string" then
-				local resultText = display.newText( {text = target.result, x = screen.centerX, y = window.layer.y*0.82} )
-				-- resultText:setFillColor()
-				-- TODO: Lisää resultTextille taustan vastaväri
-
-				timer.performWithDelay( 1500, function()
-					composer.hideOverlay( "fade", 250 )
-						display.remove( resultText )
-							end )
-
-			else
-				composer.hideOverlay( "fade", 250 )
-
-			end
-
-		else
-			return
-		end
-
-
-	end
-	return true
-end
-
-
-
 -- -----------------------------------------------------------------------------------
 -- Scene event functions
 -- -----------------------------------------------------------------------------------
@@ -177,6 +132,55 @@ function scene:create( event )
 	-- Luodaan eventin vaihtoehdoista omat painikkeet
 
 	local optionTextY = screen.centerY + 95
+
+
+
+	-- Ajetaan pelaajan valitsemalle vaihtoehdolle eventData taulussa oleva funktio
+local function chooseOption(event)
+	local target = event.target
+	if event.phase == "ended" then
+		if not optionChosen then
+			optionChosen = true
+			local result = target.action()
+
+			print(result)
+			userdata.save()
+			-- Päivitetään ruudun yläreunassa olevat pelaajan statsit,
+			-- sillä ne todennäköisesti muuttuivat eventin seurauksena.
+			playerStatusBar.update()
+
+			window.layer:toFront()
+
+	-- window.bg:setFillColor(0, 0.5)
+
+			if result then
+
+				local resultText = display.newText( {sceneGroup, text = result, x = screen.centerX, y = window.layer.y*0.82, fontSize = 32} )
+				local resultBG = display.newRect( sceneGroup, resultText.x, resultText.y, resultText.width, resultText.height )
+				resultBG:setFillColor(0.3, 0.3, 0.3, 0.8)
+
+
+
+				timer.performWithDelay( 3000, function()
+					composer.hideOverlay( "fade", 250 )
+					display.remove( resultText )
+				end )
+
+			else
+				composer.hideOverlay( "fade", 250 )
+			end
+
+			-- TODO: Lisää resultTextille taustan vastaväri
+
+
+		else
+			return
+		end
+
+
+	end
+	return true
+end
 
 
 	for i = 1, #options do

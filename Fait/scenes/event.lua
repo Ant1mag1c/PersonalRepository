@@ -9,66 +9,145 @@ local settings = require("Scripts.settings")
 local userdata = require("Scripts.userdata")
 local screen = require("Scripts.screen")
 local playerStatusBar = require("Widgets.playerStatusBar")
-
 local dataHandler = require("Scripts.dataHandler")
--- local eventData = dataHandler.getData( "events.tsv" )
 local eventData = require("Data.eventData")
-local options = {}
-local actions = {}
-local result = {}
-local bounds = {}
--- local text
-local popupTitle = {}
+local widget = require("widget")
+
+
+local options
+local actions
+local result
+local bounds
+
 local optionChosen = false
 
--- -----------------------------------------------------------------------------------
--- Scene event functions
--- -----------------------------------------------------------------------------------
+local window, eventGroup
+local createEvent, removeEvent, chooseOption, onMouseEvent
 
--- create()
-function scene:create( event )
-	local sceneGroup = self.view
-	local sceneParams = event.params or {}
-	local eventType = sceneParams.type
-	print( "Luodaan tapahtuma: " .. eventType )
 
-	if not userdata.player then
-		userdata.new()
+local title, description, image
+local thisEvent
+
+local isHiglighted = false
+
+local imageWidth = 280
+local imageHeight = 280
+local mouseX = 0
+local mouseY = 0
+local optionTextY
+local optionTextDefaultY = optionTextY
+
+
+local function createText( text, x, y, width, font, fontSize, align)
+
+	textOptions =
+
+	{
+		text = text,
+		x = x or screen.centerX,
+		y = y or screen.centerY,
+		width = width or 500,
+		font = settings.userdata.font,
+		fontSize = fontSize or 60,
+		align = align or "left"
+	}
+
+	local text = display.newText( textOptions )
+
+	return text
+end
+
+function removeEvent()
+	-- print("REMOVED WINDOW")
+	display.remove( eventGroup )
+	eventGroup = nil
+	eventWindow = nil
+
+end
+
+function chooseOption( event )
+	local target = event.target
+
+	if event.phase == "ended" then
+		if not optionChosen then
+			optionChosen = true
+			local result, nextScene = target.action()
+
+			if result then
+				eventWindow.layer:toFront()
+
+
+				local resultText = createText( result, screen.centerX+30, screen.centerY, eventWindow.layer.x*1.5, font, 45, align )
+					eventGroup:insert( resultText )
+
+				resultText.backGround = display.newRect( resultText.x, resultText.y, 0, 0 )
+					resultText.backGround.alpha = 0.5
+					resultText.backGround:setFillColor(0.1)
+					resultText.backGround.height, resultText.backGround.width = resultText.height, resultText.width
+
+					eventGroup:insert( resultText.backGround )
+
+					resultText:toFront()
+
+					local continueButton = widget.newButton( {
+						label = "Continue",
+						fontSize = 30,
+						labelColor = { default={ 1, 1, 0 }, over= { 1, 0, 0, 0.5 } },
+						onRelease = function()
+							removeEvent()
+
+							if nextScene then
+								local newScene = eventData[nextScene]
+								thisEvent = newScene
+								optionChosen = false
+
+								createEvent()
+
+							else
+								-- Sulje scene
+								composer.hideOverlay( "fade", 250 )
+							end
+
+						end
+					} )
+
+					continueButton.x, continueButton.y = screen.centerX, eventWindow.layer.height
+					eventGroup:insert( continueButton )
+			end
+
+
+		else
+			return
+		end
+
+
+	-- Päivitetään ruudun yläreunassa olevat pelaajan statsit,
+	-- sillä ne todennäköisesti muuttuivat eventin seurauksena.
+	playerStatusBar.update()
 	end
+	return true
 
-	local mouseX = 0
-	local mouseY = 0
-	local isHiglighted = false
-
-	-- Luodaan ikkuna jonka sisällä eventti näytetään
-	window = {}
-
-	window.bg = display.newRect( sceneGroup, screen.centerX, screen.centerY, screen.width, screen.height )
-	window.bg:setFillColor(0, 0.5)
-
-	window.layer = display.newImageRect( sceneGroup, "Resources/Images/options.png", screen.width, screen.height/1.5 )
-	window.layer.x, window.layer.y = screen.centerX, screen.centerY
-
-	window.imageBorder = display.newImageRect( sceneGroup, "Resources/Images/menu.png", 280, 280 )
-	window.imageBorder.x, window.imageBorder.y = screen.centerX*0.5, screen.centerY*1.1
+end
 
 
-	local title, description, image
-	local thisEvent
 
-	-- Katsotaan onko eventti randomEvent vai joku muu ja annetaan parametrit sen mukaisesti
-	if sceneParams.type == "randomEvent" then
-		thisEvent = table.getRandom( eventData )
 
-	else
-		thisEvent = eventData[sceneParams.type]
-	end
+
+function createEvent()
+	eventWindow = {}
+
+	options = {}
+	actions = {}
+	result = {}
+	bounds = {}
+
+	print("Luodaan uusi ikkuna")
+
 
 	title = thisEvent.title
 	description = thisEvent.description
 	image = thisEvent.image
 
-	-- Tarkistetaan montako valittavaa vaihtoehtoa eventillä on ja lisätään ne omiin tauluihinsa
 	for k,v in pairs (thisEvent.event) do
 		-- print(k,v)
 		for i = 1, k do
@@ -80,143 +159,107 @@ function scene:create( event )
 		end
 	end
 
-	titleOptions =
-	{
-		text = title,
-		x = window.layer.x+10,
-		y = window.layer.y*0.5,
-		width = window.layer.x*1.63,
-		font = settings.userdata.font,
-		fontSize = 40,
-		align = "left"
-	}
+	print( "Luodaan tapahtuma: ",  thisEvent )
 
-	descriptionOptions =
-	{
-		text = description,
-		x = window.layer.x*1.33,
-		y =  window.layer.y*0.82,
-		width = window.layer.x,
-		font = settings.userdata.font,
-		fontSize = 25,
-		align = "left"
+	-- print("thisEvent: " .. description)
 
-	}
+	eventGroup = display.newGroup()
 
+	eventWindow.layer = display.newImageRect( eventGroup, "Resources/Images/eventMenu.png", 920, 480 )
+	eventWindow.layer.x, eventWindow.layer.y = screen.centerX, screen.centerY
 
-	local titleText = display.newText( titleOptions )
-	sceneGroup:insert(titleText)
-
-
-	-- Eventin kuvien koko erojen vuoksi muokataan jokaisen kuvan ominaisuuksia suoraan eventin taulukosta
-	local imageWidth = thisEvent.imageSize.imageWidth
-	local imageHeight = thisEvent.imageSize.imageHeight
-	local anchorY = thisEvent.imageSize.anchorY
 
 	-- Ladataan eventille henkilökohtainen kuva ja ellei sitä löydy käytetään
 	-- sen sijaan oletuskuvaa
-	local layerImage = display.newImageRect( sceneGroup, "Resources/Images/Levels/" .. image,  imageWidth, imageHeight )
-
+	local layerImage = display.newImageRect( eventGroup, "Resources/Images/Events/" .. image,  imageWidth, imageHeight )
 
 	if not layerImage then
-		layerImage = display.newImageRect( sceneGroup, "Resources/Images/Levels/randomEvent.png", imageWidth, imageHeight )
-		anchorY = 0.5
+		layerImage = display.newImageRect( eventGroup, "Resources/Images/Events/blackberries.png", imageWidth, imageHeight )
+		layerImage.x, layerImage.y = 230, 360
+
+		-- TODO: ota nuo alemmat rivit pois kommenteista kun Emma on saanut testailtua taustakuvia, ettei vielä häiritä sitä tehtävää.
+ 		-- print( "WARNING: Kuvaa ei löytynyt, käytetään oletuskuvaa ja lisätään punainen huomioväritys.")
+		-- layerImage:setFillColor( 1, 0, 0 )
+
+		-- TODO: kuvien koot ja sijainnit tulee päivittää oikeisiin.
+
+		local titleText = createText( title, layerImage.x, layerImage.y*0.4, width, font, fontSize, align)
+			titleText.anchorX, titleText.anchorY = 0.3, 0.5
+			eventGroup:insert( titleText )
+
+		local descriptionText = createText( description, layerImage.x*1.8, layerImage.y*0.6, layerImage.imageWidth, font, 24, align )
+			descriptionText.anchorX, descriptionText.anchorY = 0, 0
+			eventGroup:insert( descriptionText )
+
+			optionTextY = descriptionText.y*1.9
 	end
-
-	layerImage.x, layerImage.y = window.imageBorder.x-10, window.imageBorder.y-70
-	layerImage.anchorY = anchorY
-
-	local infoText = display.newText( descriptionOptions )
-	sceneGroup:insert( infoText )
-
-	-- Luodaan eventin vaihtoehdoista omat painikkeet
-
-	local optionTextY = screen.centerY + 95
-
-
-
-	-- Ajetaan pelaajan valitsemalle vaihtoehdolle eventData taulussa oleva funktio
-local function chooseOption(event)
-	local target = event.target
-	if event.phase == "ended" then
-		if not optionChosen then
-			optionChosen = true
-			local result = target.action()
-
-			print(result)
-			userdata.save()
-			-- Päivitetään ruudun yläreunassa olevat pelaajan statsit,
-			-- sillä ne todennäköisesti muuttuivat eventin seurauksena.
-			playerStatusBar.update()
-
-			window.layer:toFront()
-
-	-- window.bg:setFillColor(0, 0.5)
-
-			if result then
-
-				local resultText = display.newText( {sceneGroup, text = result, x = screen.centerX, y = window.layer.y*0.82, fontSize = 32} )
-				local resultBG = display.newRect( sceneGroup, resultText.x, resultText.y, resultText.width, resultText.height )
-				resultBG:setFillColor(0.3, 0.3, 0.3, 0.8)
-
-
-
-				timer.performWithDelay( 3000, function()
-					composer.hideOverlay( "fade", 250 )
-					display.remove( resultText )
-				end )
-
-			else
-				composer.hideOverlay( "fade", 250 )
-			end
-
-			-- TODO: Lisää resultTextille taustan vastaväri
-
-
-		else
-			return
-		end
-
-
-	end
-	return true
-end
 
 
 	for i = 1, #options do
+		local optionText = options[i]
+		local bounds = bounds[i]
 
-		options[i].text = display.newText( sceneGroup, options[i].option, screen.centerX-70, optionTextY, settings.userdata.font, 30 )
-		options[i].text.anchorX = 0
-		options[i].text.alpha = 0.8
+		optionText.text = createText( options[i].option, screen.centerX-70, optionTextY-50, width, settings.userdata.font, 30, align )
+		optionText.text.anchorX = 0
+		optionText.text.alpha = 0.8
 
-		options[i].text.window = display.newRect( sceneGroup, options[i].text.x, options[i].text.y, 450, 35 )
-		options[i].text.window.alpha = 0.5
-		options[i].text.window:setFillColor(0.1)
-		options[i].text.window.anchorX = 0
+		optionText.text.window = display.newRect( eventGroup, options[i].text.x, options[i].text.y, 450, 35 )
+		optionText.text.window.alpha = 0.5
+		optionText.text.window:setFillColor(0.1)
+		optionText.text.window.anchorX = 0
+		optionText.text.action = actions[i]
+		optionText.text.result = result[i]
+		optionText.text:addEventListener("touch", chooseOption)
+		eventGroup:insert( optionText.text )
 
-		bounds[i] = options[i].text.window.contentBounds
-
-		options[i].text:toFront()
-		options[i].text.action = actions[i]
-		options[i].text.result = result[i]
-
-		options[i].text:addEventListener("touch", chooseOption)
+		bounds = optionText.text.window.contentBounds
 
 		optionTextY = optionTextY + 60
 
+	end
 
+	optionTextY = optionTextDefaultY
+
+end
+
+
+-- -----------------------------------------------------------------------------------
+-- Scene event functions
+-- -----------------------------------------------------------------------------------
+
+-- create()
+function scene:create( event )
+	local sceneGroup = self.view
+
+	sceneParams = event.params or {}
+	eventType = sceneParams.type
+
+
+	if not userdata.player then
+		userdata.new()
 	end
 
 
+	-- Katsotaan onko eventti randomEvent vai joku muu ja annetaan parametrit sen mukaisesti
+	if sceneParams.type == "randomEvent" then
+		thisEvent = table.getRandom( eventData )
 
-	local function onMouseEvent(event)
-		mouseX, mouseY = event.x, event.y
+	else
+		thisEvent = eventData[sceneParams.type]
 	end
 
+	createEvent()
 
-	local isHighlighted = false
-	local target
-	local prevTarget
+
+
+-- 	local function onMouseEvent(event)
+-- 		mouseX, mouseY = event.x, event.y
+-- 	end
+
+
+-- 	local isHighlighted = false
+-- 	local target
+-- 	local prevTarget
 
 	-- TODO: Koodi ei toimi ensimmäisen optionin kohdalla..
 	-- Selvitä miksi
@@ -250,7 +293,7 @@ end
 	-- options[1].text:setFillColor(0,0,0)
 
 
-	Runtime:addEventListener( "mouse", onMouseEvent )
+	-- Runtime:addEventListener( "mouse", onMouseEvent )
 	-- Runtime:addEventListener("enterFrame", highlightOption)
 end
 

@@ -12,12 +12,12 @@ return {
         levelPad = 10,
         nodesPerForest = 6,
         stepsPerWater = 3,
-        storeFirstSpawnStep = 3,
-        eventFirstSpawnStep = 2,
+        storeFirstSpawnStep = 1,
+        eventFirstSpawnStep = 1,
         nodeContents = {
             elite = { minCount=1, maxCount=1, maxPerPath=2, firstStep=1, lastStep=3 },
-            sauna = { minCount=1, maxCount=1, maxPerPath=1, firstStep=1, lastStep=3 },
-            treasure = { minCount=1, maxCount=1, maxPerPath=1, firstStep=1, lastStep=3 },
+            sauna = { minCount=0, maxCount=0, maxPerPath=1, firstStep=1, lastStep=3 },
+            treasure = { minCount=0, maxCount=0, maxPerPath=0, firstStep=0, lastStep=0 },
             store = { minCount=1, maxCount=1, maxPerPath=1, firstStep=1, lastStep=3 },
             randomEvent = { minCount=8, maxCount=9, maxPerPath=3, firstStep=1, lastStep=3 },
         }

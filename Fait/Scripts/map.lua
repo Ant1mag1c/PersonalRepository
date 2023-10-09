@@ -34,6 +34,7 @@ local startNode
 local mapWidth
 local maxScale = 1.2
 local defaultScale = 1
+local moveReductionCount = 0
 
 -----------------------------------------------------------------------
 
@@ -74,9 +75,21 @@ local function movePlayer(event)
                     -- pelaajalle moveCost joka tulee maksaa ennen jokaista liikkumista kartalla
                     local playerHP = userdata.player.sisuCurrent
                     local bleedCount = userdata.player.bleedCount
-                    local moveCost = 10
+                    local moveCost
+                    local moveCostReductionCount = userdata.player.moveReductionCount
 
-                    playerHP = playerHP - moveCost
+                    -- Tentacle event vähentää pelaajan liikkumisen hintaa viideksi vuoroksi. Luodaan eventille
+                    -- oma tarkistus
+
+                    if moveCostReductionCount > 0 then
+                        moveCost = 7
+                        moveCostReductionCount = moveCostReductionCount - 1
+
+                    else
+                        moveCost = 10
+
+                    end
+
 
                     -- Ajetaan bleed ehto jos havaitaan pelaajan vuotavan
                     if bleedCount > 0 then
@@ -88,67 +101,75 @@ local function movePlayer(event)
                         print("I lost " .. bleedDamage .. "hp and bleed for " .. bleedCount .. " turns ")
                     end
 
-                    userdata.player.sisuCurrent = playerHP
+                    userdata.player.sisuCurrent = playerHP - moveCost
                     userdata.player.bleedCount = bleedCount
+                    userdata.player.moveReductionCount = moveCostReductionCount
+
 
 
                     playerStatusBar.update()
 
                     --  Luodaan pelaajalle liikkumi animaatio
-                    zoomOutParams = {time = 500, xScale = 0.75, yScale = 0.75+0.1, onComplete=function()  transition.to( player, zoomInParams )  end  }
-                    zoomInParams = {time = 500, xScale = 0.75-0.1, yScale = 0.75-0.1, onComplete=function()  transition.to( player, zoomOutParams )   end }
 
-                    transition.to( player, zoomInParams )
+                        -- TODO: Liikkuminen toistaiseksi kommentoitu testauksen nopeuttamiseksi
+                        player.x, player.y = prevNode.x, prevNode.y
+
+                        -- zoomOutParams = {time = 500, xScale = 0.75, yScale = 0.75+0.1, onComplete=function()  transition.to( player, zoomInParams )  end  }
+                        -- zoomInParams = {time = 500, xScale = 0.75-0.1, yScale = 0.75-0.1, onComplete=function()  transition.to( player, zoomOutParams )   end }
+
+                        -- transition.to( player, zoomInParams )
 
                     -- TODO: Pelaaja liikkuu samalla nopeudella jokaisen matkan joka tekee lyhyistä väleistä turhan pitkäkestoisia
                     -- Kehitä kaava ylläpitämään sama nopeus joka etäisyydellä
-                    transition.to(player, {time=2000, x=prevNode.x, y=prevNode.y, onComplete=function() transition.cancel(player)
+                        -- transition.to(player, {time=2000, x=prevNode.x, y=prevNode.y, onComplete=function() transition.cancel(player)
 
 
-                        for i = 1, #nodeList do
-                            if nodeList[i].row < currentRow then
-                                darkenLevel( nodeList[i] )
+
+
+                            for i = 1, #nodeList do
+                                if nodeList[i].row < currentRow then
+                                    darkenLevel( nodeList[i] )
+                                end
                             end
-                        end
-                        for i = 1, #pathList do
-                            if pathList[i].row <= currentRow then
-                                pathList[i]:setStrokeColor( 0.5, 0.5 )
+                            for i = 1, #pathList do
+                                if pathList[i].row <= currentRow then
+                                    pathList[i]:setStrokeColor( 0.5, 0.5 )
+                                end
                             end
-                        end
 
-                        local levelType = target.type
+                            local levelType = target.type
 
-                        local options = {
-                            isModal = true,
-                            effect = "fade",
-                            time = 250,
-                            params = {
-                                terrain = target.terrain,
-                                type = levelType,
-                                path = target.path,
-                                row = target.row,
-                                level = target.level,
+                            local options = {
+                                isModal = true,
+                                effect = "fade",
+                                time = 250,
+                                params = {
+                                    terrain = target.terrain,
+                                    type = levelType,
+                                    path = target.path,
+                                    row = target.row,
+                                    level = target.level,
+                                }
                             }
-                        }
 
-                        local overlayScene
-                        if levelType == "store" then
-                            overlayScene = "scenes.deck"
-                            options.params.isStore = true
+                            local overlayScene
+                            if levelType == "store" then
+                                overlayScene = "scenes.deck"
+                                options.params.isStore = true
 
-                        elseif levelType == "sauna" or levelType == "treasure" or levelType == "randomEvent" then
-                            overlayScene = "scenes.event"
+                            elseif levelType == "sauna" or levelType == "treasure" or levelType == "randomEvent" then
+                                overlayScene = "scenes.event"
 
-                        end
+                            end
 
-                        if overlayScene then
-                            composer.showOverlay( overlayScene, options )
-                        else
-                            composer.gotoScene( "scenes.battle", options )
-                        end
+                            if overlayScene then
+                                composer.showOverlay( overlayScene, options )
+                            else
+                                composer.gotoScene( "scenes.battle", options )
+                            end
 
-                    end
-                })
+                --         end
+                -- })
 
 
 					-- Tummenna taakse jääneet kentät ja polut, jotta pelaaja näkee mihin suuntaan hän voi liikkua.

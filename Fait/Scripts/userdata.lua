@@ -38,6 +38,10 @@ function userdata.new(params)
     userdata.player.startingCards = tonumber( params.startingCards or userdata.player.startingCards )
     userdata.player.attack = tonumber( params.attack or userdata.player.attack )
     userdata.player.bleedCount = userdata.bleedCount or 0
+    userdata.player.moveReductionCount = 0
+    userdata.player.goodEvents = {}
+
+
 
     -- Luodaa muita default / aloitus statseja
     userdata.player.sisuCurrent = tonumber( userdata.player.sisuMax )

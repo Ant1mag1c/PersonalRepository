@@ -136,8 +136,6 @@ function scene:show( event )
 		playerStatusBar.create( sceneGroup, buttonOptions )
 		buttonOptions:toFront()
 
-
-
 	elseif ( phase == "did" ) then
 		-- Code here runs when the scene is entirely on screen
 

@@ -39,7 +39,9 @@ function userdata.new(params)
     userdata.player.attack = tonumber( params.attack or userdata.player.attack )
     userdata.player.bleedCount = userdata.bleedCount or 0
     userdata.player.moveReductionCount = 0
-    userdata.player.goodEvents = {}
+    -- userdata.player.goodEvents = {}
+    userdata.player.goodEventCount = 0
+    userdata.player.goodEvents = nil
 
 
 

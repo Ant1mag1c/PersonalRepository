@@ -13,6 +13,8 @@
 
 local userdata = require("Scripts.userdata")
 
+
+
 return {
 
 
@@ -177,118 +179,116 @@ return {
             {
                 option = "I feel blessed",
                 action = function()
-                    for i = 1, #userdata.player.goodEvents do
-                        print( i )
-                    end
-                    print( userdata.player.goodEvents )
-                    return "Your next 2 events will be on your side"
+                    userdata.player.goodEventCount =  userdata.player.goodEventCount + 2
+
+                    return  "Your next 2 events will be on your side"
                 end
 
             }
         }
     },
 
---     ["lauma"] = {
---         isPositiveEvent = false,
---         title = "Wild Animals",
---         image = "jokuKuva.png",
---         imageSize = {imageWidth = 300, imageHeight = 600, anchorY = 0.55},
---         description = "Some wild animals have gone hunting and you are their prey. Good luck.",
---         event = {
+    ["lauma"] = {
+        isPositiveEvent = true,
+        title = "Wild Animals",
+        image = "jokuKuva.png",
+        imageSize = {imageWidth = 300, imageHeight = 600, anchorY = 0.55},
+        description = "Some wild animals have gone hunting and you are their prey. Good luck.",
+        event = {
 
---             {
---                 option = "Draw your weapon",
---                 action = function()
---                     return "Enter battleScene"
---                 end,
+            {
+                option = "Draw your weapon",
+                action = function()
+                    return "Enter battleScene"
+                end,
 
---             }
---         }
---     },
+            }
+        }
+    },
 
-    -- ["kapakka"] = {
+    ["kapakka"] = {
+        isPositiveEvent = true,
+        title = "Tavern",
+        image = "jokuKuva.png",
+        imageSize = {imageWidth = 300, imageHeight = 600, anchorY = 0.55},
+        description = "You can purchase a variety of goodies including beer.",
+        event = {
+            {
+                option = "Enter the tavern",
+                action = function()  end,
+                result = 0
+            }
+        }
+    },
+
+    -- ["luola"] = {
     --     isPositiveEvent = false,
-    --     title = "Tavern",
+    --     title = "Dark Cave",
     --     image = "jokuKuva.png",
     --     imageSize = {imageWidth = 300, imageHeight = 600, anchorY = 0.55},
-    --     description = "You can purchase a variety of goodies including beer.",
+    --     description = "You spot a mysterious cave. What will you do? Explore in hopes of treasure while risking a battle or leave it be?",
     --     event = {
     --         {
-    --             option = "Enter the tavern",
-    --             action = function()  end,
-    --             result = 0
+    --             option = "Explore the cave",
+    --             action = function()
+    --                 local result
+    --                 local chance = math.random()
+    --                 local nextScene
+    --                 -- TODO: Korjataan tälle oikea prosentti myöhemmin
+    --                 if chance < 0.1 then
+    --                     result = "Huono tuuri (enter battle scene) "
+    --                     nextScene = nil
+
+    --                 else
+    --                     result = "You had good luck and found a treasure withing the darkness "
+    --                     nextScene = "treasure"
+    --                 end
+
+    --                 return  result, nextScene
+    --             end,
+
+    --         },
+
+    --         {
+    --         option = "Exit the cave",
+    --         action = function()
+    --                 return "You left the cave in peace"
+    --             end
     --         }
     --     }
     -- },
 
---     ["luola"] = {
---         isPositiveEvent = false,
---         title = "Dark Cave",
---         image = "jokuKuva.png",
---         imageSize = {imageWidth = 300, imageHeight = 600, anchorY = 0.55},
---         description = "You spot a mysterious cave. What will you do? Explore in hopes of treasure while risking a battle or leave it be?",
---         event = {
---             {
---                 option = "Explore the cave",
---                 action = function()
---                     local result
---                     local chance = math.random()
---                     local nextScene
---                     -- TODO: Korjataan tälle oikea prosentti myöhemmin
---                     if chance < 0.1 then
---                         result = "Huono tuuri (enter battle scene) "
---                         nextScene = nil
 
---                     else
---                         result = "You had good luck and found a treasure withing the darkness "
---                         nextScene = "treasure"
---                     end
+    -- ["ansa"] = {
 
---                     return  result, nextScene
---                 end,
+    --     isPositiveEvent = false,
+    --     title = "Lynx Bite",
+    --     image = "jokuKuva.png",
+    --     imageSize = {imageWidth = 300, imageHeight = 600, anchorY = 0.55},
+    --     description = "Lynx appears from the shadows and attacks you by suprise.",
+    --     event = {
+    --         {
+    --             option = "Remove a Card to avoid attack",
+    --             action = function()
+    --                 return "Move to remove card scene"
+    --             end,
 
---             },
+    --         },
 
---             {
---             option = "Exit the cave",
---             action = function()
---                     return "You left the cave in peace"
---                 end
---             }
---         }
---     },
+    --         {
+    --             option = "Accept your fate",
+    --             action = function()
+    --                 local bleedAmmount = math.random( userdata.bleedDmgMin, userdata.bleedDmgMax )
+    --                 local bleedDuration = math.random( 1, 2 )
 
+    --                 userdata.player.sisuCurrent = userdata.player.sisuCurrent - bleedAmmount
+    --                 userdata.player.bleedCount = userdata.player.bleedCount + bleedDuration
 
---     ["ansa"] = {
-
---         isPositiveEvent = false,
---         title = "Lynx Bite",
---         image = "jokuKuva.png",
---         imageSize = {imageWidth = 300, imageHeight = 600, anchorY = 0.55},
---         description = "Lynx appears from the shadows and attacks you by suprise.",
---         event = {
---             {
---                 option = "Remove a Card to avoid attack",
---                 action = function()
---                     return "Move to remove card scene"
---                 end,
-
---             },
-
---             {
---                 option = "Accept your fate",
---                 action = function()
---                     local bleedAmmount = math.random( userdata.bleedDmgMin, userdata.bleedDmgMax )
---                     local bleedDuration = math.random( 1, 2 )
-
---                     userdata.player.sisuCurrent = userdata.player.sisuCurrent - bleedAmmount
---                     userdata.player.bleedCount = userdata.player.bleedCount + bleedDuration
-
---                     return "You lost " .. bleedAmmount .. " sisu and you are now bleeding for " .. bleedDuration .. " turns."
---                 end
---             }
---         }
---     },
+    --                 return "You lost " .. bleedAmmount .. " sisu and you are now bleeding for " .. bleedDuration .. " turns."
+    --             end
+    --         }
+    --     }
+    -- },
 
 --     ["korttienHautausmaa"] = {
 --         isPositiveEvent = false,

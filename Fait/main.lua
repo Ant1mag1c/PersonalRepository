@@ -50,7 +50,7 @@ local composer = require("composer")
 
 -- composer.gotoScene("scenes.event", {
 --     params = {
---         type = "luola",
+--         type = "onnenlantti",
 --         terrain = "field",
 --         level = 2,
 --         row = 1,

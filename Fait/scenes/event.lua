@@ -37,6 +37,8 @@ local mouseY = 0
 local optionTextY
 local optionTextDefaultY = optionTextY
 
+local quaranteedEvents
+
 
 local function createText( text, x, y, width, font, fontSize, align)
 
@@ -114,6 +116,29 @@ function chooseOption( event )
 					continueButton.x, continueButton.y = screen.centerX, eventWindow.layer.height
 					eventGroup:insert( continueButton )
 			end
+			-- Jos eventti antaa pelaajalle taattuja hyviä eventtejä niin lisätään
+			-- hyvien eventtien tauluun haluttu määrä hyviä eventtejä ja varmistetaan
+			-- etteivät hyvät eventit ole duplikaatteja
+		if userdata.player.goodEventCount > 0 then
+			for i = 1, userdata.player.goodEventCount do
+				thisEvent = table.getRandom(eventData)
+
+				if i == 1 then
+					repeat
+						thisEvent = table.getRandom(eventData)
+					until thisEvent.isPositiveEvent == true
+
+				else
+					repeat
+						thisEvent = table.getRandom(eventData)
+					until thisEvent.isPositiveEvent == true and thisEvent ~= quaranteedEvents[1]
+				end
+
+					table.insert( quaranteedEvents, thisEvent )
+					userdata.player.goodEventCount = userdata.player.goodEventCount - 1
+					print( "Quaranteed event in value " .. i .. " is " .. quaranteedEvents[i].title )
+			end
+		end
 
 
 		else
@@ -124,6 +149,8 @@ function chooseOption( event )
 	-- Päivitetään ruudun yläreunassa olevat pelaajan statsit,
 	-- sillä ne todennäköisesti muuttuivat eventin seurauksena.
 	playerStatusBar.update()
+
+
 	end
 	return true
 
@@ -159,9 +186,7 @@ function createEvent()
 		end
 	end
 
-	print( "Luodaan tapahtuma: ",  thisEvent )
-
-	-- print("thisEvent: " .. description)
+	-- print( "Luodaan tapahtuma: ",  thisEvent )
 
 	eventGroup = display.newGroup()
 
@@ -175,15 +200,16 @@ function createEvent()
 
 	if not layerImage then
 		layerImage = display.newImageRect( eventGroup, "Resources/Images/Events/blackberries.png", imageWidth, imageHeight )
-		layerImage.x, layerImage.y = 230, 360
 
 		-- TODO: ota nuo alemmat rivit pois kommenteista kun Emma on saanut testailtua taustakuvia, ettei vielä häiritä sitä tehtävää.
  		-- print( "WARNING: Kuvaa ei löytynyt, käytetään oletuskuvaa ja lisätään punainen huomioväritys.")
 		-- layerImage:setFillColor( 1, 0, 0 )
 
-		-- TODO: kuvien koot ja sijainnit tulee päivittää oikeisiin.
+	end
 
-		local titleText = createText( title, layerImage.x, layerImage.y*0.4, width, font, fontSize, align)
+	layerImage.x, layerImage.y = 230, 360
+
+		local titleText = createText( title, layerImage.x, layerImage.y*0.4, 600, font, fontSize, align)
 			titleText.anchorX, titleText.anchorY = 0.3, 0.5
 			eventGroup:insert( titleText )
 
@@ -192,7 +218,6 @@ function createEvent()
 			eventGroup:insert( descriptionText )
 
 			optionTextY = descriptionText.y*1.9
-	end
 
 
 	for i = 1, #options do
@@ -231,6 +256,8 @@ end
 function scene:create( event )
 	local sceneGroup = self.view
 
+	quaranteedEvents = userdata.player.quaranteedEvents
+
 	sceneParams = event.params or {}
 	eventType = sceneParams.type
 
@@ -242,22 +269,41 @@ function scene:create( event )
 
 
 	-- Katsotaan onko eventti randomEvent vai joku muu ja annetaan parametrit sen mukaisesti
-	if userdata.player.goodEventCount == 0 then
+	if not quaranteedEvents[1] then
 		if sceneParams.type == "randomEvent" then
 			thisEvent = table.getRandom( eventData )
 		else
 			thisEvent = eventData[sceneParams.type]
 		end
-
 	else
-		repeat
-			thisEvent = table.getRandom(eventData)
-			print("Picking an event: " .. thisEvent.title .. " goodEvent: ", thisEvent.isPositiveEvent )
-		  until thisEvent.isPositiveEvent == true
+		thisEvent = quaranteedEvents[1]
+
+	end
+
+	createEvent()
+	-- Jos pelaajalla on taattuja hyviä eventtejä niin aina hyvään eventtiin siirtyessä
+	-- poistetaan hyvien eventtien taulusta nykyinen eventti
+
+	if quaranteedEvents[1] then
+		for i = 1, #quaranteedEvents - 1 do
+			quaranteedEvents[i] = quaranteedEvents[i + 1]
+		end
+
+		quaranteedEvents[#quaranteedEvents] = nil
+
+		if quaranteedEvents[1] then
+			print("Next quranteed event: ", quaranteedEvents[1].title)
+		else
+			print("No more quranteed events")
+		end
 	end
 
 
-createEvent()
+
+
+
+
+
 
 
 

@@ -19,7 +19,7 @@ return {
             sauna = { minCount=0, maxCount=0, maxPerPath=1, firstStep=1, lastStep=3 },
             treasure = { minCount=0, maxCount=0, maxPerPath=0, firstStep=0, lastStep=0 },
             store = { minCount=1, maxCount=1, maxPerPath=1, firstStep=1, lastStep=3 },
-            randomEvent = { minCount=8, maxCount=9, maxPerPath=3, firstStep=1, lastStep=3 },
+            randomEvent = { minCount=20, maxCount=25, maxPerPath=10, firstStep=1, lastStep=8 },
         }
     },
 

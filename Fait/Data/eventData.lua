@@ -169,7 +169,7 @@ return {
 --     },
 
     ["onnenlantti"] = {
-        id = "",
+        isPositiveEvent = true,
         title = "Aurora Borealis",
         image = "jokuKuva.png",
         imageSize = {imageWidth = 300, imageHeight = 600, anchorY = 0.55},
@@ -189,7 +189,7 @@ return {
     },
 
     ["lauma"] = {
-        isPositiveEvent = true,
+        isPositiveEvent = false,
         title = "Wild Animals",
         image = "jokuKuva.png",
         imageSize = {imageWidth = 300, imageHeight = 600, anchorY = 0.55},
@@ -207,7 +207,7 @@ return {
     },
 
     ["kapakka"] = {
-        isPositiveEvent = true,
+        isPositiveEvent = false,
         title = "Tavern",
         image = "jokuKuva.png",
         imageSize = {imageWidth = 300, imageHeight = 600, anchorY = 0.55},
@@ -221,74 +221,74 @@ return {
         }
     },
 
-    -- ["luola"] = {
-    --     isPositiveEvent = false,
-    --     title = "Dark Cave",
-    --     image = "jokuKuva.png",
-    --     imageSize = {imageWidth = 300, imageHeight = 600, anchorY = 0.55},
-    --     description = "You spot a mysterious cave. What will you do? Explore in hopes of treasure while risking a battle or leave it be?",
-    --     event = {
-    --         {
-    --             option = "Explore the cave",
-    --             action = function()
-    --                 local result
-    --                 local chance = math.random()
-    --                 local nextScene
-    --                 -- TODO: Korjataan tälle oikea prosentti myöhemmin
-    --                 if chance < 0.1 then
-    --                     result = "Huono tuuri (enter battle scene) "
-    --                     nextScene = nil
+    ["luola"] = {
+        isPositiveEvent = false,
+        title = "Dark Cave",
+        image = "jokuKuva.png",
+        imageSize = {imageWidth = 300, imageHeight = 600, anchorY = 0.55},
+        description = "You spot a mysterious cave. What will you do? Explore in hopes of treasure while risking a battle or leave it be?",
+        event = {
+            {
+                option = "Explore the cave",
+                action = function()
+                    local result
+                    local chance = math.random()
+                    local nextScene
+                    -- TODO: Korjataan tälle oikea prosentti myöhemmin
+                    if chance < 0.1 then
+                        result = "Huono tuuri (enter battle scene) "
+                        nextScene = nil
 
-    --                 else
-    --                     result = "You had good luck and found a treasure withing the darkness "
-    --                     nextScene = "treasure"
-    --                 end
+                    else
+                        result = "You had good luck and found a treasure withing the darkness "
+                        nextScene = "treasure"
+                    end
 
-    --                 return  result, nextScene
-    --             end,
+                    return  result, nextScene
+                end,
 
-    --         },
+            },
 
-    --         {
-    --         option = "Exit the cave",
-    --         action = function()
-    --                 return "You left the cave in peace"
-    --             end
-    --         }
-    --     }
-    -- },
+            {
+            option = "Exit the cave",
+            action = function()
+                    return "You left the cave in peace"
+                end
+            }
+        }
+    },
 
 
-    -- ["ansa"] = {
+    ["ansa"] = {
 
-    --     isPositiveEvent = false,
-    --     title = "Lynx Bite",
-    --     image = "jokuKuva.png",
-    --     imageSize = {imageWidth = 300, imageHeight = 600, anchorY = 0.55},
-    --     description = "Lynx appears from the shadows and attacks you by suprise.",
-    --     event = {
-    --         {
-    --             option = "Remove a Card to avoid attack",
-    --             action = function()
-    --                 return "Move to remove card scene"
-    --             end,
+        isPositiveEvent = false,
+        title = "Lynx Bite",
+        image = "jokuKuva.png",
+        imageSize = {imageWidth = 300, imageHeight = 600, anchorY = 0.55},
+        description = "Lynx appears from the shadows and attacks you by suprise.",
+        event = {
+            {
+                option = "Remove a Card to avoid attack",
+                action = function()
+                    return "Move to remove card scene"
+                end,
 
-    --         },
+            },
 
-    --         {
-    --             option = "Accept your fate",
-    --             action = function()
-    --                 local bleedAmmount = math.random( userdata.bleedDmgMin, userdata.bleedDmgMax )
-    --                 local bleedDuration = math.random( 1, 2 )
+            {
+                option = "Accept your fate",
+                action = function()
+                    local bleedAmmount = math.random( userdata.bleedDmgMin, userdata.bleedDmgMax )
+                    local bleedDuration = math.random( 1, 2 )
 
-    --                 userdata.player.sisuCurrent = userdata.player.sisuCurrent - bleedAmmount
-    --                 userdata.player.bleedCount = userdata.player.bleedCount + bleedDuration
+                    userdata.player.sisuCurrent = userdata.player.sisuCurrent - bleedAmmount
+                    userdata.player.bleedCount = userdata.player.bleedCount + bleedDuration
 
-    --                 return "You lost " .. bleedAmmount .. " sisu and you are now bleeding for " .. bleedDuration .. " turns."
-    --             end
-    --         }
-    --     }
-    -- },
+                    return "You lost " .. bleedAmmount .. " sisu and you are now bleeding for " .. bleedDuration .. " turns."
+                end
+            }
+        }
+    },
 
 --     ["korttienHautausmaa"] = {
 --         isPositiveEvent = false,

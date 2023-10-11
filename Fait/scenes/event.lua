@@ -116,12 +116,9 @@ function chooseOption( event )
 			end
 
 
-			print( userdata.player.goodEventCount )
 		else
 			return
 		end
-
-
 
 
 	-- Päivitetään ruudun yläreunassa olevat pelaajan statsit,
@@ -144,7 +141,7 @@ function createEvent()
 	result = {}
 	bounds = {}
 
-	print("Luodaan uusi ikkuna")
+	print("Luodaan uusi ikkuna " .. thisEvent.title)
 
 
 	title = thisEvent.title
@@ -162,7 +159,7 @@ function createEvent()
 		end
 	end
 
-	print( "Luodaan tapahtuma: ",  thisEvent.title )
+	print( "Luodaan tapahtuma: ",  thisEvent )
 
 	-- print("thisEvent: " .. description)
 
@@ -234,7 +231,6 @@ end
 function scene:create( event )
 	local sceneGroup = self.view
 
-
 	sceneParams = event.params or {}
 	eventType = sceneParams.type
 
@@ -243,37 +239,25 @@ function scene:create( event )
 		userdata.new()
 	end
 
-	if userdata.player.goodEventCount > 0 then
-		userdata.player.goodEvents = {}
-
-		for i = 1, userdata.player.goodEventCount do
-			local goodEvent = table.getRandom( eventData )
-
-
-			table.insert( userdata.player.goodEvents, goodEvent )
-
-			userdata.player.goodEventCount = userdata.player.goodEventCount - 1
-			print("isPositive?: ", goodEvent.isPositiveEvent )
-
-		end
-
-		print( "nextGoodEvent ", userdata.player.goodEvents[1].title )
-		print( "2ndGoodEvent: ", userdata.player.goodEvents[2].title )
-		print( "3ndGoodEvent: ", userdata.player.goodEvents[3] )
-		print( "Count: ", userdata.player.goodEventCount )
-	end
-
 
 
 	-- Katsotaan onko eventti randomEvent vai joku muu ja annetaan parametrit sen mukaisesti
-	if sceneParams.type == "randomEvent" then
-		thisEvent = table.getRandom( eventData )
+	if userdata.player.goodEventCount == 0 then
+		if sceneParams.type == "randomEvent" then
+			thisEvent = table.getRandom( eventData )
+		else
+			thisEvent = eventData[sceneParams.type]
+		end
 
 	else
-		thisEvent = eventData[sceneParams.type]
+		repeat
+			thisEvent = table.getRandom(eventData)
+			print("Picking an event: " .. thisEvent.title .. " goodEvent: ", thisEvent.isPositiveEvent )
+		  until thisEvent.isPositiveEvent == true
 	end
 
-	createEvent()
+
+createEvent()
 
 
 

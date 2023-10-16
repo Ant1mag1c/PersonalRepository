@@ -108,31 +108,42 @@ function scene:create( event )
 
 	-- Ladataan vihollistaulukko sen mukaan, mitä vihollista vastaan taistellaan.
 	local enemyData
-	if enemyType == "enemy" or enemyType == "elite" then
-		if enemyType == "enemy" then
-			enemyData = dataHandler.getData( "enemies.tsv" )
-		else
-			enemyData = dataHandler.getData( "elites.tsv" )
+	local eventEnemy = sceneParams.eventEnemy
+
+	-- print( "Enemy from event:", eventEnemy )
+
+		if enemyType == "enemy" or enemyType == "elite" then
+			if enemyType == "enemy" then
+				enemyData = dataHandler.getData( "enemies.tsv" )
+			else
+				enemyData = dataHandler.getData( "elites.tsv" )
+			end
+			bgImage = "Resources/Images/Battle/enemy" .. math.random(1, 5) .. ".png"
+
+		elseif enemyType == "bossNode" then
+			enemyData = dataHandler.getData( "bosses.tsv" )
+			bgImage = "Resources/Images/Battle/boss.png"
+
 		end
-		bgImage = "Resources/Images/Battle/enemy" .. math.random(1, 5) .. ".png"
-
-	elseif enemyType == "bossNode" then
-		enemyData = dataHandler.getData( "bosses.tsv" )
-		bgImage = "Resources/Images/Battle/boss.png"
-
-	end
 
 	local chosenEnemy
 
 	-- TODO: väliaikainen ratkaisu, jolla pyritään varmistamaan, että pelaaja saa vastaansa halutun tasoisen vihollisen.
-	local iterations = 1000
-	local currentMap = userdata.player.currentMap or 1
-	for _ = 1, iterations do
-		chosenEnemy = table.getRandom(enemyData)
-		if chosenEnemy.firstMap <= currentMap and chosenEnemy.lastMap >= currentMap then
-			break
+	if not eventEnemy then
+		local iterations = 1000
+		local currentMap = userdata.player.currentMap or 1
+		for _ = 1, iterations do
+			chosenEnemy = table.getRandom(enemyData)
+			if chosenEnemy.firstMap <= currentMap and chosenEnemy.lastMap >= currentMap then
+				break
+			end
 		end
+
+	else
+		chosenEnemy = eventEnemy
 	end
+
+	-- print("chosen Enemy: ", chosenEnemy, chosenEnemy.name)
 
 	local background = display.newImage( sceneGroup, bgImage )
 	background.x, background.y = display.contentCenterX, display.contentCenterY

@@ -302,29 +302,29 @@ return {
     -- },
 
 
-    -- ["treasure"] = {
-    --     isPositiveEvent = false,
-    --     title = "Treasure chest",
-    --     image = "treasure.png",
-    --     imageSize = {imageWidth = 300, imageHeight = 600, anchorY = 0.55},
-    --     description = "Player can choose to pick a new card to his hand or gain some money",
-    --     event = {
-    --         {
-    --             option = "Pick a card",
-    --             action = function()
-    --                 return "Move to pick card scene"
-    --             end
-    --         },
+    ["treasure"] = {
+        isPositiveEvent = false,
+        title = "Treasure chest",
+        image = "treasure.png",
+        imageSize = {imageWidth = 300, imageHeight = 600, anchorY = 0.55},
+        description = "Player can choose to pick a new card to his hand or gain some money",
+        event = {
+            {
+                option = "Pick a card",
+                action = function()
+                    return "Move to pick card scene"
+                end
+            },
 
-    --         {
-    --             option = "Gain +15 money",
-    --             action = function()
-    --                 userdata.player.money = userdata.player.money + 15
-    --                 return "You earned some pocket money"
-    --             end
-    --         }
-    --     }
-    -- },
+            {
+                option = "Gain +15 money",
+                action = function()
+                    userdata.player.money = userdata.player.money + 15
+                    return "You earned some pocket money"
+                end
+            }
+        }
+    },
 
 
 
@@ -358,42 +358,44 @@ return {
     --     }
     -- },
 
-    -- ["luola"] = {
-    --     isPositiveEvent = false,
-    --     title = "Dark Cave",
-    --     image = "jokuKuva.png",
-    --     imageSize = {imageWidth = 300, imageHeight = 600, anchorY = 0.55},
-    --     description = "You spot a mysterious cave. What will you do? Explore in hopes of treasure while risking a battle or leave it be?",
-    --     event = {
-    --         {
-    --             option = "Explore the cave",
-    --             action = function()
-    --                 local result
-    --                 local chance = math.random()
-    --                 local nextScene
-    --                 -- TODO: Korjataan tälle oikea prosentti myöhemmin
-    --                 if chance < 0.01 then
-    --                     result = "Huono tuuri (enter battle scene) "
+    ["luola"] = {
+        isPositiveEvent = false,
+        title = "Dark Cave",
+        image = "jokuKuva.png",
+        imageSize = {imageWidth = 300, imageHeight = 600, anchorY = 0.55},
+        description = "You spot a mysterious cave. What will you do? Explore in hopes of treasure while risking a battle or leave it be?",
+        event = {
+            {
+                option = "Explore the cave",
+                action = function()
+                    local params
+                    local result
+                    local chance = math.random()
+                    local nextScene
+                    -- TODO: Korjataan tälle oikea prosentti myöhemmin
+                    if chance < 0.9 then
+                        params = "hamahakki"
+                        result = "Huono tuuri (enter battle scene) "
+                        nextScene = "battle"
 
+                    else
+                        result = "You had good luck and found a treasure withing the darkness "
+                        nextScene = "treasure"
+                    end
 
-    --                 else
-    --                     result = "You had good luck and found a treasure withing the darkness "
-    --                     nextScene = "treasure"
-    --                 end
+                    return  result, nextScene, params
+                end,
 
-    --                 return  result, nextScene
-    --             end,
+            },
 
-    --         },
-
-    --         {
-    --         option = "Exit the cave",
-    --         action = function()
-    --                 return "You left the cave in peace"
-    --             end
-    --         }
-    --     }
-    -- },
+            {
+            option = "Exit the cave",
+            action = function()
+                    return "You left the cave in peace"
+                end
+            }
+        }
+    },
 
     -- ["kapakka"] = {
     --     isPositiveEvent = false,

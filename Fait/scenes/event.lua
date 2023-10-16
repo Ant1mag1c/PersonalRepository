@@ -73,7 +73,8 @@ function chooseOption( event )
 	if event.phase == "ended" then
 		if not optionChosen then
 			optionChosen = true
-			local result, nextScene = target.action()
+			local result, nextScene, params = target.action()
+
 
 			if result then
 				eventWindow.layer:toFront()
@@ -87,34 +88,59 @@ function chooseOption( event )
 					resultText.backGround:setFillColor(0.1)
 					resultText.backGround.height, resultText.backGround.width = resultText.height, resultText.width
 
-					eventGroup:insert( resultText.backGround )
+				eventGroup:insert( resultText.backGround )
 
-					resultText:toFront()
+				resultText:toFront()
 
-					local continueButton = widget.newButton( {
-						label = "Continue",
-						fontSize = 30,
-						labelColor = { default={ 1, 1, 0 }, over= { 1, 0, 0, 0.5 } },
-						onRelease = function()
-							removeEvent()
+				local continueButton = widget.newButton( {
+					label = "Continue",
+					fontSize = 30,
+					labelColor = { default={ 1, 1, 0 }, over= { 1, 0, 0, 0.5 } },
+					onRelease = function()
+						removeEvent()
 
-							if nextScene then
+						if nextScene then
+							print( "nextScene: ", nextScene )
+							-- Onko newScene eventti, kauppa vai jokin muu?
+
+							if not nextScene == "battle" or nextScene == "pharma" or nextScene == "tavern" then
 								local newScene = eventData[nextScene]
 								thisEvent = newScene
 								optionChosen = false
+								-- createEvent()
 
-								createEvent()
+							elseif nextScene == "battle" then
+								local enemy = dataHandler.getData( "enemies.tsv" )
+								-- print("vihollinen: ", enemy[params].name)
+								local options = {
+									isModal = true,
+									effect = "fade",
+									time = 250,
+									params = {
+										eventEnemy = enemy[params]
+										-- terrain = target.terrain,
+										-- type = levelType,
+										-- path = target.path,
+										-- row = target.row,
+										-- level = target.level,
+									}
+								}
 
-							else
-								-- Sulje scene
 								composer.hideOverlay( "fade", 250 )
+								composer.gotoScene( "scenes.battle", options)
 							end
 
-						end
-					} )
+						else
+								-- Sulje scene
+						composer.hideOverlay( "fade", 250 )
 
-					continueButton.x, continueButton.y = screen.centerX, eventWindow.layer.height
-					eventGroup:insert( continueButton )
+						end
+
+					end
+				} )
+
+				continueButton.x, continueButton.y = screen.centerX, eventWindow.layer.height
+				eventGroup:insert( continueButton )
 			end
 			-- Jos eventti antaa pelaajalle taattuja hyviä eventtejä niin lisätään
 			-- hyvien eventtien tauluun haluttu määrä hyviä eventtejä ja varmistetaan

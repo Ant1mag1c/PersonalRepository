@@ -75,19 +75,16 @@ function chooseOption( event )
 			optionChosen = true
 			local result, nextScene, params = target.action()
 
-
 			if result then
 				eventWindow.layer:toFront()
 
-
 				local resultText = createText( result, screen.centerX+30, screen.centerY, eventWindow.layer.x*1.5, font, 45, align )
-					eventGroup:insert( resultText )
+				eventGroup:insert( resultText )
 
 				resultText.backGround = display.newRect( resultText.x, resultText.y, 0, 0 )
-					resultText.backGround.alpha = 0.5
-					resultText.backGround:setFillColor(0.1)
-					resultText.backGround.height, resultText.backGround.width = resultText.height, resultText.width
-
+				resultText.backGround.alpha = 0.5
+				resultText.backGround:setFillColor(0.1)
+				resultText.backGround.height, resultText.backGround.width = resultText.height, resultText.width
 				eventGroup:insert( resultText.backGround )
 
 				resultText:toFront()
@@ -102,84 +99,94 @@ function chooseOption( event )
 						if nextScene then
 							print( "nextScene: ", nextScene )
 							-- Onko newScene eventti, kauppa vai jokin muu?
-
-							if not nextScene == "battle" or nextScene == "pharma" or nextScene == "tavern" then
-								local newScene = eventData[nextScene]
-								thisEvent = newScene
-								optionChosen = false
-								-- createEvent()
-
-							elseif nextScene == "battle" then
-								local enemy = dataHandler.getData( "enemies.tsv" )
+							if nextScene == "battle" then
 								-- print("vihollinen: ", enemy[params].name)
+								local enemy = dataHandler.getData( "enemies.tsv" )
 								local options = {
 									isModal = true,
 									effect = "fade",
 									time = 250,
 									params = {
-										eventEnemy = enemy[params]
-										-- terrain = target.terrain,
-										-- type = levelType,
-										-- path = target.path,
-										-- row = target.row,
-										-- level = target.level,
+										eventEnemy = enemy[params.enemy],
+										enemyCount = params.enemyCount
+									}
+								}
+								composer.hideOverlay( "fade", 250 )
+								composer.gotoScene( "scenes.battle", options)
+
+							elseif nextScene == "pharma" then
+								local cardData = dataHandler.getData( "cards.tsv" )
+
+								local options = {
+									isModal = true,
+									effect = "fade",
+									time = 250,
+									params = {
+										isPharma = true,
+										eventCard = cardData[params.card],
 									}
 								}
 
+								composer.gotoScene( "scenes.deck", options)
 								composer.hideOverlay( "fade", 250 )
-								composer.gotoScene( "scenes.battle", options)
+
+							elseif nextScene == "tavern" then
+
+							else
+								local newScene = eventData[nextScene]
+								thisEvent = newScene
+								optionChosen = false
+								createEvent()
 							end
-
 						else
-								-- Sulje scene
-						composer.hideOverlay( "fade", 250 )
-
+							composer.hideOverlay( "fade", 250 )
 						end
-
 					end
 				} )
 
 				continueButton.x, continueButton.y = screen.centerX, eventWindow.layer.height
 				eventGroup:insert( continueButton )
 			end
-			-- Jos eventti antaa pelaajalle taattuja hyviä eventtejä niin lisätään
-			-- hyvien eventtien tauluun haluttu määrä hyviä eventtejä ja varmistetaan
-			-- etteivät hyvät eventit ole duplikaatteja
-		if userdata.player.goodEventCount > 0 then
-			for i = 1, userdata.player.goodEventCount do
-				thisEvent = table.getRandom(eventData)
+			-- Generoidaan pelaajalle mahdolliset hyvät eventit
+			if userdata.player.goodEventCount > 0 then
+				for i = 1, userdata.player.goodEventCount do
+					-- t = table, _ = "ei käytetty muuttuja", v = value (eli taulukon sisältö)
+					local t = {}
+					for _, v in pairs( eventData ) do
+						if v.isPositiveEvent == true then
+							t[#t+1] = v
+							print( v.title )
+						end
+					end
+					table.shuffle( t )
 
-				if i == 1 then
-					repeat
-						thisEvent = table.getRandom(eventData)
-					until thisEvent.isPositiveEvent == true
+					thisEvent = table.getRandom( eventData )
 
-				else
-					repeat
-						thisEvent = table.getRandom(eventData)
-					until thisEvent.isPositiveEvent == true and thisEvent ~= quaranteedEvents[1]
-				end
+					if i == 1 then
+						thisEvent = t[1]
+					else
+						for j = 1, #t do
+							if t[j] ~= quaranteedEvents[i-1] then
+								thisEvent = t[j]
+								break
+							end
+						end
+					end
 
 					table.insert( quaranteedEvents, thisEvent )
 					userdata.player.goodEventCount = userdata.player.goodEventCount - 1
 					print( "Quaranteed event in value " .. i .. " is " .. quaranteedEvents[i].title )
+				end
 			end
+		-- else
+			-- return
 		end
-
-
-		else
-			return
-		end
-
-
-	-- Päivitetään ruudun yläreunassa olevat pelaajan statsit,
-	-- sillä ne todennäköisesti muuttuivat eventin seurauksena.
-	playerStatusBar.update()
-
-
+		-- Päivitetään ruudun yläreunassa olevat pelaajan statsit,
+		-- sillä ne todennäköisesti muuttuivat eventin seurauksena.
+		playerStatusBar.update()
 	end
-	return true
 
+	return true
 end
 
 
@@ -188,7 +195,6 @@ end
 
 function createEvent()
 	eventWindow = {}
-
 	options = {}
 	actions = {}
 	result = {}
@@ -196,29 +202,25 @@ function createEvent()
 
 	print("Luodaan uusi ikkuna " .. thisEvent.title)
 
-
 	title = thisEvent.title
 	description = thisEvent.description
 	image = thisEvent.image
 
-	for k,v in pairs (thisEvent.event) do
-		-- print(k,v)
+	for k, v in pairs ( thisEvent.event ) do
 		for i = 1, k do
 			options[i] = thisEvent.event[i]
-			actions[i] = thisEvent.event[i].action
-			result[i] = thisEvent.event[i].result
-
 			options[i].text = {}
+
+			actions[i] = thisEvent.event[i].action
+
+			result[i] = thisEvent.event[i].result
 		end
 	end
-
 	-- print( "Luodaan tapahtuma: ",  thisEvent )
-
 	eventGroup = display.newGroup()
 
 	eventWindow.layer = display.newImageRect( eventGroup, "Resources/Images/eventMenu.png", 920, 480 )
 	eventWindow.layer.x, eventWindow.layer.y = screen.centerX, screen.centerY
-
 
 	-- Ladataan eventille henkilökohtainen kuva ja ellei sitä löydy käytetään
 	-- sen sijaan oletuskuvaa
@@ -226,25 +228,22 @@ function createEvent()
 
 	if not layerImage then
 		layerImage = display.newImageRect( eventGroup, "Resources/Images/Events/blackberries.png", imageWidth, imageHeight )
-
 		-- TODO: ota nuo alemmat rivit pois kommenteista kun Emma on saanut testailtua taustakuvia, ettei vielä häiritä sitä tehtävää.
- 		-- print( "WARNING: Kuvaa ei löytynyt, käytetään oletuskuvaa ja lisätään punainen huomioväritys.")
+		-- print( "WARNING: Kuvaa ei löytynyt, käytetään oletuskuvaa ja lisätään punainen huomioväritys.")
 		-- layerImage:setFillColor( 1, 0, 0 )
-
 	end
 
 	layerImage.x, layerImage.y = 230, 360
 
-		local titleText = createText( title, layerImage.x, layerImage.y*0.4, 600, font, fontSize, align)
-			titleText.anchorX, titleText.anchorY = 0.3, 0.5
-			eventGroup:insert( titleText )
+	local titleText = createText( title, layerImage.x, layerImage.y*0.4, 600, font, fontSize, align)
+	titleText.anchorX, titleText.anchorY = 0.3, 0.5
+	eventGroup:insert( titleText )
 
-		local descriptionText = createText( description, layerImage.x*1.8, layerImage.y*0.6, layerImage.imageWidth, font, 24, align )
-			descriptionText.anchorX, descriptionText.anchorY = 0, 0
-			eventGroup:insert( descriptionText )
+	local descriptionText = createText( description, layerImage.x*1.8, layerImage.y*0.6, layerImage.imageWidth, font, 24, align )
+	descriptionText.anchorX, descriptionText.anchorY = 0, 0
+	eventGroup:insert( descriptionText )
 
-			optionTextY = descriptionText.y*1.9
-
+	optionTextY = descriptionText.y*1.9
 
 	for i = 1, #options do
 		local optionText = options[i]
@@ -258,21 +257,21 @@ function createEvent()
 		optionText.text.window.alpha = 0.5
 		optionText.text.window:setFillColor(0.1)
 		optionText.text.window.anchorX = 0
-		optionText.text.action = actions[i]
-		optionText.text.result = result[i]
-		optionText.text:addEventListener("touch", chooseOption)
 		eventGroup:insert( optionText.text )
 
-		bounds = optionText.text.window.contentBounds
+		optionText.text.action = actions[i]
+		optionText.text.result = result[i]
+
+		optionText.text:addEventListener("touch", chooseOption)
 
 		optionTextY = optionTextY + 60
 
+		bounds = optionText.text.window.contentBounds
 	end
 
 	optionTextY = optionTextDefaultY
 
 end
-
 
 -- -----------------------------------------------------------------------------------
 -- Scene event functions
@@ -281,18 +280,15 @@ end
 -- create()
 function scene:create( event )
 	local sceneGroup = self.view
+	local sceneParams = event.params or {}
 
-	quaranteedEvents = userdata.player.quaranteedEvents
-
-	sceneParams = event.params or {}
-	eventType = sceneParams.type
-
-
+	-- Jos devaaja hyppää suoraan tähän sceneen niin userdataa ei ole vielä luotu.
 	if not userdata.player then
 		userdata.new()
 	end
 
-
+	quaranteedEvents = userdata.player.quaranteedEvents
+	-- eventType = sceneParams.type
 
 	-- Katsotaan onko eventti randomEvent vai joku muu ja annetaan parametrit sen mukaisesti
 	if not quaranteedEvents[1] then

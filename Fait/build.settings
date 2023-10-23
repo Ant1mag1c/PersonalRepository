@@ -37,6 +37,37 @@ settings =
 		},
 	},
 
+	-- Desktop buildien näyttö/ikkuna-asetukset.
+    window =
+    {
+		default = "Sisuvala",
+        defaultMode = "fullscreen",
+        defaultViewHeight = 960,
+        defaultViewWidth = 640,
+        resizable = false,
+        enableCloseButton = true,
+        enableMinimizeButton = true,
+        enableMaximizeButton = true,
+        suspendWhenMinimized = true,
+    },
+
+	-- TODO: Lisää Windows ja macOS ikonit projektiin:
+	-- https://docs.coronalabs.com/guide/distribution/win32Build/index.html#app-icon
+	-- https://docs.coronalabs.com/guide/distribution/macOSBuild/index.html#app-icon
+
+	win32 =
+    {
+        singleInstance = false,
+    },
+
+    macos =
+    {
+        plist =
+        {
+            NSHumanReadableCopyright = "Copyright © 2023 Roso Games 2022 team"
+        },
+    },
+
 	--
 	-- Plugins section
 	--
@@ -48,10 +79,13 @@ settings =
 	--
 	-- Project section
 	--
-	excludeFiles =
-	{
-		-- Exclude unnecessary files for each platform
-		all = { "Icon.png", "Icon-*dpi.png", "Images.xcassets", },
-		android = { "LaunchScreen.storyboardc", },
+	-- Poistetaan tarpeettomia tiedostoja buildin aikana eri alustoilta.
+	excludeFiles = {
+		all =		{ "LICENSE", ".DS_Store", "Thumbs.db", "*.txt", "*.md", ".gitignore", ".luacheckrc", },
+		ios =		{ "*AndroidResources*", "Icon*.ico", "Icon*.icns", },
+		android =	{ "*.xcassets*", "*.storyboardc*", "Icon*.ico", "Icon*.icns", },
+		web =		{ "*.xcassets*", "*.storyboardc*", "*AndroidResources*", "Icon*.ico", "Icon*.icns", },
+		win32 =		{ "*.xcassets*", "*.storyboardc*", "*AndroidResources*", "Icon*.icns", },
+		macos =		{ "*.xcassets*", "*.storyboardc*", "*AndroidResources*", "Icon*.ico", },
 	},
 }

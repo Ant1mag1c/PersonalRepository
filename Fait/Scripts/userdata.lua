@@ -33,20 +33,19 @@ function userdata.new(params)
 
     -- Hahmokohtaisia ja devaajan muokattavissa olevia statseja
     userdata.player.defense = tonumber( params.defense or userdata.player.defense )
-    userdata.player.tempEnergy = tonumber( params.tempEnergy or userdata.player.tempEnergy )
+    userdata.player.energy = tonumber( params.energy or userdata.player.energy )
+    userdata.player.energyRegen = userdata.player.energy
     userdata.player.sisuMax = tonumber( params.sisu or userdata.player.sisu )
     userdata.player.startingCards = tonumber( params.startingCards or userdata.player.startingCards )
     userdata.player.attack = tonumber( params.attack or userdata.player.attack )
-    userdata.player.bleedCount = userdata.bleedCount or 0
+    userdata.player.bleedCount = userdata.bleedCount or 5
     userdata.player.moveReductionCount = 0
     userdata.player.quaranteedEvents = userdata.quaranteedEvents or {}
     userdata.player.goodEventCount = 0
 
-
-
     -- Luodaa muita default / aloitus statseja
     userdata.player.sisuCurrent = tonumber( userdata.player.sisuMax )
-    userdata.player.money = tonumber( defaultStats.money ) -- TODO: Tämän voi varmaan siirtää hahmokohtaisiin statseihin?
+    userdata.player.money = tonumber( defaultStats.money )
     userdata.player.maxCardsDeck = tonumber( defaultStats.maxCardsDeck )
     userdata.player.maxCardsHand = tonumber( defaultStats.maxCardsHand )
     userdata.player.cardPerTurn = tonumber( defaultStats.cardPerTurn )

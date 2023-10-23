@@ -11,15 +11,34 @@ local userdata = require("Scripts.userdata")
 local settings = require("Scripts.settings")
 local widget = require( "widget" )
 local playerStatusBar = require("Widgets.playerStatusBar")
+local cardScript = require("Scripts.Card")
 
 local dataHandler = require("Scripts.dataHandler")
 local cardData = dataHandler.getData( "cards.tsv" )
 
-
+local sceneParams
 local buttonClose
+local scrollView
 
+local card = {}
+local slot = {}
 
-local function handleButtonEvent( event )
+-- -----------------------------------------------------------------------------------
+
+-- Visuaalisia asetuksia:
+local buttonWidth = 120
+local buttonHeight = 373/1072*buttonWidth
+local cardWidth = 140
+local cardHeight = cardWidth*1.65
+local cardPadding = 20
+local cardsPerRow = 5
+
+-- Kauppa asetuksia:
+local sellPriceRatio = 0.15
+
+-- -----------------------------------------------------------------------------------
+
+local function closeScene( event )
 	if event.phase == "ended" then
 		userdata.save()
 		composer.hideOverlay( "fade", 100 )
@@ -28,31 +47,120 @@ local function handleButtonEvent( event )
 end
 
 
-local function cardBuy( event )
-	if event.phase == "ended" then
-		print( "cardBuy", event.target.id )
+local function cardBuy( target )
+	print( "buy:", target.id )
+	local _card = target._view._attachedCard
+	local price = math.ceil( _card.data.price )
 
-		-- print( userdata.player.money )
-
-		userdata.save()
-		playerStatusBar.update()
+	if userdata.player.money < price then
+		print( "not enough money" )
+		return
 	end
-	return true
+
+	if #userdata.player.cards == userdata.player.maxCardsDeck then
+		print( "no space left" )
+		return
+	end
+
+	userdata.player.money = userdata.player.money - price
+	userdata.player.cards[#userdata.player.cards + 1] = target.id
+
+	local newSlot
+	for i = 1, #slot do
+		if not slot[i].gotCard then
+			newSlot = slot[i]
+			slot[i].gotCard = true
+			break
+		end
+	end
+
+	_card.x, _card.y = newSlot.x, newSlot.y
+	_card:toFront()
+
+	-- Poistetaan vanha nappi pois käytöstä.
+	target:setEnabled( false )
+	target:setLabel( "BOUGHT" )
+	target.alpha = 0.5
+
+	-- Jos kortti siirtyy myydyn kortin tekemään tyhjään tilaan,
+	-- niin poista siinä slotissa oleva vanha "SOLD" nappi.
+	display.remove( newSlot.button )
+
+	-- Luodaan uusi nappi vain visuaalista ilmettä varten.
+	local fakeButton = widget.newButton({
+		left = _card.x - buttonWidth*0.5,
+		top = _card.y + _card.height*0.5 + buttonHeight*0.5 - 10,
+		width = buttonWidth,
+		height = buttonHeight,
+		defaultFile = "Resources/Images/generalbutton1.png",
+		overFile = "Resources/Images/generalbutton.png",
+		label = "NEW",
+		labelColor = { default={ 0.9 }, over={ 1 } },
+		font = settings.userdata.font,
+		fontSize = 16,
+	})
+	scrollView:insert( fakeButton )
+	fakeButton:setEnabled( false )
+	fakeButton.alpha = 0.5
+
+	userdata.save()
+	playerStatusBar.update()
 end
 
 
-local function cardSell( event )
-	if event.phase == "ended" then
-		print( "cardSell", event.target.id )
+local function cardSell( target )
+	print( "sell:", target.id )
+	local _card = target._view._attachedCard
+	local price = math.ceil( _card.data.price*sellPriceRatio )
+
+	if #userdata.player.cards == 1 then
+		print( "can't sell last card" )
+		return
+	end
+
+	-- Anna pelaajalle rahat ja poista kortti hänen kokoelmastaan.
+	userdata.player.money = userdata.player.money + price
+	for i = 1, #userdata.player.cards do
+		if userdata.player.cards[i] == target.id then
+			table.remove( userdata.player.cards, i )
+			break
+		end
+	end
+
+	display.remove( _card )
+	_card.slot.gotCard = false
+
+	-- Poistetaan vanha nappi pois käytöstä.
+	target:setEnabled( false )
+	target:setLabel( "SOLD" )
+	target.alpha = 0.5
+
+	userdata.save()
+	playerStatusBar.update()
+end
 
 
+-- Hallitaan scrollView:n sisällä olevien buttonien tapahtumia.
+local function onButtonEvent( event )
+	local phase = event.phase
 
-		userdata.save()
-		playerStatusBar.update()
+	-- Jos pelaaja vetää ylös tai alas riittävästi, niin hän todennäköisesti haluaa scrollata.
+	if phase == "moved" then
+		local dy = math.abs( ( event.y - event.yStart ) )
+		if ( dy > 10 ) then
+			scrollView:takeFocus( event )
+		end
+	elseif phase == "ended" then
+		-- Nappien nimissä löytyy hinnat, niin katsotaan vain onko kyseessä osto vai myynti.
+		local label = event.target:getLabel():sub(1,3)
+		if label == "BUY" then
+			cardBuy( event.target )
+		else
+			cardSell( event.target )
+		end
 	end
 	return true
 end
-
 -- -----------------------------------------------------------------------------------
 -- Scene event functions
 -- -----------------------------------------------------------------------------------
@@ -60,24 +168,41 @@ end
 -- create()
 function scene:create( event )
 	local sceneGroup = self.view
-	local sceneParams = event.params or {}
-	-- Code here runs when the scene is first created but has not yet appeared on screen
-
-	if not userdata.player then
-		userdata.new()
-	end
-
-	local isStore = sceneParams.isStore or false
-	print( "deck: isStore", isStore )
+	sceneParams = event.params or {}
 
 	-------------------------------------------------------
 
 	local background = display.newRect( sceneGroup, screen.centerX, screen.centerY, screen.width, screen.height )
 	background:setFillColor(0, 0.5)
 
+	-------------------------------------------------------
 
-	local buttonWidth = 120
-	local buttonHeight = 373/1072*buttonWidth
+	local isStore = sceneParams.isStore or false
+	local isPharma = sceneParams.isPharma or false
+	local isTavern = sceneParams.isTavern or false
+	local eventCard = sceneParams.eventCard or {}
+	local label
+
+	if eventCard.title then
+		for i = 1, #eventCard do
+			print( "eventCardCount", i )
+		end
+		print( "title:", eventCard.title)
+	else
+		print( "no title for eventCard" )
+	end
+
+	-- table.print(eventCard)
+
+	if isStore then
+		label = "Close Store"
+	elseif isPharma then
+		label = "Close Pharma"
+	elseif isTavern then
+		label = "Close Tavern"
+	else
+		label = "Close Deck"
+	end
 
 	buttonClose = widget.newButton({
 		left = screen.maxX - buttonWidth,
@@ -86,9 +211,9 @@ function scene:create( event )
 		height = buttonHeight,
 		defaultFile = "Resources/Images/generalbutton1.png",
 		overFile = "Resources/Images/generalbutton.png",
-		label = isStore and "Close Store" or "Close Deck",
+		label = label ,
 		labelColor = { default={ 0.9 }, over={ 1 } },
-		onEvent = handleButtonEvent,
+		onEvent = closeScene,
 		font = settings.userdata.font,
 		fontSize = 18,
 	})
@@ -96,89 +221,154 @@ function scene:create( event )
 
 	-------------------------------------------------------
 
-	local cardWidth = 136
-	local cardHeight = cardWidth*1.5
-	local cardPadding = 20
-	local cardsPerRow = 5
+	-- Jos devaaja hyppää suoraan tähän sceneen niin userdataa ei ole vielä luotu.
+	if not userdata.player then
+		userdata.new()
 
-	local window = display.newRect( sceneGroup, screen.centerX, screen.minY + 80, 800, 600 )
+		playerStatusBar.create( sceneGroup, buttonClose )
+	end
+
+	local currentMap = userdata.player.currentMap or sceneParams.currentMap or 1
+	-- print( "deck: isStore", isStore )
+
+	-------------------------------------------------------
+
+	-- TODO: korjaa hienommalla grafiikalla.
+	local window = display.newRect( sceneGroup, screen.centerX, 60, 800, 550 )
 	window:setFillColor( 0.2 )
 	window.anchorY = 0
 
-	local xStart = window.x - window.width*0.5 + cardPadding
+	scrollView = widget.newScrollView
+	{
+		top = 60,
+		left = 80,
+		width = 800,
+		height = 550,
+		-- backgroundColor = { 0.2, 0.2 },
+		hideBackground = true,
+		-- scrollWidth = 600,
+		-- scrollHeight = 800,
+		horizontalScrollDisabled = true
+	}
+	sceneGroup:insert( scrollView )
+
+
+	local xStart = window.x - window.width*0.5
 	local offset
-
-	local card = {}
-
-	-- TODO: Laita tekstit ja kortit scrollView:iin.
 
 	-- Jos ollaan kaupassa, niin laitetaan pelaajan korttien yläpuolelle kaupan kortit.
 	if isStore then
+		-- Luo numeroitu lista kaikista pelin korteista.
+		local cardList = {}
+		for cardName, v in pairs( cardData ) do
+			cardList[#cardList+1] = v
+			cardList[#cardList].name = cardName
+		end
+
 		local titleStore = display.newText({
-			parent = sceneGroup,
 			text = "Store",
-			x = screen.centerX,
-			y = window.y + 20,
+			x = 400,
+			y = 10,
 			font = settings.userdata.font,
 			fontSize = 40
 		})
+		scrollView:insert( titleStore )
 		titleStore.anchorY = 0
 
 		for i = 1, cardsPerRow do
-			-- TODO: generoi kortit card moduulilla.
-			local newCard = display.newRect( sceneGroup, xStart + (i-1)*(cardWidth+cardPadding), titleStore.y + titleStore.height, cardWidth, cardHeight )
-			newCard.anchorX, newCard.anchorY = 0, 0
+			-- Valitse satunnainen kortti, joka on saatavilla nykyisellä kartalla.
+			table.shuffle( cardList )
+			local cardForSale = eventCard[i] or nil
+			if not cardForSale then
+				for cardIndex = 1, #cardList do
+					if cardList[cardIndex].firstMap <= currentMap and cardList[cardIndex].lastMap >= currentMap then
+						cardForSale = cardList[cardIndex].name
+						break
+					end
+				end
+			end
 
-			newCard:setFillColor( 0.75 )
-			newCard.strokeWidth = 2
-			newCard:setStrokeColor( 0.9 )
+			local cardSlot = display.newRect( xStart + (i-1)*(cardWidth+cardPadding), titleStore.y + titleStore.height + cardHeight*0.5 + 20, cardWidth, cardHeight )
+			cardSlot:setFillColor( 0.5 )
+			cardSlot.strokeWidth = 2
+			cardSlot:setStrokeColor( 0.8 )
+			scrollView:insert( cardSlot )
+
+			local newCard = cardScript.newCard( cardForSale, nil, {
+				x = xStart + (i-1)*(cardWidth+cardPadding),
+				y = titleStore.y + titleStore.height + cardHeight*0.5 + 20,
+				noShuffle = true,
+				cardRevealed = true,
+			})
+			scrollView:insert( newCard )
+			cardSlot.gotCard = true
 
 			newCard.button = widget.newButton({
-				left = newCard.x + newCard.width*0.5 - buttonWidth*0.5,
-				top = newCard.y + newCard.height - 50,
+				left = newCard.x - buttonWidth*0.5,
+				top = newCard.y + newCard.height*0.5 + buttonHeight*0.5 - 10,
 				width = buttonWidth,
 				height = buttonHeight,
 				defaultFile = "Resources/Images/generalbutton1.png",
 				overFile = "Resources/Images/generalbutton.png",
-				label = "BUY",
+				label = "BUY "  .. math.ceil(newCard.data.price) .. "G",
+				id = randomCard,
 				labelColor = { default={ 0.9 }, over={ 1 } },
-				onEvent = cardBuy,
+				onEvent = onButtonEvent,
 				font = settings.userdata.font,
-				fontSize = 18,
+				fontSize = 16,
 			})
-			sceneGroup:insert( newCard.button )
+			scrollView:insert( newCard.button )
+			-- Hack: buttonin kautta pääsee käsiksi korttiin.
+			newCard.button._view._attachedCard = newCard
+			newCard.slot = cardSlot
 
 			card[#card+1] = newCard
+			slot[#slot+1] = cardSlot
 		end
 
-		offset = card[1].y + card[1].height
+		offset = card[1].button.contentBounds.yMax
 	end
 
 	local titleDeck = display.newText({
-		parent = sceneGroup,
 		text = "Deck",
-		x = screen.centerX,
-		y = offset and offset + 20 or window.y + 20,
+		x = 400,
+		y = offset and offset + 20 or 10,
 		font = settings.userdata.font,
 		fontSize = 40
 	})
+	scrollView:insert( titleDeck )
 	titleDeck.anchorY = 0
-
 
 	-------------------------------------------------------
 
-	local yStart = titleDeck.y + titleDeck.height + cardPadding
+	local yStart = titleDeck.y + titleDeck.height + cardHeight*0.5 + cardPadding
 	local row, column = 1, 1
+	local yMax
 
 	local playerData = userdata.player
 	for i = 1, playerData.maxCardsDeck do
-		-- TODO: generoi kortit card moduulilla.
-		local newCard = display.newRect( sceneGroup, xStart + (column-1)*(cardWidth+cardPadding), yStart + (row-1)*(cardHeight+cardPadding), cardWidth, cardHeight )
-		newCard.anchorX, newCard.anchorY = 0, 0
+		local newCard
 
-		newCard:setFillColor( 0.5 )
-		newCard.strokeWidth = 2
-		newCard:setStrokeColor( 0.8 )
+		-- Jokaisella kortilla on paikka, "slot", mihin se asetetaan.
+		local cardSlot = display.newRect( xStart + (column-1)*(cardWidth+cardPadding), yStart + (row-1)*(cardHeight+cardPadding + buttonHeight + 10), cardWidth, cardHeight )
+		cardSlot:setFillColor( 0.5 )
+		cardSlot.strokeWidth = 2
+		cardSlot:setStrokeColor( 0.8 )
+		scrollView:insert( cardSlot )
+
+		yMax = cardSlot.y + cardSlot.height
+
+		-- Pelaajan kortit.
+		if i <= #userdata.player.cards then
+			newCard = cardScript.newCard( userdata.player.cards[i], nil, {
+				x = xStart + (column-1)*(cardWidth+cardPadding),
+				y = yStart + (row-1)*(cardHeight+cardPadding + buttonHeight + 10),
+				noShuffle = true,
+				cardRevealed = true,
+			})
+			scrollView:insert( newCard )
+			cardSlot.gotCard = true
+		end
 
 		if column == cardsPerRow then
 			column = 1
@@ -187,28 +377,37 @@ function scene:create( event )
 			column = column + 1
 		end
 
-		if isStore then
-			-- TODO: myyntihinta on 2/3 kortin arvosta.
+		if isStore and newCard then
 			newCard.button = widget.newButton({
-				left = newCard.x + newCard.width*0.5 - buttonWidth*0.5,
-				top = newCard.y + newCard.height - 50,
+				left = newCard.x - buttonWidth*0.5,
+				top = newCard.y + newCard.height*0.5 + buttonHeight*0.5 - 10,
 				width = buttonWidth,
 				height = buttonHeight,
 				defaultFile = "Resources/Images/generalbutton1.png",
 				overFile = "Resources/Images/generalbutton.png",
-				label = "SELL",
+				label = "SELL " .. math.ceil(newCard.data.price*sellPriceRatio) .. "G",
 				labelColor = { default={ 0.9 }, over={ 1 } },
-				onEvent = cardSell,
+				id = userdata.player.cards[i],
+				onEvent = onButtonEvent,
 				font = settings.userdata.font,
-				fontSize = 18,
+				fontSize = 16,
 			})
-			sceneGroup:insert( newCard.button )
+			scrollView:insert( newCard.button )
+			-- Hack: buttonin kautta pääsee käsiksi korttiin.
+			newCard.button._view._attachedCard = newCard
+			newCard.slot = cardSlot
+			cardSlot.button = newCard.button
 		end
 
 		card[#card+1] = newCard
+		slot[#slot+1] = cardSlot
 	end
 
-	-------------------------------------------------------
+	-- Lisätään scrollView:n loppuun "tyhjä tila", jotta viimeinen rivi näkyy.
+	local bottomPadding = display.newRect( 400, yMax - 40, 800, 40 )
+	bottomPadding.anchorY = 0
+	bottomPadding.isVisible = false
+	scrollView:insert( bottomPadding )
 
 end
 

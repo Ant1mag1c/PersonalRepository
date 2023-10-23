@@ -143,6 +143,10 @@ function scene:create( event )
 
 
 
+	-- TODO: käännä tekstejä englanniksi.
+	-- TODO: poista "guaranteed card" ja korvaa se hahmon traitilla.
+
+
 	local infoTextCreated = false
 	local infoText
 
@@ -213,7 +217,7 @@ function scene:create( event )
 	local defenseValue = display.newText(sceneGroup, characterData[currentCharacterID].defense, defencePower.x + defencePower.width*0.5 + iconTextPadding, defencePower.y, settings.userdata.font, 23)
 	defenseValue.anchorX = 0
 
-	local energyValue = display.newText(sceneGroup, characterData[currentCharacterID].tempEnergy, energy.x + energy.width*0.5 + iconTextPadding, energy.y, settings.userdata.font, 23)
+	local energyValue = display.newText(sceneGroup, characterData[currentCharacterID].energy, energy.x + energy.width*0.5 + iconTextPadding, energy.y, settings.userdata.font, 23)
 	energyValue.anchorX = 0
 
 	local cardsValue = display.newText(sceneGroup, characterData[currentCharacterID].startingCards, cards.x + cards.width*0.5 + iconTextPadding, cards.y, settings.userdata.font, 23)
@@ -241,7 +245,7 @@ function scene:create( event )
 		sisuValue.text = characterData[currentCharacterID].sisu
 		attackValue.text = characterData[currentCharacterID].attack
 		defenseValue.text = characterData[currentCharacterID].defense
-		energyValue.text = characterData[currentCharacterID].tempEnergy
+		energyValue.text = characterData[currentCharacterID].energy
 		cardsValue.text = characterData[currentCharacterID].startingCards
 		guaranteedCardValue.text = characterData[currentCharacterID].guaranteedCard
 		characterDescription.text = characterData[currentCharacterID].lore

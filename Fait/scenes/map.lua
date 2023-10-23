@@ -8,7 +8,6 @@ local map = require("Scripts.map")
 local mapData = require("Data.mapData")
 local widget = require( "widget" )
 local playerStatusBar = require("Widgets.playerStatusBar")
-local eventData = require("Data.eventData")
 
 -- -----------------------------------------------------------------------------------
 -- Code outside of the scene event functions below will only be executed ONCE unless
@@ -52,6 +51,11 @@ function scene:create( event )
 	local sceneGroup = self.view
 	local sceneParams = event.params or {}
 
+	-- Jos devaaja hyppää suoraan tähän sceneen niin userdataa ei ole vielä luotu.
+	if not userdata.player then
+		userdata.new()
+	end
+
 	local background = display.newImage(sceneGroup, "Resources/Images/map.png")
 	background.x, background.y = display.contentCenterX, display.contentCenterY
 	display.scaleDisplayObject( background, screen.width, screen.height )
@@ -61,10 +65,6 @@ function scene:create( event )
 	fog.origScale = fog.fill.scaleX
 
 	repeatCloudTransition()
-
-	if not userdata.player then
-		userdata.new()
-	end
 
 	if not userdata.player.map or not sceneParams or sceneParams.newGame then
 		local whichMap = sceneParams.whichMap or 1

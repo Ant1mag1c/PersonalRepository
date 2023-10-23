@@ -39,7 +39,7 @@ function bar.update()
 
 		local contents = {
 			"SISU: " .. playerData.sisuCurrent .. "/" .. playerData.sisuMax,
-			"ENERGY: " .. playerData.tempEnergy,
+			"ENERGY: " .. playerData.energy,
 			"ATTACK: " .. playerData.attack,
 			"DEFENSE: " .. playerData.defense,
 			"MONEY: " .. playerData.money,

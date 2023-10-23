@@ -34,9 +34,11 @@ local startNode
 local mapWidth
 local maxScale = 1.2
 local defaultScale = 1
-local moveReductionCount = 0
 
+local overlayGroup
+local bleedIndicator
 -----------------------------------------------------------------------
+
 
 local function darkenLevel(target)
 	local intensity = 0.5
@@ -45,6 +47,19 @@ local function darkenLevel(target)
 	target.terrainView:setFillColor( intensity )
 end
 
+-- Pelaaja sulkee event overlay scenen, niin jossain tilanteissa nämä
+-- eventit vaativat uusia toimia, jotka voidaan käsitellä täällä.
+local function closeEventView( params )
+	if type( params ) == "table" then
+		-- DEBUG PRINT:
+		---------------
+		print( "closeEventView - params:" )
+		for k,v in pairs( params ) do
+			print( k, v )
+		end
+		---------------
+	end
+end
 
 -- Liikutetaan pelaajaa kartalla
 local function movePlayer(event)
@@ -78,9 +93,8 @@ local function movePlayer(event)
                     local moveCost
                     local moveCostReductionCount = userdata.player.moveReductionCount
 
-                    -- Tentacle event vähentää pelaajan liikkumisen hintaa viideksi vuoroksi. Luodaan eventille
-                    -- oma tarkistus
 
+                    -- Lonkero event vähentää pelaajan liikkumisen hintaa viideksi vuoroksi.
                     if moveCostReductionCount > 0 then
                         moveCost = 7
                         moveCostReductionCount = moveCostReductionCount - 1
@@ -90,15 +104,33 @@ local function movePlayer(event)
 
                     end
 
-
                     -- Ajetaan bleed ehto jos havaitaan pelaajan vuotavan
                     if bleedCount > 0 then
+                        -- TODO: Indikaattorin tulisi olla enterframe kuuntelijalla jotta logo katoaisi milloin vain vuoto loppuu
+                        -- Luodaan pelaajan vuotamiselle indikaattori
+                        overlayGroup = display.newGroup()
+
+                        local coordinates = {
+                            0, 0, 25, 50, 50, 0, 40, -10,
+                                30, -15, 20, -15, 10, -10, -5,0
+                        }
+
+                        bleedIndicator = display.newLine(overlayGroup, unpack(coordinates))
+                        bleedIndicator.x = screen.safe.maxX - 20
+                        bleedIndicator.y = screen.safe.minY + 120
+                        bleedIndicator.strokeWidth = 10
+                        bleedIndicator.stroke = { 1, 0, 0 }  -- Red color
+                        bleedIndicator.rotation = 180
+
                         local bleedDamage = math.random( userdata.bleedDmgMin, userdata.bleedDmgMax )
 
                         bleedCount = bleedCount - 1
                         playerHP = playerHP - bleedDamage
 
                         print("I lost " .. bleedDamage .. "hp and bleed for " .. bleedCount .. " turns ")
+
+                    else
+                        display.remove(overlayGroup)
                     end
 
                     userdata.player.sisuCurrent = playerHP - moveCost
@@ -149,6 +181,7 @@ local function movePlayer(event)
                                     path = target.path,
                                     row = target.row,
                                     level = target.level,
+									callback = closeEventView,
                                 }
                             }
 

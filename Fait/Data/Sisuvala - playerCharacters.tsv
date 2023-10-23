@@ -1,4 +1,4 @@
-id	name	imageAvatar	imageBattle	imageMap	sisu	tempEnergy	defense	attack	startingCards	guaranteedCard	trait	disabled	lore
+id	name	imageAvatar	imageBattle	imageMap	sisu	energy	defense	attack	startingCards	guaranteedCard	trait	disabled	lore
 puukkojunkkari	Puukkojunkkari	avatarPuukkojunkkari.png	battlePuukkojunkkari.png	mapPuukkojunkkari.png	300	3	1	3	4	puukko	Jos puukkojunkkarin viimeinen kortti tappaa vihollisen, niin tämä kortti palaa pelaajan käteen.	FALSE	Puukkojunkkarilla löytyy aina puukko taskusta.
 metsastaja	Metsästäjä	avatarMetsastaja.png	battleMetsastaja.png	mapMetsastaja.png	340	3	4	2	5	jousi	Metsästäjä voi valita 1 kortin enemmän taisteluiden lopussa pakkaansa.	FALSE	Metsästäjä on metsien osaaja.
 tietaja	Tietäjä	avatarTietaja.png	battleTietaja.png	mapTietaja.png	250	5	2	1	7	luento	Tietäjällä on yksi kortti enemmän kädessä kuin muilla hahmoilla.	FALSE	Tietäjä tietää paljon ja vähän päälle.

@@ -50,29 +50,28 @@ local composer = require("composer")
 
 -- composer.gotoScene("scenes.event", {
 --     params = {
---         type = "ansa",
+--         type = "luola",
 --         terrain = "field",
 --         level = 2,
---         row = 1,
---         path = 2
+--         row = 1
+--             }
 --     }
--- })
+-- )
+
 
 -- composer.gotoScene("scenes.deck", {
 --     params = {
---         isStore = true,
+--         -- isStore = true,
+--         isPharma = true,
+--         eventCard = "viikate"
+--         -- isTavern = true,
 --     }
 -- })
 
-composer.gotoScene("scenes.map")
+-- composer.gotoScene("scenes.map")
 
 composer.showOverlay( "scenes.event", {
     params = {
-        type = "piima",
-
-   }
+        type = "apteekki",
+    }
 })
-
-
-
-

@@ -1,177 +1,225 @@
-local x = x or display.contentCenterX
-local y = y or display.contentCenterY
+local inventory = {}
+local item = {}
 
-local obj = {}
-local itemSlot = {}
+local itemT = {
+    {image="Assets/Images/sword1.png", id="weapon", name="copperS"},
+    {image="Assets/Images/sword2.png", id="weapon", name="SilverS"},
+    {image="Assets/Images/armor1.png", id="armor", name="rustyArmor"},
+}
+
+local imageG = display.newGroup()
+
+-- if targetSlot.item == selectedItem then
+        --     targetSlot.item = nil
+        -- end
 
 
-local isInsideBounds
-
-
-local function handleItemSlots( object, prevX, prevY )
-    local isFromSlot = false
-    local fromSlot
+local function manageInventory( item )
+    local onSlot
     local targetSlot
-    for i = 1, #itemSlot do
-        targetSlot = itemSlot[i]
-        --Tarkistetaan onko objektista irroitettu slotin sisällä
-        if object.x > targetSlot.bounds.xMin and
-            object.y > targetSlot.bounds.yMin and
-            object.x < targetSlot.bounds.xMax and
-            object.y < targetSlot.bounds.yMax then
-            -- TODO: Jos objekti siirtyy slotista varattuun slottiin niin voisi objektit vaihtaa
-            -- keskenään paikkaa
 
-            for i = 1, #itemSlot do
-                if itemSlot[i].equippedItem == object then
-                    isFromSlot = true
-                    fromSlot = itemSlot[i]
-                    break
-                end
+    for i = 1, #inventory do
+        targetSlot = inventory[i]
+
+        -- Check if target has been moved inside slot
+        onSlot = item.x > targetSlot.bound.xMin and
+            item.x < targetSlot.bound.xMax and
+            item.y > targetSlot.bound.yMin and
+            item.y < targetSlot.bound.yMax or false
+
+        -- Check if item is allowed in selected slot
+        if onSlot then
+            local swapped = item and targetSlot.item and not targetSlot.block
+
+            if swapped then
+                local toSwap = item
+                local fromSwap = targetSlot.item
+
+                targetSlot.item = fromSwap
+                fromSwap.x, fromSwap.y = fromSwap.startX, fromSwap.startY
             end
 
-            isInsideBounds = true
-            object.x, object.y = targetSlot.x, targetSlot.y
-            break
-        else
-            isInsideBounds = false
-        end
-    end
-
-    if isFromSlot then
-        -- print( "isFromSlot ", isFromSlot, fromSlot.id )
-    end
-    -- Tarkistetaan onko valittu objekti otettu slotista
-
-    -- Käsitellään itemslotin dataa
-    print("--------------------")
-    if isInsideBounds then
-        if not isFromSlot then
-            if object ~= targetSlot.equippedItem then
-                if not targetSlot.equippedItem then
-                    targetSlot.equippedItem = object
-                    -- Poistetaan objektin viittaus muilta sloteilta
-                    for i = 1, #itemSlot do
-                        if itemSlot[i].equippedItem == object then
-                            if itemSlot[i] ~= targetSlot then
-                                print("Removed object from " .. itemSlot[i].id)
-                                itemSlot[i].equippedItem = nil
-                            end
-                        end
-                    end
-                    print( targetSlot.equippedItem.id .. " in slot " .. targetSlot.id )
-
-                -- Kyseisessä slotissa on jo ennestään objekti
-                else
-                    if not isFromSlot then
-                        print("You already have item in this slot")
-                        object.x, object.y = prevX, prevY
-                    -- Vaihdetaan itemien slotit keskenään
-                    else
-                        print("Swap items")
-
-                    end
-                end
+            if not targetSlot.block then
+                print("EQUIPPED")
+                targetSlot.item = item
+                item.x, item.y = targetSlot.x, targetSlot.y
             else
-                print("This item is already in current slot")
-            end
-        -- Objekti on siirretty slotilta ja taulut vaihdetaan keskenään
-        else
-            print("Swap these two tables")
-            local _swapSlot =
-                {
-                    item1 = fromSlot.equippedItem,
-                    item2 = targetSlot.equippedItem
-
-                }
-                -- print(targetSlot.equippedItem)
-                -- print(fromSlot.equippedItem)
-            targetSlot.equippedItem = _swapSlot.item1
-            fromSlot.equippedItem = _swapSlot.item2
-
-        end
-    else
-        print(object.id .. " is not equipped " )
-        -- Poistetaan objektin viittaus slotilta
-        for i = 1, #itemSlot do
-            if itemSlot[i].equippedItem == object then
-                print( object.id .. " removed from slot " .. itemSlot[i].id )
-                itemSlot[i].equippedItem = nil
-                break
+                print("BLOCKED")
+                item.x, item.y = item.startX, item.startY
             end
         end
     end
-
-    print("-------------------")
-    print("Slot 1: ", itemSlot[1].equippedItem)
-    print("Slot 2: ", itemSlot[2].equippedItem)
-    print("Slot 3: ", itemSlot[3].equippedItem)
+    print(inventory[1].item, inventory[2].item)
 end
 
----------------------------------------------
-local originalX, originalY
-
-local function moveObject( event)
-    local target = event.target
+-- Handle touch event between items and inventory slots
+local function handleTouch(event)
     local phase = event.phase
+    local target = event.target
 
-    if event.phase == "began" then
-        originalX, originalY = target.x, target.y
+    if phase == "began" then
         display.getCurrentStage():setFocus(target)
         target.isFocus = true
-        target.xScale, target.yScale = 1.2, 1.2
-        -- print( "Touch happened on " .. target.id)
+        target.prevX = event.x - target.x
+        target.prevY = event.y - target.y
 
-        -- Save the initial touch position
-        target.touchOffsetX = event.x - target.x
-        target.touchOffsetY = event.y - target.y
+        -- Create "cant insert here logos on all unallowed slots"
+        for i = 1, #inventory do
+            local targetInventory = inventory[i]
+
+            if targetInventory.type ~= target.id then
+                local denySign = display.newText( imageG, "X", targetInventory.x, targetInventory.y, native.systemFont, 60 )
+                denySign:setFillColor(1,0,0)
+                targetInventory.block = denySign
+            end
+        end
 
     elseif target.isFocus then
-        if event.phase == "moved" then
-            target.x = event.x - target.touchOffsetX
-            target.y = event.y - target.touchOffsetY
-
-        else
-            -- print( "Mouse original pos: ", originalX, originalY)
-            -- Objectista on irroitettu
-            target.xScale, target.yScale = 1, 1
+        if phase == "moved" then
+            target.x = event.x - target.prevX
+            target.y = event.y - target.prevY
+        elseif phase == "ended" then
+            -- Reset touch focus
             display.getCurrentStage():setFocus(nil)
-            target.isFocus = false
-            handleItemSlots( target, originalX, originalY )
+            target.isFocus = nil
+
+            manageInventory( target )
+
+            for i = 1, #inventory do
+                if inventory[i].block then
+                    display.remove(inventory[i].block)
+                    inventory[i].block = nil
+                end
+            end
         end
     end
-
-    return true  -- To prevent other objects from catching the touch event
+    return true
 end
 
-local colorTable =
-
-    {
-        red = {1,0,0, color="red"},
-        green={0,1,0, color="green"},
-        blue={0,0,1, color="blue"}
-
-    }
-
--- print(colorTable.red.color)
-
--- Luodaan itemSlotit
-for i = 1, 3 do
-    itemSlot[i] = display.newRect( (i-1) * 90 + 70, y*1.8, 80, 80)
-    itemSlot[i]:setFillColor( 0.5 )
-    itemSlot[i].bounds = itemSlot[i].contentBounds
-    itemSlot[i].id = "Slot " .. i
-
+local padding = 50
+local scale = 0.7
+-- Create items
+for i = 1, #itemT do
+    local currItem = display.newImageRect(imageG, itemT[i].image, 50, 50)
+    currItem.x = (i - 1) * (currItem.width) + display.contentCenterX * 0.8
+    currItem.y = display.contentCenterY * 1.5
+    currItem.id = itemT[i].id
+    currItem.startX, currItem.startY = currItem.x, currItem.y
+    currItem.xScale, currItem.yScale = scale, scale
+    item[i] = currItem
+    currItem:addEventListener("touch", handleTouch)
 end
--- print(itemSlot[1].bounds.xMax)
 
---Luodaan liikutettavat objektit
-local objectX = 100
-for i = 1, 3 do
-    local bodyColor = i == 1 and colorTable.red or i == 2 and colorTable.green or colorTable.blue
+-- Create inventory slots
+for i = 1, 2 do
+    local image = i == 1 and "Assets/Images/armor1.png" or "Assets/Images/sword1.png"
+    local slot = display.newRect(imageG, 0, 0, item[1].width + 10, 50)
+    slot.x = (i - 1) * (slot.width + 30) + display.contentCenterX * 0.5
+    slot.y = display.contentHeight - (slot.height * 0.65)
+    slot.alpha = 0.3
+    slot.bound = slot.contentBounds
+    slot.type = i == 1 and "armor" or "weapon"
 
-    obj[i] = display.newCircle( (i-1) * objectX + 50, y, 26 )
-    obj[i]:setFillColor( bodyColor[1], bodyColor[2], bodyColor[3] )
-    obj[i].id = "object " .. bodyColor.color
-    obj[i]:addEventListener( "touch", moveObject)
+    local slotImage = display.newImageRect( imageG, image, slot.width-10, slot.height-10  )
+    slotImage.x, slotImage.y = slot.x, slot.y
+    slotImage.alpha = 0.3
+    inventory[i] = slot
+    slotImage:toBack()
+    slot:toBack()
 end
+
+--------------------------------------------------------
+-- VERSION 2
+---------------------------------------------------------
+-- local inventory = {}
+-- local item = {}
+
+-- local itemT = {
+--     {image="Assets/Images/sword1.png", id="copperS"},
+--     {image="Assets/Images/sword2.png", id="SilverS"},
+-- }
+
+-- local imageG = display.newGroup()
+
+-- local function manageInventory(target)
+--     local selectedItem = target
+--     local onSlot
+
+--     for i = 1, #inventory do
+--         targetSlot = inventory[i]
+
+--         if targetSlot.item == selectedItem then
+--             targetSlot.item = nil
+--         end
+
+--         -- Check if target has been moved inside slot
+--         onSlot = target.x > targetSlot.bound.xMin and
+--             target.x < targetSlot.bound.xMax and
+--             target.y > targetSlot.bound.yMin and
+--             target.y < targetSlot.bound.yMax or false
+
+--         -- Include target item to inventory slot
+--         if onSlot then
+--             if not targetSlot.item then
+--                 target.x, target.y = targetSlot.x, targetSlot.y
+--                 targetSlot.item = target
+--             else
+--                 target.y = display.contentCenterY*1.5
+--             end
+--         end
+--     end
+
+--     for i = 1, #inventory do
+--         print( "Inventory", i, inventory[i].item )
+--     end
+-- end
+
+-- -- Handle touch event between items and inventory slots
+-- local function handleTouch(event)
+--     local phase = event.phase
+--     local target = event.target
+
+--     if phase == "began" then
+--         display.getCurrentStage():setFocus(target)
+--         target.isFocus = true
+--         target.prevX = event.x - target.x
+--         target.prevY = event.y - target.y
+
+--     elseif target.isFocus then
+--         if phase == "moved" then
+--             target.x = event.x - target.prevX
+--             target.y = event.y - target.prevY
+--         elseif phase == "ended" then
+--             -- Reset touch focus
+--             display.getCurrentStage():setFocus(nil)
+--             target.isFocus = nil
+--             manageInventory(target)
+--         end
+--     end
+--     return true
+-- end
+
+-- local padding = 50
+-- local scale = 0.7
+-- -- Create items
+-- for i = 1, #itemT do
+--     local currItem = display.newImageRect(imageG, itemT[i].image, 50, 50)
+--     currItem.x = (i - 1) * (currItem.width) + display.contentCenterX * 0.8
+--     currItem.y = display.contentCenterY * 1.5
+--     currItem.xScale, currItem.yScale = scale, scale
+--     item[i] = currItem
+--     currItem:addEventListener("touch", handleTouch)
+-- end
+
+-- -- Create inventory slots
+-- for i = 1, 2 do
+--     local slot = display.newRect(imageG, 0, 0, item[1].width + 10, 50)
+--     slot.x = (i - 1) * (slot.width + 30) + display.contentCenterX * 0.5
+--     slot.y = display.contentHeight - (slot.height * 0.65)
+--     slot.alpha = 0.3
+
+--     slot.bound = slot.contentBounds
+--     slot.isOccupied = false
+
+--     inventory[i] = slot
+-- end

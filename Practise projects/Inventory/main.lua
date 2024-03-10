@@ -23,10 +23,17 @@ local function openInventory()
     end
 end
 -- During pick item will be removed and reference will have isOwned as true
+-- TODO: Logic is not working properly
 local function pickItem(event)
     local target = event.target
     if event.phase == "ended" then
         print("Item picked")
+        if not target.isOwned then
+            target.isOwned = true
+            _itemData[1] = target
+            display.remove( target )
+            target = nil
+        end
     end
 end
 
@@ -36,15 +43,15 @@ local function spawnItem(itemNumber, group)
     local item = display.newImageRect( group, _data.image, 50, 50 )
     item.x, item.y = 100, 100
     item.id, item.name, item.isOwned, item.type = _data.id, _data.name, _data.isOwned, _data.type
+    item.image = _data.image
     item:addEventListener("touch" , pickItem)
     return item
 end
 
 local firstItem = spawnItem(1, groupGame )
-print(firstItem.id)
 
 
 local openButton = display.newRect(groupUI, display.contentCenterX, display.contentCenterY*1.8, 80, 50)
 openButton:setFillColor(0.5)
 openButton:addEventListener("touch", openInventory)
-local openText = display.newText(groupUI, "Menu", openButton.x, openButton.y, native.systemFont, 25)
+local openText = display.newText(groupUI, "Inv", openButton.x, openButton.y, native.systemFont, 25)

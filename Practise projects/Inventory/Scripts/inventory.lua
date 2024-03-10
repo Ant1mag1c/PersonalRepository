@@ -1,7 +1,11 @@
+local itemData = require("Data.itemData")
 local M = {}
 
 local onCloseCallback -- Declare callback variable
 local bodyGroup -- Declare displayGroup where all objects will be included
+local ownedItem = {}
+local item = {}
+
 
 local function handleTouch(event)
     local phase = event.phase
@@ -21,13 +25,29 @@ local function handleTouch(event)
 end
 
 function M.show(parent, x, y, width, height, callback)
+    print("Window Created")
     onCloseCallback = callback -- Store the callback function
 
-    print("Window Created")
+    -- Import all owned items into ownedItem table
+    for i = 1, #itemData do
+        if itemData[i].isOwned then
+            ownedItem[i] = itemData[i]
+        end
+    end
+
     bodyGroup = display.newGroup()
 
     local body = display.newRect(parent, x, y, width, height)
     body:setFillColor(0.2)
+
+    for i = 1, #ownedItem do
+        print("Item imported")
+        local slot = display.newImageRect( bodyGroup, ownedItem[i].image, 100, 100, 50, 50)
+        slot.x, slot.y = 100, 100--(body.width*1.8), body.y - (body.height*0.4)
+        slot:toFront()
+        item[i] = slot
+        return slot
+    end
 
     -- Button to close window
     local closeButton = display.newRect(parent, body.x + (body.width*0.43), body.height - 20, 25, 30)

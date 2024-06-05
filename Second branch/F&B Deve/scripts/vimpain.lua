@@ -343,20 +343,33 @@ function vimpain.leap( body )
     end)
 end
 
-function vimpain.shadowStrike( body )
+function vimpain.shadowStrike( body, isStabSeguence )
     local data = vimpainData["shadowStrike"]
     body.alpha = 0.5
     body.isVisible = false
     -- Savu sprite
 
+    if isStabSeguence and body.stealthTimer then
+        body.alpha = 1
+        body.isVisible = true
 
-    local timer = timer.performWithDelay( data.duration or 500, function()
-        if not body.isVisible then
-            local weapon = meleeAttack( body.weapon, body, {stab = true} )
-            body.alpha = 1
+        if body.stealthTimer then
+            timer.cancel(body.stealthTimer)
+            body.stealthTimer = nil
         end
 
-        body.isVisible = true
+        local weapon = meleeAttack( body.weapon, body, {stab = true} )
+        return
+    end
+    print( isStabSeguence )
+
+    body.stealthTimer = timer.performWithDelay( data.duration or 1000, function()
+        if not body.isVisible then
+            body.alpha = 1
+            body.isVisible = true
+            body.stealthTimer = nil
+        end
+
     end )
 end
 ---------------------------------------------------------------------------------------------------------

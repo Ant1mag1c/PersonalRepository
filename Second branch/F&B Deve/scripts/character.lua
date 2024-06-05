@@ -388,8 +388,9 @@ function character.new( parent, x, y, id, isInvulnerable )
                             -- Tarkistetaan että jos shadowStrike vimpainta on käytetty kahdesti peräkkäin. Jos on annetaan "actionRepeated" arvo true
                             -- Muissa tapauksissa arvoksi annetaan false
                             if vimpainName == "shadowStrike" then
-                                if vimpainUsed == previousVimpainUsed then
+                                if (vimpainUsed == previousVimpainUsed) and body.stealthTimer or vimpainUsed.type == "weapon" then
                                     actionRepeated = not actionRepeated
+
                                 else
                                     actionRepeated = false
                                 end
@@ -397,9 +398,9 @@ function character.new( parent, x, y, id, isInvulnerable )
                                 actionRepeated = false
                             end
 
+                            print(vimpainUsed.type)
                             vimpain[vimpainName](body, actionRepeated)
                             previousVimpainUsed = vimpainUsed
-                            print(actionRepeated)
                             ---------------------------------------------------------------------
 
                             -- TODO: Tulisiko kääntyminen vimpainten yhteydessä tehdä paremmaksi?

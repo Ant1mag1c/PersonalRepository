@@ -128,7 +128,7 @@ composer.gotoScene( "scenes.game", {
 		map = "m1_F_test",
 		spawn = "1_forest",
 		-- invulnerability = true, -- Jos "true", niin viholliset eivät osu pelaajaan.
-		physicsDrawMode = "hybrid", -- sallitut arvot: "hybrid" tai "normal".
+		-- physicsDrawMode = "hybrid", -- sallitut arvot: "hybrid" tai "normal".
 		debugArena = true, -- Jos "true", niin oikeaa kenttää ei ladata, vaan pelaaja viedään tyhjään "debug areenan".
 		fullInventory = true, -- debug asetus: laittaa pelaajan inventoryyn kaikki pelin vimpaimet
 	},

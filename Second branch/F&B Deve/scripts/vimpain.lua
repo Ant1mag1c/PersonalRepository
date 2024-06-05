@@ -171,11 +171,10 @@ local function novaSpell(name, body)
         xLoc, yLoc = body.x, body.y
     end
 
-    local spellFrame = display.newCircle( body.parent, xLoc, yLoc, data.range or 100 )
-    -- local newEmitter = emitter.frostCircle( body.parent, xLoc, yLoc )
     local newEmitter = emitter[name]( xLoc, yLoc )
     body.parent:insert( newEmitter )
 
+    local spellFrame = display.newCircle( body.parent, xLoc, yLoc, data.range or 100 )
     spellFrame:setFillColor(1,0,0)
     spellFrame.alpha = 0
 
@@ -229,7 +228,7 @@ local function novaSpell(name, body)
             local damageTaken = math.random( spellFrame.damageMin, spellFrame.damageMax )
 
             --Lasketaan suunta johon target paiskotaan törmäyksen jälkeen
-            local impactForce = spellFrame.impactForce
+            local impactForce = data.impactForce
             local dx = target.x - spellFrame.x
             local dy = target.y - spellFrame.y
             local lenght = math.sqrt(dx^2 + dy^2)
@@ -240,7 +239,6 @@ local function novaSpell(name, body)
             target:setLinearVelocity( 0, 0 )
             target:applyLinearImpulse(xDir * impactForce, yDir * impactForce, target.x, target.y)
             target.stop( "controls", 1 )
-
             target:takeHit( damageTaken )
         end
 
@@ -284,16 +282,9 @@ function vimpain.heal(body)
     local data = vimpainData["heal"]
     local maxHealth = body.maxHealth or 50
     local currHealth = body.health
-    local count = 0
-    local maxCount = data.effect
+    local healEffect = data.effect
 
-    if currHealth < maxHealth then
-        repeat
-            currHealth = currHealth + 1
-            count = count + 1
-        until currHealth == maxHealth or count == maxCount
-        body.health = currHealth
-    end
+    body.health = math.min(maxHealth, currHealth + healEffect)
 
     local newEmitter = emitter.heal( body.sprite.x, body.sprite.y )
     body:insert( newEmitter )
@@ -326,6 +317,7 @@ end
 
 function vimpain.leap( body )
     body.isSensor = true
+    body.canBeDetected = false
     local delay = vimpain.dodge( body, {range=11} )
 
     local jumpHeight = 20
@@ -338,36 +330,26 @@ function vimpain.leap( body )
     timer.performWithDelay(delay+20, function ()
         timer.performWithDelay(1, function ()
             body.isSensor = false
+            body.canBeDetected = true
         end)
         local leap = novaSpell( "leap", body )
     end)
 end
 
-function vimpain.shadowStrike( body, isStabSeguence )
+function vimpain.shadowStrike( body )
     local data = vimpainData["shadowStrike"]
     body.alpha = 0.5
-    body.isVisible = false
-    -- Savu sprite
+    body.canBeDetected = false
 
-    if isStabSeguence and body.stealthTimer then
-        body.alpha = 1
-        body.isVisible = true
 
-        if body.stealthTimer then
-            timer.cancel(body.stealthTimer)
-            body.stealthTimer = nil
-        end
-
-        local weapon = meleeAttack( body.weapon, body, {stab = true} )
-        return
-    end
-    print( isStabSeguence )
+    local newEmitter = emitter.smoke( body.x, body.y )
+    body.parent:insert( newEmitter )
 
     body.stealthTimer = timer.performWithDelay( data.duration or 1000, function()
-        if not body.isVisible then
+        if not body.canBeDetected then
             body.alpha = 1
-            body.isVisible = true
-            body.stealthTimer = nil
+            body.canBeDetected = true
+            local weapon = meleeAttack( body.weapon, body, {stab = true} )
         end
 
     end )

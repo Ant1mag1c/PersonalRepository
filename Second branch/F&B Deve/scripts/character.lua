@@ -78,7 +78,7 @@ function character.new( parent, x, y, id, isInvulnerable )
         body.direction = "Down" -- TODO: "Down" on vakio, mutta jos peli ladataan, niin se voi olla vaihtunut.
         body.hasStopped, body.movementDisabled, body.holdPosition = true, true, false
         body.state = "idle"
-        body.isVisible = true
+        body.canBeDetected = true
 
         local collisionFilter
         local dataSource
@@ -211,7 +211,11 @@ function character.new( parent, x, y, id, isInvulnerable )
                         timer.cancel( body.timerLeash )
                         body.timerLeash = nil
                     end
-                    body.aggro()
+                    body.aggro(player)
+                end
+
+                if not player.canBeDetected then
+                    body.state = "return"
                 end
 
                 if body.state == "return" then
@@ -256,14 +260,14 @@ function character.new( parent, x, y, id, isInvulnerable )
             end
 
 
-            function body.aggro()
+            function body.aggro(player)
                 dx, dy, currentDistance = body._dx, body._dy, body._currentDistance
 
                 if body.state ~= "aggro" then
                     body.state = "aggro"
                 end
 
-                if body.attackRange > currentDistance then
+                if body.attackRange > currentDistance and player.canBeDetected then
                     body.action( body.weapon, "down" )
                 end
 
@@ -365,8 +369,6 @@ function character.new( parent, x, y, id, isInvulnerable )
             prevX, prevY = vx, vy
         end
 
-        local actionRepeated = false
-        local previousVimpainUsed
 		function body.action( action, phase )
             if phase == "down" then
                 local currentTime = system.getTimer()
@@ -385,22 +387,7 @@ function character.new( parent, x, y, id, isInvulnerable )
                             abilityCooldown[vimpainName] = currentTime
                             abilityUsedLast = currentTime
 
-                            -- Tarkistetaan että jos shadowStrike vimpainta on käytetty kahdesti peräkkäin. Jos on annetaan "actionRepeated" arvo true
-                            -- Muissa tapauksissa arvoksi annetaan false
-                            if vimpainName == "shadowStrike" then
-                                if (vimpainUsed == previousVimpainUsed) and body.stealthTimer or vimpainUsed.type == "weapon" then
-                                    actionRepeated = not actionRepeated
-
-                                else
-                                    actionRepeated = false
-                                end
-                            else
-                                actionRepeated = false
-                            end
-
-                            print(vimpainUsed.type)
                             vimpain[vimpainName](body, actionRepeated)
-                            previousVimpainUsed = vimpainUsed
                             ---------------------------------------------------------------------
 
                             -- TODO: Tulisiko kääntyminen vimpainten yhteydessä tehdä paremmaksi?

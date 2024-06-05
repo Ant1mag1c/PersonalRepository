@@ -41,5 +41,12 @@ function emitter.heal( xPos, yPos )
     return newEmitter
 end
 
+function emitter.smoke( xPos, yPos )
+    local newEmitter = emitter.new( "smoke", xPos, yPos )
+    return newEmitter
+end
+
+
+
 
 return emitter

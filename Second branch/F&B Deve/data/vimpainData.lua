@@ -68,7 +68,6 @@ return {
 		damageMin = 1,
 		damageMax = 1,
 		impactForce = 5,
-		-- image = "proj9.png",
 		range = 100,
 		cooldown = 2000,
 		tickCount = 5,
@@ -88,7 +87,6 @@ return {
 		icon = "Skill_Icons/Heal.png",
 		effect = 5,
 		range = 25,
-		-- range = 11
 		cooldown = 3000,
 		duration = 400
 	},
@@ -119,7 +117,7 @@ return {
 		attackType = "onGround",
 		damageMin = 1,
 		damageMax = 1,
-		impactForce = 5,
+		impactForce = 15,
 		-- image = "proj9.png",
 		range = 100,
 		cooldown = 2000,

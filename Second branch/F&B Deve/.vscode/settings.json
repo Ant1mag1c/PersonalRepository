@@ -1,9 +1,0 @@
-{
-    "Lua.diagnostics.globals": [
-        "Runtime"
-    ],
-    "Lua.diagnostics.disable": [
-        "undefined-global",
-        "duplicate-set-field"
-    ]
-}

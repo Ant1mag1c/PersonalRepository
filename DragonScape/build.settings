@@ -1,0 +1,80 @@
+--
+-- For more information on build.settings, see the Project Build Settings guide at:
+-- https://docs.coronalabs.com/guide/distribution/buildSettings
+--
+
+settings =
+{
+	orientation =
+	{
+		-- Supported values for orientation:
+		-- portrait, portraitUpsideDown, landscapeLeft, landscapeRight
+		default = "landscapeRight",
+		supported = { "landscapeRight", "landscapeLeft" },
+	},
+
+	--
+	-- Android section
+	--
+	android =
+	{
+		usesPermissions =
+		{
+			"android.permission.INTERNET",
+		},
+	},
+
+	--
+	-- iOS section
+	--
+	iphone =
+	{
+		xcassets = "Images.xcassets",
+		plist =
+		{
+			UIStatusBarHidden = false,
+			UILaunchStoryboardName = "LaunchScreen",
+		},
+	},
+
+	-- Mac ja Windows-kohtaisia asetuksia:
+	window =
+	{
+		defaultMode = "fullscreen",
+		defaultViewWidth = 960,
+		defaultViewHeight = 640,
+		minViewWidth = 960,
+		minViewHeight = 640,
+		enableCloseButton = true,
+		enableMinimizeButton = true,
+		enableMaximizeButton = true,
+		suspendWhenMinimized = true,
+		titleText = {
+			default = "Tasohyppely",
+		},
+		resizable = false,
+	},
+
+	win32 =
+	{
+		singleInstance = false,
+	},
+
+	--
+	-- Plugins section
+	--
+	plugins =
+	{
+
+	},
+
+	--
+	-- Project section
+	--
+	excludeFiles =
+	{
+		-- Exclude unnecessary files for each platform
+		all = { "Icon.png", "Icon-*dpi.png", "Images.xcassets", },
+		android = { "LaunchScreen.storyboardc", },
+	},
+}

@@ -15,13 +15,16 @@ gamedata.goalCount = 2
 -- Debug Settings
 -- gamedata.playerHp = 1
 -- gamedata.printPlayer = true
-gamedata.dragonFreezed = true
+-- gamedata.dragonFreezed = true
 -- gamedata.printDragon = true
 -- gamedata.scanLine = true
 -- gamedata.printScanResult = true
 
-gamedata.projectileFreeze = true
+gamedata.shootEnabled = true
+gamedata.shotCount = 3
+-- gamedata.projectileFreeze = true
 gamedata.moveSpeed = 300
+
 
 
 

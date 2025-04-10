@@ -497,18 +497,19 @@ function scene:create( event )
 		-- #Dragon
 		dragon = dragon.new( levelGroup, player.x+100, player.y-400 )
 
-		-- dragon.fireTimer = timer.performWithDelay(200, function()
-		-- 	local newProjectile = dragon.shoot( dragon.xScale )
-		-- 	table.insert(projectileList, newProjectile)
-		-- end, 1 )
-
+		if gamedata.shootEnabled then
+			dragon.fireTimer = timer.performWithDelay(200, function()
+				local newProjectile = dragon.shoot( dragon.xScale )
+				table.insert(projectileList, newProjectile)
+			end, gamedata.shotCount )
+		end
 
 		local mapBounds = gamedata.mapBounds
 		-- #Update
 		local function update(event)
 			dragon.scan(player)
 
-			if projectileList and projectileList[1] then
+			if projectileList and projectileList[1] and player.hp > 0 then
 				for i = #projectileList, 1, -1 do
 					local _projectile = projectileList[i]
 
@@ -526,10 +527,10 @@ function scene:create( event )
 			end
 
 
-			-- -- TODO:
-			-- if dragon.x > mapBounds.right or dragon.x < mapBounds.left then
-			-- 	dragon.start( -dragon.xScale )
-			-- end
+			-- Dragon tahdotaan vaihtavan suuntaa kun kentän reuna on ohitettu
+			if dragon.x > mapBounds.right + dragon.width or dragon.x < mapBounds.left - dragon.width then
+				dragon.start( -dragon.xScale )
+			end
 
 			if gamedata.printDragon then
 				print("Dragon x:", dragon.x)

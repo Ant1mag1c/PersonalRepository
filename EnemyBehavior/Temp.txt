@@ -1,0 +1,40 @@
+PVP taistelupeli
+
+    VISUAALIT
+        - Hahmot ovat erivärisiä palloja ilman erillistä spriteä
+        - Aseissa käytetään spritejä
+        - Lyöntiin sekä osumaan jonkinlainen efekti.
+
+
+    MEKANISMIT
+        - Hahmot voivat lyödä omalla aseellaan sekä suojata itseään iskuilta
+        - Puolustusmekanismeja ovat block sekä parry
+        - Hyökkäysmekanismeja ovat clash (miekat osuvat yhteen) --ONKO MAHDOLLISTA?
+        - Hyökkäys tapahtuu kolmen iskun combossa joista viimeinen tekee suuremman vahingon ja knockaa vihollista kauemmas
+
+
+    MIETTEET
+        - Miten estää ettei vihollista voi hardlockata iskuilla?
+            #Status joka estää vihollisen interupin hetkellisesti
+        - Vihollisen balanssi
+
+
+    LOGI
+        Sprite lukittuu yhteen sheettiin. Täytyy editoida yksi iso spriteSheet
+
+------------------------------BACKUP------------------------------------------------------------
+
+if phase == "attack" and not self.isAttacking then
+            controls.stop(self); self:setLinearVelocity(0)
+            self.isAttacking = true
+            local attackDir = "attack" .. dir
+            self:setSequence( attackDir ); self:play()
+
+            _timer(800, function()
+                body.isAttacking =  nil
+                local idleDirection = "idle" .. dir
+                body:pause(); body:setSequence( idleDirection ); body:play()
+                controls.start(self)
+            end)
+            return
+        end

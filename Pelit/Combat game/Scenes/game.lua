@@ -20,6 +20,7 @@ local onKey, updateMouse, spriteListener, getDistance, getAngle, update
 
 local defaultData =
 {
+    id = "player",
     hp = 100,
     isAlive = true,
     maxHp = 100,
@@ -33,6 +34,7 @@ local defaultData =
     meleeRange = 60,
     ai =
         {
+            id = "enemy",
             moveStatus = "approach",  --approach, retreat,
             safeDistance = 200,
             lastActionTime = {},
@@ -109,26 +111,29 @@ local function newCharacter(isPlayer, x, y)
         body[k] = v
     end
 
-    -- Functions for both characters
-    function body.move( vx, vy)
+    local function spriteListener(event)
+        if event.phase == "ended" and body.isAttacking then
+            body.isAttacking = false
+            body:setSequence("idle" .. body.lookingDir)
+            body:play()
+        end
+    end
+
+    function body.move( vx, vy )
         local directionChanged = body.lastDir ~= body.lookingDir
         local fromIdle = body.sequence == "idle" .. body.lastDir
 
         if vx ~= 0 or vy ~= 0 then
-            if directionChanged or fromIdle then
-                body:setSequence("walk" .. body.lookingDir);
-            end
-        else
-            body:setSequence("idle" .. body.lookingDir)
-        end
-
-
-        -- Normalize diagonal movement
-        if vx ~= 0 or vy ~= 0 then
+            -- Normalize diagonal movement
     		local len = math.sqrt(vx*vx + vy*vy)
     		vx, vy = (vx/len)*body.speed, (vy/len)*body.speed
+
+            if directionChanged or fromIdle then
+                body:setSequence("walk" .. body.lookingDir)
+            end
     	else
     		vx, vy = 0, 0
+            body:setSequence("idle" .. body.lookingDir)
     	end
 
         body:play()
@@ -149,27 +154,29 @@ local function newCharacter(isPlayer, x, y)
     function body.takeDamage(self, fromAngle, damage)
         self.hp = self.hp - damage
         if self.hp <= 0 then
-            self.alpha = 0
             self.isAlive = false
-            return
         end
 
-        if self.isAlive then end --Lisää tarkistus
-        self.alpha = 0.5
-        local force = 0.3
-        -- Add little variance to pushback direction. Second random chooses between two values
-        local pushVar = math.random() * math.random() < 0.5 and -0.25 or 0.25
-        local pushAngle = fromAngle + pushVar
-        self:applyLinearImpulse( cos(pushAngle)*force, sin(pushAngle)*force, self.x, self.y )
+        if self.isAlive then
+            local force = 0.3
+            -- Add little variance to pushback direction. Second random chooses between two values
+            local pushVar = math.random() * math.random() < 0.5 and -0.25 or 0.25
+            local pushAngle = fromAngle + pushVar
+            self:applyLinearImpulse( cos(pushAngle)*force, sin(pushAngle)*force, self.x, self.y )
+            self.alpha = 0.5
 
-        timer.after(300, function()
-            self.alpha = 1
-            self:hold()
-        end )
+            timer.after(300, function()
+                self.alpha = 1
+                self:hold()
+            end )
+        else
+            self.alpha = 0
+            print( self.id .. " has died" )
+        end
     end
 
-    local attackAngles =
-    {
+    -- Tee tästä hitboxParams jossa angle, anchorX ja Y sekä rotation
+    local attackAngles = {
         left = 180,
         right = 360,
         down = 90,
@@ -195,20 +202,12 @@ local function newCharacter(isPlayer, x, y)
 
                 if hits then
                     local firstObj = hits[1].object
-                    if firstObj ~= self then firstObj:takeDamage(targetAngle, self.attackPower or 50) end
+                    if firstObj ~= self then
+                        hits[1].object:takeDamage( targetAngle, self.attackPower or 50 )
+                    end
                 end
             end)
 
-        end
-    end
-
-    local function spriteListener(event)
-        if event.phase == "ended" then
-            if body.isAttacking then
-                body.isAttacking = false
-                body:setSequence("idle" .. body.lookingDir)
-                body:play()
-            end
         end
     end
 

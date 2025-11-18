@@ -8,11 +8,3 @@ local composer = require("composer")
 
 composer.gotoScene( "Scenes.game", { effect = "fade", time = 0, params = nil } )
 
-
---[[
-    TODO!
-
-    Luo omat funktiot vihollisen etäisyyden hakemiselle sekä kulman laskemiselle
-    Viimeistele Leash() funktio
-
---]]

@@ -11,43 +11,42 @@ local isPressed = {}
 local target
 
 -- Ladataan userdata tiedosto, jossa on käyttäjän/pelin asetukset esim. käytettävistä/sallituista kontrollinäppäimistä.
-local key = {
-    a = "left",
-    d = "right",
-    w = "up",
-    s = "down",
-	left = "attleft",
-	right = "attright",
-	up = "attup",
-	down = "attdown",
-}
 
+local keyActions = {
+	s = { action = function() target.vy = 1 end, dir = "down" },
+	w = { action = function() target.vy = -1 end, dir = "up" },
+	d = { action = function() target.vx = 1 end, dir = "right" },
+	a = { action = function() target.vx = -1 end, dir = "left" },
+
+	left = { action = function() target:attackMelee("left") end, dir = "left" },
+	right = { action = function() target:attackMelee("right") end, dir = "right" },
+	up = { action = function() target:attackMelee("up") end, dir = "up" },
+	down = { action = function() target:attackMelee("down") end, dir = "down" },
+
+	space = { action = function() target:block() end, dir = "down" },
+}
 
 -- Funktio, joka kutsutaan joka frame. Tässä funktiossa tarkistetaan, ovatko tietyt liikkumisnäppäimet painettuna ja kutsutaan callbackMovement funktiota.
 local function monitorControls()
-	if target.isAttacking then
-		-- print(target.isAttacking)
-		return false
-	end
-
-	local vx, vy = 0, 0
-
+	target.vx, target.vy = 0, 0
 
 	if not target.isAttacking then
-		if isPressed["attleft"] then target:attackMelee("left") end
-		if isPressed["attright"] then target:attackMelee("right") end
-		if isPressed["attup"] then target:attackMelee("up") end
-		if isPressed["attdown"] then target:attackMelee("down") end
+		for k,v in pairs( isPressed ) do
+			if v.action then
+				v.action()
+				target.lookingDir = v.dir and v.dir or nil
+			end
+		end
 
-		if isPressed["left"] then vx = vx - 1; target.lookingDir = "left" end
-		if isPressed["right"] then vx = vx + 1; target.lookingDir = "right" end
-		if isPressed["up"] then vy = vy - 1; target.lookingDir = "up" end
-		if isPressed["down"] then vy = vy + 1; target.lookingDir = "down" end
+		-- Looking up or down needs to be forced for nimation to behave properly
+		if isPressed["w"] or isPressed["s"] then
+			target.lookingDir = isPressed["w"] and "up" or isPressed["s"] and "down"
+		end
 	end
 
 	-- During attack player can't move
 	if not target.isAttacking then
-		callbackMovement(vx, vy)
+		callbackMovement(target.vx, target.vy)
 	else
 		target:hold()
 	end
@@ -56,19 +55,17 @@ end
 
 -- Funktio, joka kutsutaan aina kun mikä tahansa nappi painetaan pohjaan tai se päästetään ylös.
 local function onKeyEvent(event)
-	local mapped = key[event.keyName]
+	local mapped = keyActions[event.keyName]
 	-- print(event.keyName, mapped, event.phase)
-
 	if mapped then
 		if event.phase == "down" then
-			isPressed[mapped] = true
-
+			isPressed[event.keyName] = mapped
 		elseif event.phase == "up" then
-			isPressed[mapped] = false
+			isPressed[event.keyName] = nil
 		end
 	end
 
-	return false  -- allow event to propagate
+	return false
 end
 
 function controls.start(player, callBack)

@@ -25,6 +25,12 @@ local defaultData =
     isAlive = true,
     maxHp = 100,
     speed = 300,
+
+    vx = 0,
+    vy = 0,
+    vxPrev = 0,
+    vyPrev = 0,
+
     lookingDir = "down",
     lastDir = "down",
     sequence = "idledown",
@@ -145,6 +151,10 @@ local function newCharacter(isPlayer, x, y)
     function body.attackRanged(self)
         print("attackRanged")
         return true
+    end
+
+    function body.block(self)
+        print("block")
     end
 
     function body.hold(self)

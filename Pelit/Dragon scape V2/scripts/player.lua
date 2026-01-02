@@ -1,277 +1,240 @@
 local player = {}
 
-local physics = require( "physics" )
+local physics = require("physics")
 
 ----------------------------------------------------------------------------------
 
-local sfxJump = audio.loadSound( "assets/audio/sfx/jump.wav" )
-local sfxHurt = audio.loadSound( "assets/audio/sfx/hurt.wav" )
+local sfxJump = audio.loadSound("assets/audio/sfx/jump.wav")
+local sfxHurt = audio.loadSound("assets/audio/sfx/hurt.wav")
 
-local sheet = graphics.newImageSheet( "assets/images/characters/player.png", {
-
-	width = 64,
-	height = 64,
-	numFrames = 36
-} )
-
+local sheet = graphics.newImageSheet(
+	"assets/images/characters/player.png",
+	{
+		width = 64,
+		height = 64,
+		numFrames = 36
+	}
+)
 
 local animation = {
-	{
-		name = "idle",
-		start = 1,
-		count = 1,
-		time = 250,
-		loopCount = 0,
-		loopDirection = "forward"
-	},
-
-	{
-		name = "move",
-		start = 1,
-		count = 2,
-		time = 250,
-		loopCount = 0,
-		loopDirection = "forward"
-	},
-
-	{
-		name = "attack",
-		start = 28,
-		count = 6,
-		time = 500,
-		loopCount = 1,
-		loopDirection = "forward"
-	}
+	{ name = "idle",   start = 1,  count = 1, time = 250, loopCount = 0 },
+	{ name = "move",   start = 1,  count = 2, time = 250, loopCount = 0 },
+	{ name = "attack", start = 28, count = 6, time = 800, loopCount = 1 }
 }
 
 ----------------------------------------------------------------------------------
 
--- Poistetaan vanha pelaajahahmon kuva kentästä ja luodaan uusi hahmo sen tilalle.
-function player.new( parent, reference )
-	-- Otetaan talteen pelaajan alkuperäinen sijainti kartalla.
+function player.new(parent, reference)
 	local x, y
 	local scale = 0.5
 
 	if reference then
 		x, y = reference.x, reference.y
-		display.remove( reference )
+		display.remove(reference)
 	else
-		x, y = 100, 100
+		local spawn = 100
+		x, y = 100, spawn
 	end
 
-	local newPlayer = display.newSprite( sheet, animation )
+	local newPlayer = display.newSprite(sheet, animation)
 	newPlayer.x, newPlayer.y = x, y
 	newPlayer.xScale, newPlayer.yScale = scale, scale
 	newPlayer.id = "player"
-	parent:insert( newPlayer )
+	parent:insert(newPlayer)
 
-	physics.addBody( newPlayer, "dynamic", {
-		radius=newPlayer.width*0.1,
+	physics.addBody(newPlayer, "dynamic", {
+		radius = newPlayer.width * 0.15,
 		friction = 0.3,
 		density = 0.5,
-		bounce = 0,
-	} )
-	-- Estetään pelaajahahmoa pyörimästä fysiikoiden vaikutuksesta.
+		bounce = 0
+	})
+
 	newPlayer.isFixedRotation = true
 
-	-- newPlayer:setSequence( "idle" )
+	----------------------------------------------------------------------------------
+	-- INTERNAL STATE
+	----------------------------------------------------------------------------------
 
-	-- Hahmon sisäisiä arvoja:
-	local moveSpeed = 100
-	local prevDirection = 0
-	local ropeTouchCount = 0
+	local state = "idle" -- idle | move | attack | dead
+	local lookDir = -1   -- -1 = left, 1 = right
 
 	local jumpCount = 0
 	local maxJumpCount = 1
-	local jumpForce = -0.3
-	local isJumping = false
+	local jumpForce = -0.65
+	local ropeTouchCount = 0
+	local onStairs = false
 
-	-- Pelaajan HP-arvot ovat osana taulukkoa, joten
-	-- niitä voi myös lukea ja muokata muualta käsin.
-	newPlayer.vx = 0
-	newPlayer.facingDir = 1
+
+	----------------------------------------------------------------------------------
+	-- PLAYER STATS
+	----------------------------------------------------------------------------------
+
+	newPlayer.moveSpeed = 100
 	newPlayer.currentHP = 2
 	newPlayer.maxHP = 2
-	newPlayer.timerImmortal = nil
-	newPlayer.isImmortal = false
 	newPlayer.isDead = false
+	newPlayer.isImmortal = false
+	newPlayer.timerImmortal = nil
 
 	local immortalTime = 500
 
-	function newPlayer:takeDamage( amount, alwaysTakeDamage )
-		if self.isDead or (self.isImmortal and not alwaysTakeDamage) then
-			return
-		end
+	local function setState(newState)
+		if state == newState then return end
+		state = newState
 
-		if self.timerImmortal then
-			timer.cancel( self.timerImmortal )
-			self.timerImmortal = nil
-		end
+		if state == "idle" then
+			newPlayer:setSequence("idle")
+			newPlayer:play()
 
-		-- Tehdään pelaajasta hetkellisesti kuolematon ja animoidaan se.
-		transition.blink( self, { time=immortalTime } )
+		elseif state == "move" then
+			newPlayer:setSequence("move")
+			newPlayer:play()
+
+		elseif state == "attack" then
+			newPlayer:setSequence("attack")
+			newPlayer:play()
+		end
+	end
+
+	----------------------------------------------------------------------------------
+	-- DAMAGE
+	----------------------------------------------------------------------------------
+
+	function newPlayer:takeDamage(amount)
+		if self.isDead or self.isImmortal then return end
+
+		self.currentHP = math.max(self.currentHP - amount, 0)
+		audio.play(sfxHurt, { channel = audio.findFreeChannel(2) })
+
 		self.isImmortal = true
 		self.alpha = 0.5
+		transition.blink(self, { time = immortalTime })
 
-		-- Poistetaan kuolemattomuus tietyn ajan kuluttua.
-		self.timerImmortal = timer.performWithDelay( immortalTime, function()
-			self.timerImmortal = nil
-			transition.cancel( self )
+		self.timerImmortal = timer.performWithDelay(immortalTime, function()
 			self.isImmortal = false
 			self.alpha = 1
-		end )
-
-		self.currentHP = math.max( self.currentHP - amount, 0 )
-
-		audio.play( sfxHurt, {
-			channel = audio.findFreeChannel(2),
-		})
+			transition.cancel(self)
+		end)
 
 		if self.currentHP <= 0 then
 			self.isDead = true
-			newPlayer.isFixedRotation = false
-
-			self:setLinearVelocity( math.random(-50,50), -200 )
-			self:applyAngularImpulse( math.random(-25,25) )
+			state = "dead"
+			self.isFixedRotation = false
+			self:setLinearVelocity(math.random(-50, 50), -200)
+			self:applyAngularImpulse(math.random(-25, 25))
 		end
 	end
 
-	function newPlayer:addHP( amount )
-		self.currentHP = math.min( self.currentHP + amount, self.maxHP )
-	end
+	function newPlayer:move(vx, vy)
+		local lookNow = vx == 1 and 1 or vx == -1 and -1 or nil
 
-	function newPlayer:attack(attackLeft) --Tarkastetaan hyökkääkö pelaaja vasemmalle
-	end
-
-	-- Varmistetaan, että timer ja transitionit poistetaan, kun pelaaja tuhotaan.
-	function newPlayer:finalize( event )
-		if self.timerImmortal then
-			timer.cancel( self.timerImmortal )
-			self.timerImmortal = nil
-		end
-		transition.cancel( self )
-	end
-
-
-	function newPlayer:move( vx, vy )
-		local scaledDir = vx * scale
-		if self.sequence == "attack" then return end
-
-		-- Hahmo oli aiemmin paikallaan ja nyt se alkaa liikkua.
-		if prevDirection == 0 and vx ~= 0 then
-			self:setSequence("move")
-			self:play()
-
-			-- Hahmo liikkui aiemmin ja nyt se pysähtyy.
-		elseif prevDirection ~= 0 and vx == 0 then
-			self:pause()
-			self:setSequence("idle")
+		if state == "attack" or state == "dead" then
+			local _, currentVy = self:getLinearVelocity()
+			self:setLinearVelocity(0, currentVy)
+			return
 		end
 
-		-- Hahmo liikkuu eri suuntaan kuin aiemmin, käännetään hahmo.
-		if vx ~= 0 and vx ~= prevDirection then
-			self.xScale = -scaledDir
+		-- Jos pelaaja kääntyy
+		if lookNow and lookNow ~= lookDir then
+			lookDir = lookNow
+			newPlayer.xScale = -lookNow * scale
 		end
 
-		-- Luetaan pelaajan nykyinen nopeus.
-		local _, _vy = self:getLinearVelocity()
 
-		-- Jos pelaaja koskee köyteen, eikä yritä liikkua y-akselilla,
-		-- niin pysäytetään pelaajan y-akselin nopeus.
-		local touchingRope = ropeTouchCount > 0
-		if vy == 0 and ropeTouchCount > 0 then
-			_vy = 0
-		end
-
-		-- Muutetaan pelaajan liikenopeutta eri tilanteissa:
-		----------------------------------------------------
-		-- Pelaaja ei yritä liikkua y-akselilla, käytetään pelaajan nykyistä y-akselin nopeutta.
-		if vy == 0 then
-			self:setLinearVelocity( vx * moveSpeed, _vy )
-
-		-- Pelaaja yrittää liikkua y-akselilla.
+		if vx == 0 then
+			setState("idle")
 		else
-			if touchingRope then
-				self:setLinearVelocity( vx * moveSpeed, vy * moveSpeed )
+			setState("move")
+		end
+
+		local currentVx, currentVy = self:getLinearVelocity()
+		local touchingRope = ropeTouchCount > 0
+
+		-- Rope logic
+		if touchingRope then
+			if vy == 0 then
+				currentVy = 0
 			else
-				self:setLinearVelocity( vx * moveSpeed, _vy )
+				currentVy = vy * self.moveSpeed
 			end
 		end
-		prevDirection = vx
-		self.vx = vx
+
+		self:setLinearVelocity(vx * self.moveSpeed, currentVy)
 	end
 
-	function newPlayer:touchRope( didTouchBegin )
-		local change = didTouchBegin and 1 or -1
-		ropeTouchCount = ropeTouchCount + change
+	function newPlayer:touchRope(didTouchBegin)
+		if didTouchBegin then
+			ropeTouchCount = ropeTouchCount + 1
+		else
+			ropeTouchCount = math.max(ropeTouchCount - 1, 0)
+		end
 
-		-- Muutetaan pelaajan painovoimaa köyteen koskemisen mukaan.
+		-- Disable gravity while on rope
 		if ropeTouchCount > 0 then
 			self.gravityScale = 0
+			self:setLinearVelocity(0, 0)
 		else
 			self.gravityScale = 1
 		end
 	end
 
-	function newPlayer:jump( didJumpBegin )
-		if didJumpBegin then
-			if jumpCount >= maxJumpCount then
-				return
-			end
-			jumpCount = jumpCount + 1
+	function newPlayer:attack(dir)
+		if state == "attack" or state == "dead" then return end
 
-			audio.play( sfxJump, {
-				channel = audio.findFreeChannel(2),
-			})
+		lookDir = dir
+		self.xScale = -dir * scale
+		setState("attack")
+	end
 
-			-- Nollataan pelaajan y-akselin nopeus ennen hyppyä.
-			local _vx, _ = self:getLinearVelocity()
-			self:setLinearVelocity( _vx, 0 )
+	----------------------------------------------------------------------------------
+	-- JUMP
+	----------------------------------------------------------------------------------
 
-			local multiplier = 1
-			if self.nearbyTrampoline then
-				multiplier = self.nearbyTrampoline:use()
-				self.nearbyTrampoline = nil
-			end
+	function newPlayer:jump(didJumpBegin)
+		if state == "dead" then return end
+		if not didJumpBegin then return end
+		if jumpCount >= maxJumpCount then return end
 
-			self:applyLinearImpulse( 0, jumpForce*multiplier, player.x, player.y )
-			isJumping = true
+		jumpCount = jumpCount + 1
 
-		else
-			isJumping = false
+		audio.play(sfxJump, { channel = audio.findFreeChannel(2) })
 
-		end
+		local vx, _ = self:getLinearVelocity()
+		self:setLinearVelocity(vx, 0)
+		self:applyLinearImpulse(0, jumpForce, self.x, self.y)
 	end
 
 	function newPlayer:resetJumpCount()
 		jumpCount = 0
 	end
 
-    local function spriteListener(event)
-	    if event.phase == "ended" and newPlayer.sequence == "attack" then
+	----------------------------------------------------------------------------------
+	-- SPRITE LISTENER
+	----------------------------------------------------------------------------------
 
-			-- Reset animation state
-			local sequence
-			local xScale
-			if newPlayer.vx == 0 then
-				sequence = "idle"
-				xScale = newPlayer.xScale
-			else
-				sequence = "move"
-				xScale = newPlayer.vx
-
-			end
-			newPlayer.xScale = xScale
-	        newPlayer:setSequence(sequence)
-	        newPlayer:play()
-	    end
+	local function spriteListener(event)
+		if event.phase == "ended" and state == "attack" then
+			setState("idle")
+		end
 	end
 
+	newPlayer:addEventListener("sprite", spriteListener)
 
-	-- Tarkkaillaan, koska pelaaja tuhotaan.
-	newPlayer:addEventListener( "finalize" )
-    newPlayer:addEventListener("sprite", spriteListener)
+	----------------------------------------------------------------------------------
+	-- CLEANUP
+	----------------------------------------------------------------------------------
 
+	function newPlayer:finalize()
+		if self.timerImmortal then
+			timer.cancel(self.timerImmortal)
+			self.timerImmortal = nil
+		end
+		transition.cancel(self)
+	end
+
+	newPlayer:addEventListener("finalize")
+
+	setState("idle")
 	return newPlayer
 end
 

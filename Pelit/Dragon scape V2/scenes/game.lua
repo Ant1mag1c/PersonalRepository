@@ -17,7 +17,7 @@ local heartModule = require( "scripts.heart" )
 local controls = require( "scripts.controls" )
 local loadsave = require( "scripts.loadsave" )
 local camera = require( "scripts.camera" )
-local backgroundGroup, levelGroup, foregroundGroup
+local background, levelGroup, foreground
 
 local physics = require( "physics" )
 physics.start()
@@ -91,6 +91,11 @@ local function onCollision( self, event )
 	end
 
 	if phase == "began" then
+		if event.other.isStairs then
+			print( "stairs" )
+			player.moveSpeed = 50
+		end
+
 		if id == "platform" or id == "rope" then
 			player:resetJumpCount()
 
@@ -98,9 +103,6 @@ local function onCollision( self, event )
 				player:touchRope( true )
 			end
 
-		elseif id == "trampoline" then
-			-- Tallennetaan viittaus viimeksi kosketettuun trampoliiniin.
-			player.nearbyTrampoline = event.other
 
 		elseif id == "heart" or id == "coin" then
 			event.other:collect()
@@ -108,14 +110,6 @@ local function onCollision( self, event )
 			if id == "heart" then
 				player:addHP( 1 )
 				counterHP:update( player.currentHP )
-
-			elseif id == "coin" then
-				-- Kasvatetaan kerättyjen kolikoiden määrää ja tallennetaan se.
-				loadsave.userdata.coinsCollected = loadsave.userdata.coinsCollected + 1
-				loadsave.save( loadsave.userdata, "userdata.json" )
-
-				-- TODO: Päivitä mahdollinen kolikkojen näyttö käyttöliittymässä.
-
 			end
 
 		elseif id == "goal" then
@@ -140,15 +134,12 @@ local function onCollision( self, event )
 		end
 
 	elseif phase == "ended" then
+		if event.other.isStairs then
+			player.moveSpeed = 100
+		end
+
 		if id == "rope" then
 			player:touchRope( false )
-
-		elseif id == "trampoline" then
-			-- Poistetaan viittaus vain, jos kyseessä on sama trampoliini.
-			if player.nearbyTrampoline and player.nearbyTrampoline == event.other then
-				player.nearbyTrampoline = nil
-			end
-
 		end
 
 	end
@@ -175,9 +166,9 @@ function scene:create( event )
 	map.x = display.contentCenterX - map.designedWidth/2
 	map.y = display.contentCenterY - map.designedHeight/2
 
-	backgroundGroup = map:findLayer( "background" )
+	background = map:findLayer( "background" )
 	levelGroup = map:findLayer( "level" )
-	foregroundGroup = map:findLayer( "foreground" )
+	foreground = map:findLayer( "foreground" )
 
 	------------------------------------------------------------------------------
 	-- Luodaan dynaamiset hahmot ja objektit:
@@ -186,50 +177,45 @@ function scene:create( event )
 	player.collision = onCollision
 	player:addEventListener( "collision" )
 
+	local stairsTiles = map.getAllTiles("isStairs", true)
 
-	-- for i = 1, levelGroup.numChildren do
-	--     local tile = levelGroup[i]
+for i = 1, #stairsTiles do
+	local tile = stairsTiles[i]
 
-	-- 	tile.xScale, tile.yScale = 1,1
-	--     -- print(
-	--     --     "Tile index:", i,
-	--     --     "x:", tile.x,
-	--     --     "y:", tile.y,
-	--     --     "gid:", tile.gid,
-	--     --     "tileNum:", tile.tileNum
-	--     -- )
-	-- end
+	local w = tile.width
+	local h = tile.height
 
-
-	-- local spikes = map.getAllTiles( "id", "spikes" )
-	-- for i = 1, #spikes do
-	-- 	spikesModule.new( levelGroup, spikes[i] )
-	-- end
+	physics.addBody(tile, "static", {
+		shape = {
+		-- chain = {
+			-- bottom-left
+			-w * 0.5,  h * 0.5,
+			-- bottom-right
+			 w * 0.5,  h * 0.5,
+			-- top-right
+			 w * 0.5, -h * 0.5
+		},
+		friction = 1.5,
+		-- isSensor = true
+	})
+end
 
 	-- Haetaan kaikki viholliset kentästä.
-	local enemies = map.getAllTiles( "isEnemy" )
-	for i = 1, #enemies do
-		local thisEnemy = enemies[i]
-		if thisEnemy.id == "hat" then
-			enemy[#enemy + 1] = hatModule.new( levelGroup, enemies[i] )
-			enemy[#enemy]:startAI( player )
-		end
-	end
-
-	-- local trampolines = map.getAllTiles( "id", "trampoline" )
-	-- for i = 1, #trampolines do
-	-- 	trampolineModule.new( levelGroup, trampolines[i] )
+	-- local enemies = map.getAllTiles( "isEnemy" )
+	-- for i = 1, #enemies do
+	-- 	local thisEnemy = enemies[i]
+	-- 	if thisEnemy.id == "hat" then
+	-- 		enemy[#enemy + 1] = hatModule.new( levelGroup, enemies[i] )
+	-- 		enemy[#enemy]:startAI( player )
+	-- 	end
 	-- end
 
-	local hearts = map.getAllTiles( "id", "heart" )
-	for i = 1, #hearts do
-		heartModule.new( levelGroup, hearts[i] )
-	end
 
-	-- local coins = map.getAllTiles( "id", "coin" )
-	-- for i = 1, #coins do
-	-- 	coinModule.new( levelGroup, coins[i] )
+	-- local hearts = map.getAllTiles( "id", "heart" )
+	-- for i = 1, #hearts do
+	-- 	heartModule.new( levelGroup, hearts[i] )
 	-- end
+
 
 	-- local flag = map.getFirstTile( "id", "goal" )
 	-- goalModule.new( levelGroup, flag )
@@ -250,8 +236,8 @@ function scene:create( event )
 	)
 
 	levelBorder.fill = { 0, 0 }
-	levelBorder.strokeWidth = 4
-	levelBorder:setStrokeColor( 1, 0, 0 )
+	-- levelBorder.strokeWidth = 4
+	-- levelBorder:setStrokeColor( 1, 0, 0 )
 	levelBorder.id = "levelBorder"
 
 	physics.addBody( levelBorder, "static", {
@@ -266,9 +252,9 @@ function scene:create( event )
 	} )
 
 	camera.start( player, {
-		{ backgroundGroup, 1 },
+		{ background, 1 },
 		{ levelGroup, 1 },
-		{ foregroundGroup, 1 },
+		{ foreground, 1 },
 	} )
 end
 

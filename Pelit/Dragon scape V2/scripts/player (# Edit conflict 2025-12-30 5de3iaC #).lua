@@ -77,7 +77,6 @@ function player.new( parent, reference )
 	-- newPlayer:setSequence( "idle" )
 
 	-- Hahmon sisäisiä arvoja:
-	local moveSpeed = 100
 	local prevDirection = 0
 	local ropeTouchCount = 0
 
@@ -88,6 +87,7 @@ function player.new( parent, reference )
 
 	-- Pelaajan HP-arvot ovat osana taulukkoa, joten
 	-- niitä voi myös lukea ja muokata muualta käsin.
+	newPlayer.moveSpeed = 100
 	newPlayer.vx = 0
 	newPlayer.facingDir = 1
 	newPlayer.currentHP = 2
@@ -187,14 +187,14 @@ function player.new( parent, reference )
 		----------------------------------------------------
 		-- Pelaaja ei yritä liikkua y-akselilla, käytetään pelaajan nykyistä y-akselin nopeutta.
 		if vy == 0 then
-			self:setLinearVelocity( vx * moveSpeed, _vy )
+			self:setLinearVelocity( vx * newPlayer.moveSpeed, _vy )
 
 		-- Pelaaja yrittää liikkua y-akselilla.
 		else
 			if touchingRope then
-				self:setLinearVelocity( vx * moveSpeed, vy * moveSpeed )
+				self:setLinearVelocity( vx * newPlayer.moveSpeed, vy * newPlayer.moveSpeed )
 			else
-				self:setLinearVelocity( vx * moveSpeed, _vy )
+				self:setLinearVelocity( vx * newPlayer.moveSpeed, _vy )
 			end
 		end
 		prevDirection = vx

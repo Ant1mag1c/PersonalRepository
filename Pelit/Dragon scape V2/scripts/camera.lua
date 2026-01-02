@@ -11,13 +11,13 @@ local camX, camY
 local targetX, targetY
 
 -- settings
-local cameraScale = 3        -- zoom level (2,3,4...)
-local moveSpeed = 0.15       -- smoothing (0 = snap, 1 = instant)
+local cameraScale = 5        -- zoom level (2,3,4...)
+local moveSpeed = 0.05       -- smoothing (0 = snap, 1 = instant)
 local isManual = false
 
 -- screen center
-local halfWidth  = display.actualContentWidth  * 0.5
-local halfHeight = display.actualContentHeight * 0.5
+local halfWidth  = display.actualContentWidth  * 0.3
+local halfHeight = display.actualContentHeight * 0.3
 
 ------------------------------------------------
 -- INTERNAL UPDATE
@@ -51,7 +51,7 @@ local function update()
 		local group = cameraGroups[i].group
 		local parallax = cameraGroups[i].parallax
 
-		group.x = -toX * parallax
+		group.x = (-toX * parallax)
 		group.y = -toY * parallax
 	end
 end

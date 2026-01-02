@@ -1,3 +1,4 @@
+utils = require("scripts.utils")
 -- Asetetaan näytön asetukset, kuten piilotetaan statusbar ja
 -- määritetään tekstuurifiltterit pikseligrafiikalle sopiviksi.
 display.setStatusBar( display.HiddenStatusBar )
@@ -45,6 +46,8 @@ composer.gotoScene( "scenes.game", {
 	effect = "fade",
 	time = 0, -- Ladataan kenttä heti.
 	params = {
-		level = "tutorial.json"
+		-- level = "tutorial.json"
+		level = "test.json"
+		-- level = "beta-map.json"
 	}
 })

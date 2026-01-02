@@ -804,7 +804,7 @@ function M.new(data, dir)
       end
     end
   end
-  
+
   function map:playAnimation(layer)
     for i = self.numChildren,1,-1 do
       local layers = self[i]
@@ -816,7 +816,7 @@ function M.new(data, dir)
         end
       end
     end
-  end  
+  end
 
   function map:restartAnimation(layer)
     for i = self.numChildren,1,-1 do

@@ -18,7 +18,7 @@ local sheet = graphics.newImageSheet(
 
 local animation = {
 	{ name = "idle",   start = 1,  count = 1, time = 250, loopCount = 0 },
-	{ name = "move",   start = 1,  count = 2, time = 250, loopCount = 0 },
+	{ name = "move",   start = 1,  count = 9, time = 250, loopCount = 0 },
 	{ name = "attack", start = 28, count = 6, time = 800, loopCount = 1 }
 }
 
@@ -32,8 +32,7 @@ function player.new(parent, reference)
 		x, y = reference.x, reference.y
 		display.remove(reference)
 	else
-		local spawn = 100
-		x, y = 100, spawn
+		return false
 	end
 
 	local newPlayer = display.newSprite(sheet, animation)

@@ -11,7 +11,7 @@ local camX, camY
 local targetX, targetY
 
 -- settings
-local cameraScale = 5        -- zoom level (2,3,4...)
+local cameraScale = 3        -- zoom level (2,3,4...)
 local moveSpeed = 0.05       -- smoothing (0 = snap, 1 = instant)
 local isManual = false
 

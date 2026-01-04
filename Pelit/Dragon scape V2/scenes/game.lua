@@ -8,12 +8,9 @@ local ui = require( "scripts.ui" )
 local ponytiled = require( "com.ponywolf.ponytiled" )
 local json = require( "json" )
 local playerModule = require( "scripts.player" )
--- local spikesModule = require( "scripts.spikes" )
--- local trampolineModule = require( "scripts.trampoline" )
 local heartModule = require( "scripts.heart" )
--- local coinModule = require( "scripts.coin" )
+local wizardModule = require( "scripts.wizard" )
 -- local goalModule = require( "scripts.goal" )
--- local hatModule = require( "scripts.hat" )
 local controls = require( "scripts.controls" )
 local loadsave = require( "scripts.loadsave" )
 local camera = require( "scripts.camera" )
@@ -177,28 +174,35 @@ function scene:create( event )
 	player.collision = onCollision
 	player:addEventListener( "collision" )
 
+	local enemyRefs = map.getAllTiles("isEnemy", true)
+
+	for i = 1, #enemyRefs do
+		enemyRefs[i] = wizardModule.new(levelGroup, enemyRefs[i])
+		enemy[i] = enemyRefs[i]
+	end
+
 	local stairsTiles = map.getAllTiles("isStairs", true)
 
-for i = 1, #stairsTiles do
-	local tile = stairsTiles[i]
+	for i = 1, #stairsTiles do
+		local tile = stairsTiles[i]
 
-	local w = tile.width
-	local h = tile.height
+		local w = tile.width
+		local h = tile.height
 
-	physics.addBody(tile, "static", {
-		shape = {
-		-- chain = {
-			-- bottom-left
-			-w * 0.5,  h * 0.5,
-			-- bottom-right
-			 w * 0.5,  h * 0.5,
-			-- top-right
-			 w * 0.5, -h * 0.5
-		},
-		friction = 1.5,
-		-- isSensor = true
-	})
-end
+		physics.addBody(tile, "static", {
+			shape = {
+			-- chain = {
+				-- bottom-left
+				-w * 0.5,  h * 0.5,
+				-- bottom-right
+				 w * 0.5,  h * 0.5,
+				-- top-right
+				 w * 0.5, -h * 0.5
+			},
+			friction = 1.5,
+			-- isSensor = true
+		})
+	end
 
 	-- Haetaan kaikki viholliset kentästä.
 	-- local enemies = map.getAllTiles( "isEnemy" )

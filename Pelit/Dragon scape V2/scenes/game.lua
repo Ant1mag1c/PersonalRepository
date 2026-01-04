@@ -14,6 +14,8 @@ local wizardModule = require( "scripts.wizard" )
 local controls = require( "scripts.controls" )
 local loadsave = require( "scripts.loadsave" )
 local camera = require( "scripts.camera" )
+local effects = require("data.effects")
+
 local background, levelGroup, foreground
 
 local physics = require( "physics" )
@@ -89,7 +91,6 @@ local function onCollision( self, event )
 
 	if phase == "began" then
 		if event.other.isStairs then
-			print( "stairs" )
 			player.moveSpeed = 50
 		end
 

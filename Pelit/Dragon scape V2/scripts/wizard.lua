@@ -1,3 +1,7 @@
+local effects = require("data.effects")
+local json = require( "json" )
+
+
 local wizard = {}
 
 local sheet = graphics.newImageSheet( "assets/images/characters/wizard.png",
@@ -9,10 +13,10 @@ local sheet = graphics.newImageSheet( "assets/images/characters/wizard.png",
 
 local animateTime = 600
 local animation = {
-	{ name = "idle",   start = 1,  count = 1, time = animateTime, loopCount = 0 },
+	{ name = "idle",   frames= { 1 }, time = animateTime, loopCount = 0 },
 	{ name = "move",   start = 2,  count = 8, time = animateTime, loopCount = 0 },
 	{ name = "cast", start = 10, count = 7, time = animateTime, loopCount = 3 },
-	{ name = "attack", start = 19, count = 8, time = animateTime, loopCount = 0 },
+	{ name = "attack", frames= { 23 }, time = animateTime, loopCount = 1 },
 }
 
 local rayConfig = {
@@ -21,11 +25,13 @@ local rayConfig = {
 	rayOffsetY = 4,
 	rayDropDistance = 4,
 
+	attackRange = 100,
+
 	debugLineWidth = 2,
-	debugMode = true
+	-- debugMode = true
 }
 
-local aiState = {
+local states = {
 	idle = "idle",
 	moving = "moving",
 	attacking = "attacking",
@@ -44,9 +50,10 @@ local function newRay( params )
 
 	-- Piirretään debug viiva, jotta näemme raycast-säteen pelissä.
 	if rayConfig.debugMode then
+		local rayColor = hits and { 1,0,0 } or { 0,1,0 }
 		display.remove(character.debugLine)
 		character.debugLine = display.newLine(character._parent, startX, startY, endX, endY)
-		character.debugLine:setStrokeColor( 1, 0, 0, 0.9 )
+		character.debugLine:setStrokeColor( unpack(rayColor) )
 		character.debugLine.strokeWidth = rayConfig.debugLineWidth
 	end
 
@@ -74,7 +81,6 @@ local function newRay( params )
 end
 
 local function checkGroundAhead( character, direction )
-	local foundPlatform = false
 
 	-- Viiva alkaa hahmon edestä tai takaa riippuen suunnasta.
 	local startX = character.x + (character.width*rayConfig.rayOffsetX + rayConfig.rayDistance) * direction
@@ -85,7 +91,7 @@ local function checkGroundAhead( character, direction )
 	local endY = startY + rayConfig.rayDropDistance
 
 	-- Suoritetaan raycast, eli katsotaan osukko viiva fysiikkakehoihin.
-foundPlatform = newRay({
+	local foundPlatform = newRay({
     rayType = "platform",
     startX = startX,
     startY = startY,
@@ -96,6 +102,30 @@ foundPlatform = newRay({
 })
 
 	return foundPlatform
+end
+
+local function checkPlayerinRange( character, direction )
+
+	-- Viiva alkaa hahmon edestä tai takaa riippuen suunnasta.
+	local startX = character.x
+	local startY = character.y
+
+	-- Viiva piirretään suoraan alaspäin.
+	local endX = startX + ( rayConfig.attackRange * direction )
+	local endY = startY
+
+	-- Suoritetaan raycast, eli katsotaan osukko viiva fysiikkakehoihin.
+	local inRange = newRay({
+    rayType = "player",
+    startX = startX,
+    startY = startY,
+    endX = endX,
+    endY = endY,
+    mode = "sorted",
+    character = character
+})
+
+	return inRange
 end
 
 function wizard.new(parent, reference)
@@ -116,7 +146,7 @@ function wizard.new(parent, reference)
     body._parent = parent
 
 	body:setSequence("idle")
-	body.state = aiState.idle
+	body.state = states.idle
 	physics.addBody(body, "dynamic", {
 		radius = body.width * 0.15,
 		friction = 0.3,
@@ -136,34 +166,50 @@ function wizard.new(parent, reference)
 
 --------------------AI Funktiot-----------------------------
 	local function setState(newState)
-		if state == newState then return end
-		state = newState
+		body.state = newState
 
-		if state == "idle" then
-			body:setSequence("idle")
-			body:play()
-
-		elseif state == "move" then
-			body:setSequence("move")
-			body:play()
-
-		elseif state == "attack" then
-			body:setSequence("attack")
-			body:play()
+		if newState == "idle" or newState == "attacking" then
+			body:setLinearVelocity( 0, 0 )
 		end
+
 	end
 
-    function body:move()
-		local vx, _ = self:getLinearVelocity()
+    function body:move( prevState )
+		self:setLinearVelocity( self.xScale * self.speed, 0 )
 
-		-- if vx == 0 then	--Hahmo on pysähtynyt rayCastin toimesta
-			self:setLinearVelocity( self.xScale * self.speed, 0 )
-		-- end
-		print( vx )
+		if body.state ~= prevState then --Ladataan liikeanimaatio
+			body:setSequence("move")
+			body:play()
+		end
 
     end
 
-    function body:attack()
+	local attackTimer = nil
+    function body:attack(prevState)
+		local effectX = self.x + self.width/2.6 * self.xScale
+		local effectY = self.y + 5
+		setState( states.attacking )
+
+		if body.state ~= prevState then
+			local scale = 0.8
+
+			local emitter = display.newEmitter( effects.attackEffectIn )
+			body._parent:insert( emitter )
+			emitter.x, emitter.y = effectX, effectY
+			emitter:scale( scale, scale )
+
+			-- print("line._properties: " .. json.prettify( emitter._properties ) )
+			body:setSequence("attack")
+			body:play()
+
+			local duration = (emitter.duration*2) * 1000
+
+			attackTimer = timer.performWithDelay( duration, function()
+				emitter:removeSelf(); emitter = nil
+				setState( states.idle )
+				attackTimer = nil
+			end )
+		end
     end
 
     function body:cast()
@@ -172,27 +218,32 @@ function wizard.new(parent, reference)
 
     -- Päivitetään vihollisen logiikkaa joka frame
     function body.update()
+		if body.state == states.attacking then return end
+
+		local prevState = body.state
+        local playerInRange = checkPlayerinRange( body, body.xScale )
+
+		if playerInRange then
+			setState( states.attacking )
+			body:attack( prevState )
+			return
+		else
+			setState( states.idle )
+		end
+
         local platformAhead = checkGroundAhead( body, body.xScale )
 
 		if not platformAhead then
-			body.state = aiState.idle
+			setState( states.idle )
+			-- TODO: Lisää viive
+			body.xScale = ( body.xScale * -1)
 		else
-			if body.state == aiState.idle then
-				body.state = aiState.moving
-			end
+			setState( states.moving )
 		end
 
-		if body.state == aiState.idle or body.state == aiState.attacking then
-			body:setLinearVelocity( 0, 0 )
-
-			if body.state == aiState.idle then
-				-- TODO: Lisää viive
-				body.xScale = ( body.xScale * -1) --Hahmo kääntyy
-			end
-		end
-
-		body:move()
+		body:move( prevState )
 	end
+
 
     Runtime:addEventListener( "enterFrame", body.update )
     return body

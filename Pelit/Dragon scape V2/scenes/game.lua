@@ -21,7 +21,7 @@ local background, levelGroup, foreground
 local physics = require( "physics" )
 physics.start()
 physics.setGravity( 0, 9.8 )
-physics.setDrawMode( "hybrid" )  -- Vaihtoehdot: "normal", "debug", "hybrid"
+-- physics.setDrawMode( "hybrid" )  -- Vaihtoehdot: "normal", "debug", "hybrid"
 
 --------------------------------------------------------------------------------------
 -- scene event -funktioiden ulkopuolella oleva koodi suoritetaan vain kerran, ellei
@@ -86,7 +86,7 @@ local function onCollision( self, event )
 	local id = event.other.id
 	local myPart = event.selfElement == 1 and "body" or "leg" --1 = body, 2 = legs
 
-	print(myPart)
+	-- print(myPart)
 
 	-- Jos pelaaja on kuollut, ei käsitellä muita törmäyksiä.
 	if player.isDead then
@@ -120,7 +120,7 @@ local function onCollision( self, event )
 			controls.stop()
 			menuOpen( "complete" )
 
-		elseif id == "spikes" or id == "projectile" or event.other.isEnemy then
+		elseif id == "spikes" or id == "projectile" and not self.isImmortal or event.other.isEnemy then
 			local isProjectile = (id == "projectile")
 			local damage = 1
 

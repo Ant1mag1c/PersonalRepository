@@ -85,7 +85,7 @@ end
 
 local function removeObj( targetObj )
 	if targetObj.id then
-		print( "removing object: ", targetObj.id )
+		-- print( "removing object: ", targetObj.id )
 		targetObj:removeSelf(); targetObj = nil
 	else
 		print("invalid id")
@@ -223,7 +223,7 @@ function wizard.new(parent, reference)
 	            removeObj(effectOut)
 	            attackTimer = nil
 	            setState(states.idle)
-	        end)
+	        end )
 	    end)
 	end
 

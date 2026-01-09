@@ -79,10 +79,12 @@ physics.addBody(newPlayer, "dynamic",
 	newPlayer.currentHP = 2
 	newPlayer.maxHP = 2
 	newPlayer.isDead = false
-	newPlayer.isImmortal = false
+	newPlayer.isImmortal = true
 	newPlayer.timerImmortal = nil
 
 	local immortalTime = 500
+
+	if newPlayer.isImmortal then print( "Player debug on" ) end
 
 	local function setState(newState)
 		if state == newState then return end

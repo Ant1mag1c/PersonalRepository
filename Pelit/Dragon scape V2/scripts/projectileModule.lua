@@ -34,7 +34,7 @@ function t.new( enemyRef, x, y, func )
 	function body.remove( playerHit )
 		if not playerHit then
 			transition.to(body, {
-				time = 100,
+				time = 10,
 			    startColorAlpha = 0,
 			    finishColorAlpha = 0,
 				onComplete = callback(body)

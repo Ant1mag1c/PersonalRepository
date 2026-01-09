@@ -11,7 +11,7 @@ return
 
         textureFileName = "assets/images/emmiter/particle01.png",
 
-        maxParticles = 200,
+        maxParticles = 50,
         duration = 0.6,
 
         particleLifespan = 0.05,
@@ -25,7 +25,7 @@ return
         angle = 0,
         angleVariance = 360,
 
-        speed = 9,
+        speed = 15,
         speedVariance = 270,
 
         gravityx = 0,
@@ -87,10 +87,10 @@ return
 
         textureFileName = "assets/images/emmiter/particle01.png",
 
-        maxParticles = 500,
+        maxParticles = 250,
         duration = 0.1,
 
-        particleLifespan = 0.15,
+        particleLifespan = 0.08,
         particleLifespanVariance = 0.1,
 
         startParticleSize = 40.64,
@@ -164,7 +164,7 @@ return
 
         textureFileName = "assets/images/emmiter/particle01.png",
 
-        maxParticles = 705,
+        maxParticles = 50,
         duration = -1,
 
         particleLifespan = 0.01,

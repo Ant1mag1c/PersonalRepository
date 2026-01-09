@@ -82,7 +82,11 @@ end
 local function onCollision( self, event )
 	-- print( "collided with", event.other.id, "phase", event.phase )
 	local phase = event.phase
+	local other = event.other
 	local id = event.other.id
+	local myPart = event.selfElement == 1 and "body" or "leg" --1 = body, 2 = legs
+
+	print(myPart)
 
 	-- Jos pelaaja on kuollut, ei käsitellä muita törmäyksiä.
 	if player.isDead then
@@ -94,7 +98,7 @@ local function onCollision( self, event )
 			player.moveSpeed = 50
 		end
 
-		if id == "platform" or id == "rope" then
+		if myPart == "leg" and id == "platform" or id == "rope" then
 			player:resetJumpCount()
 
 			if id == "rope" then
@@ -116,12 +120,14 @@ local function onCollision( self, event )
 			controls.stop()
 			menuOpen( "complete" )
 
-		elseif id == "spikes" or id == "levelBorder" or event.other.isEnemy then
-			local isBorder = (id == "levelBorder")
+		elseif id == "spikes" or id == "projectile" or event.other.isEnemy then
+			local isProjectile = (id == "projectile")
 			local damage = 1
-			if isBorder then
-				damage = player.maxHP
+
+			if isProjectile then
+				other.remove()
 			end
+
 			player:takeDamage( damage, isBorder )
 			counterHP:update( player.currentHP )
 
@@ -269,8 +275,6 @@ function scene:show( event )
 	local phase = event.phase
 
 	if ( phase == "will" ) then
-		-- Ajetaan ennen kuin scene tulee näkyviin.
-
 
 	elseif ( phase == "did" ) then
 		-- Ajetaan heti kun scene näkyy pelaajalle.

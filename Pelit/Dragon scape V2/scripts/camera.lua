@@ -11,13 +11,14 @@ local camX, camY
 local targetX, targetY
 
 -- settings
-local cameraScale = 3        -- zoom level (2,3,4...)
+local cameraScale = 1      -- zoom level (2,3,4...)
 local moveSpeed = 0.05       -- smoothing (0 = snap, 1 = instant)
 local isManual = false
 
 -- screen center
-local halfWidth  = display.actualContentWidth  * 0.3
-local halfHeight = display.actualContentHeight * 0.3
+local offset = 0.6
+local halfWidth  = display.actualContentWidth  * offset
+local halfHeight = display.actualContentHeight * offset
 
 ------------------------------------------------
 -- INTERNAL UPDATE

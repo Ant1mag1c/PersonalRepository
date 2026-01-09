@@ -1,6 +1,11 @@
 return
 {
+    params = {
+        attackEffectIn = {}
+    },
+
     attackEffectIn = {
+        offset = 100,
         absolutePosition = true,
         configName = "dummy",
 
@@ -82,11 +87,11 @@ return
 
         textureFileName = "assets/images/emmiter/particle01.png",
 
-        maxParticles = 2000,
+        maxParticles = 500,
         duration = 0.1,
 
-        particleLifespan = 0.2,
-        particleLifespanVariance = 0.3,
+        particleLifespan = 0.15,
+        particleLifespanVariance = 0.1,
 
         startParticleSize = 40.64,
         startParticleSizeVariance = 10,
@@ -162,18 +167,18 @@ return
         maxParticles = 705,
         duration = -1,
 
-        particleLifespan = 0.05,
+        particleLifespan = 0.01,
         particleLifespanVariance = 1,
 
-        startParticleSize = 70,
-        startParticleSizeVariance = 49.53,
-        finishParticleSize = 10,
-        finishParticleSizeVariance = 26.67,
+        startParticleSize = 20,
+        startParticleSizeVariance = 30,
+        finishParticleSize = 3,
+        finishParticleSizeVariance = 10,
 
         angle = 0,
         angleVariance = 1,
 
-        speed = 160,
+        speed = 20,
         speedVariance = 10,
 
         gravityx = 0,

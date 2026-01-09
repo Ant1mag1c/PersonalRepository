@@ -1,4 +1,6 @@
 local effects = require("data.effects")
+local emitterModule = require("scripts.emitter")
+local projectileModule = require("scripts.projectileModule")
 local json = require( "json" )
 
 
@@ -80,6 +82,17 @@ local function newRay( params )
 	return false
 end
 
+
+local function removeObj( targetObj )
+	if targetObj.id then
+		print( "removing object: ", targetObj.id )
+		targetObj:removeSelf(); targetObj = nil
+	else
+		print("invalid id")
+	end
+end
+
+
 local function checkGroundAhead( character, direction )
 
 	-- Viiva alkaa hahmon edestä tai takaa riippuen suunnasta.
@@ -131,6 +144,8 @@ end
 function wizard.new(parent, reference)
 	local x, y
 	local scale = 0.5
+	local state = "idle" -- idle | move | attack | dead
+
 
 	if reference then
 		x, y = reference.x, reference.y
@@ -154,25 +169,24 @@ function wizard.new(parent, reference)
 		bounce = 0
 	} )
 
+	body.lookDir = 1 -- -1 = left, 1 = right
 	body.isFixedRotation = true
-
-------------------------------------------------------------
-	local state = "idle" -- idle | move | attack | dead
-	local lookDir = 1   -- -1 = left, 1 = right
-
 	body.speed = 60
 	body.currentHP = 2
 	body.maxHP = 2
 
 --------------------AI Funktiot-----------------------------
 	local function setState(newState)
-		body.state = newState
+	    if body.state == newState then return false end
+	    body.state = newState
 
-		if newState == "idle" or newState == "attacking" then
-			body:setLinearVelocity( 0, 0 )
-		end
+	    if newState == states.idle or newState == states.attacking then
+	        body:setLinearVelocity( 0, 0 )
+	    end
 
+	    return true
 	end
+
 
     function body:move( prevState )
 		self:setLinearVelocity( self.xScale * self.speed, 0 )
@@ -185,32 +199,34 @@ function wizard.new(parent, reference)
     end
 
 	local attackTimer = nil
-    function body:attack(prevState)
-		local effectX = self.x + self.width/2.6 * self.xScale
-		local effectY = self.y + 5
-		setState( states.attacking )
+    function body:attack()
+	    if attackTimer then return end  -- HARD guard
 
-		if body.state ~= prevState then
-			local scale = 0.8
+	    body:setSequence("attack")
+	    body:play()
 
-			local emitter = display.newEmitter( effects.attackEffectIn )
-			body._parent:insert( emitter )
-			emitter.x, emitter.y = effectX, effectY
-			emitter:scale( scale, scale )
+	    local x = self.x + self.width/2.6 * self.xScale
+	    local y = self.y + 5
 
-			-- print("line._properties: " .. json.prettify( emitter._properties ) )
-			body:setSequence("attack")
-			body:play()
+	    local effectIn = emitterModule.new(body._parent, x, y, "attackEffectIn")
 
-			local duration = (emitter.duration*2) * 1000
+	    local duration = (effectIn.duration * 2.3) * 1000
 
-			attackTimer = timer.performWithDelay( duration, function()
-				emitter:removeSelf(); emitter = nil
-				setState( states.idle )
-				attackTimer = nil
-			end )
-		end
-    end
+	    attackTimer = timer.performWithDelay(duration, function()
+	        removeObj(effectIn)
+
+	        local effectOut = emitterModule.new(body._parent, x, y, "attackEffectOut")
+	        local projectile = projectileModule.new(body, x, y, removeObj)
+			projectile.angle = body.lookDir == -1 and 0 or 180
+
+	        timer.performWithDelay(1000, function()
+	            removeObj(effectOut)
+	            attackTimer = nil
+	            setState(states.idle)
+	        end)
+	    end)
+	end
+
 
     function body:cast()
     end
@@ -218,17 +234,17 @@ function wizard.new(parent, reference)
 
     -- Päivitetään vihollisen logiikkaa joka frame
     function body.update()
+		body.lookDir = (body.xScale * 2)
 		if body.state == states.attacking then return end
 
 		local prevState = body.state
         local playerInRange = checkPlayerinRange( body, body.xScale )
 
 		if playerInRange then
-			setState( states.attacking )
-			body:attack( prevState )
-			return
-		else
-			setState( states.idle )
+		    if setState(states.attacking) then
+		        body:attack()
+		    end
+		    return
 		end
 
         local platformAhead = checkGroundAhead( body, body.xScale )

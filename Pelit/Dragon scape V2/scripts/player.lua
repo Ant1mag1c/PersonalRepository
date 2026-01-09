@@ -37,16 +37,23 @@ function player.new(parent, reference)
 
 	local newPlayer = display.newSprite(sheet, animation)
 	newPlayer.x, newPlayer.y = x, y
+	newPlayer.anchorY, newPlayer.anchorX = 0.75, 0.55
 	newPlayer.xScale, newPlayer.yScale = scale, scale
 	newPlayer.id = "player"
 	parent:insert(newPlayer)
 
-	physics.addBody(newPlayer, "dynamic", {
-		radius = newPlayer.width * 0.15,
-		friction = 0.3,
-		density = 0.5,
-		bounce = 0
-	})
+physics.addBody(newPlayer, "dynamic",
+    {
+        box = { halfWidth = 4, halfHeight = 8, y = -10, x = 0 },
+		userData = "body"
+
+    },
+
+    {
+        radius = 3,
+		userData = "foot"
+    }
+)
 
 	newPlayer.isFixedRotation = true
 
@@ -59,7 +66,7 @@ function player.new(parent, reference)
 
 	local jumpCount = 0
 	local maxJumpCount = 1
-	local jumpForce = -0.65
+	local jumpForce = -0.0065
 	local ropeTouchCount = 0
 	local onStairs = false
 

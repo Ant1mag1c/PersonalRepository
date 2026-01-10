@@ -184,7 +184,7 @@ function scene:create( event )
 	local enemyRefs = map.getAllTiles("isEnemy", true)
 
 	for i = 1, #enemyRefs do
-		enemyRefs[i] = wizardModule.new(levelGroup, enemyRefs[i])
+		enemyRefs[i] = wizardModule.new(levelGroup, enemyRefs[i], player)
 		enemy[i] = enemyRefs[i]
 	end
 

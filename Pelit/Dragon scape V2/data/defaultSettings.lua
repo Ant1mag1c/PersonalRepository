@@ -15,5 +15,5 @@ return {
 		["attackRight"] = { "right" },
 
 		-- ["attack"] = { "ctrl" },
-	}
+	},
 }

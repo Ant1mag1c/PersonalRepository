@@ -19,7 +19,7 @@ local sheet = graphics.newImageSheet(
 local animation = {
 	{ name = "idle",   start = 1,  count = 1, time = 250, loopCount = 0 },
 	{ name = "move",   start = 1,  count = 9, time = 250, loopCount = 0 },
-	{ name = "attack", start = 28, count = 6, time = 800, loopCount = 1 }
+	{ name = "attack", start = 28, count = 6, time = 500, loopCount = 1 }
 }
 
 ----------------------------------------------------------------------------------
@@ -79,12 +79,14 @@ physics.addBody(newPlayer, "dynamic",
 	newPlayer.currentHP = 2
 	newPlayer.maxHP = 2
 	newPlayer.isDead = false
-	newPlayer.isImmortal = true
 	newPlayer.timerImmortal = nil
+
+	newPlayer.isImmortal = true
+	newPlayer.isInvisible = false
 
 	local immortalTime = 500
 
-	if newPlayer.isImmortal then print( "Player debug on" ) end
+	if newPlayer.isImmortal or newPlayer.isInvisible then print( "Player debug on" ) end
 
 	local function setState(newState)
 		if state == newState then return end

@@ -175,6 +175,8 @@ function wizard.new(parent, reference)
 	body.currentHP = 2
 	body.maxHP = 2
 
+	local cooldown, lastAttack = 1000, nil
+
 --------------------AI Funktiot-----------------------------
 	local function setState(newState)
 	    if body.state == newState then return false end
@@ -223,6 +225,11 @@ function wizard.new(parent, reference)
 	            removeObj(effectOut)
 	            attackTimer = nil
 	            setState(states.idle)
+				lastAttack = system.getTimer()
+
+				self:setSequence("idle")
+				self:play()
+				print("idle")
 	        end )
 	    end)
 	end
@@ -237,6 +244,13 @@ function wizard.new(parent, reference)
 		body.lookDir = (body.xScale * 2)
 		if body.state == states.attacking then return end
 
+		if lastAttack then
+			if ( system.getTimer() - lastAttack ) < cooldown then
+				return
+			end
+		end
+
+		-- Otetaan tämänhetkinen state talteen ennen mahdollisia muutoksia
 		local prevState = body.state
         local playerInRange = checkPlayerinRange( body, body.xScale )
 

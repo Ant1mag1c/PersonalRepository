@@ -41,6 +41,11 @@ end
 
 local function onKeyEvent(event)
 	local action = keyMap[event.keyName]
+	local key = event.keyName
+	--Debug painalluket
+
+	-- if key == "p" then player.isInvisible = not player.isInvisible print( player.isInvisible ) end
+	------------------------------------------------------------
 	if not action then return end
 
 	isPressed[action] = (event.phase == "down")

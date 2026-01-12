@@ -1,8 +1,44 @@
 local effects = require("data.effects")
 local emitterModule = require("scripts.emitter")
 local projectileModule = require("scripts.projectileModule")
+local raycastModule = require("scripts.raycast")
 local json = require( "json" )
+local player
 
+local characterData = {
+	id = "enemy",
+	x = 0,
+	y = 0,
+	anchorY = 0.8,
+	xScale = 0.5,
+	yScale = 0.5,
+	stateNow = "idle",
+	prevState = "idle",
+	lookDir = 1,
+	speed = 60,
+	currentHP = 2,
+	maxHP = 2,
+	attackCooldown = 1000,
+
+	playerSeen = false,
+	lastAttackTime = nil,
+	attackTimer = nil,
+	animateTime = 600,
+	playerRef = nil,
+
+	-- Helper functions
+	loadAnim = function( self, sequence ) self:setSequence(sequence); self:play() end,
+	removeObj = function( targetObj ) targetObj:removeSelf(); targetObj = nil end,
+	setState = function(self, state) if self.stateNow ~= state then
+        self.stateNow = state
+		if state ~= "move" then self:setLinearVelocity( 0 ) end
+        print("State changed to:", state)
+    end
+
+end
+
+
+}
 
 local wizard = {}
 
@@ -11,215 +47,92 @@ local sheet = graphics.newImageSheet( "assets/images/characters/wizard.png",
 		width = 64,
 		height = 64,
 		numFrames = 27
-	} )
+	}
+)
 
-local animateTime = 600
+
 local animation = {
-	{ name = "idle",   frames= { 1 }, time = animateTime, loopCount = 0 },
-	{ name = "move",   start = 2,  count = 8, time = animateTime, loopCount = 0 },
-	{ name = "cast", start = 10, count = 7, time = animateTime, loopCount = 3 },
-	{ name = "attack", frames= { 23 }, time = animateTime, loopCount = 1 },
+	{ name = "idle",   frames= { 1 }, time = characterData.nimateTime, loopCount = 0 },
+	{ name = "move",   start = 2,  count = 8, time = characterData.animateTime, loopCount = 0 },
+	{ name = "cast", start = 10, count = 7, time = characterData.animateTime, loopCount = 3 },
+	{ name = "attack", frames= { 23 }, time = characterData.animateTime, loopCount = 1 },
 }
 
-local rayConfig = {
-	rayDistance = 1,
-	rayOffsetX = 0.05,
-	rayOffsetY = 4,
-	rayDropDistance = 4,
 
-	attackRange = 100,
+-- local function removeObj( targetObj )
+-- 	if targetObj.id then
+-- 		-- print( "removing object: ", targetObj.id )
+-- 		targetObj:removeSelf(); targetObj = nil
+-- 	else
+-- 		print("invalid id")
+-- 	end
+-- end
 
-	debugLineWidth = 2,
-	-- debugMode = true
-}
-
-local states = {
-	idle = "idle",
-	moving = "moving",
-	attacking = "attacking",
-}
-
-local function newRay( params )
-	local rayType   = params.rayType
-    local startX    = params.startX
-    local startY    = params.startY
-    local endX      = params.endX
-    local endY      = params.endY
-    local mode      = params.mode
-    local character = params.character
-
-	local hits = physics.rayCast(startX, startY, endX, endY, mode)
-
-	-- Piirretään debug viiva, jotta näemme raycast-säteen pelissä.
-	if rayConfig.debugMode then
-		local rayColor = hits and { 1,0,0 } or { 0,1,0 }
-		display.remove(character.debugLine)
-		character.debugLine = display.newLine(character._parent, startX, startY, endX, endY)
-		character.debugLine:setStrokeColor( unpack(rayColor) )
-		character.debugLine.strokeWidth = rayConfig.debugLineWidth
-	end
-
-	-- Katsotaan osuiko säde toivottuun kohteeseen.
-	if hits then
-	    for i = 1, #hits do
-	        local hitObject = hits[i].object
-
-	        -- Phase 1: must match ray type
-	        if hitObject.id == rayType then
-
-	            -- Phase 2: platform-specific rule
-	            if rayType == "platform" then
-	                if not hitObject.isStairs then
-	                    return true
-	                end
-	            else
-	                return true
-	            end
-
-	        end
-	    end
-	end
-	return false
-end
-
-
-local function removeObj( targetObj )
-	if targetObj.id then
-		-- print( "removing object: ", targetObj.id )
-		targetObj:removeSelf(); targetObj = nil
-	else
-		print("invalid id")
-	end
-end
-
-
-local function checkGroundAhead( character, direction )
-
-	-- Viiva alkaa hahmon edestä tai takaa riippuen suunnasta.
-	local startX = character.x + (character.width*rayConfig.rayOffsetX + rayConfig.rayDistance) * direction
-	local startY = character.y + character.height*0.2 - rayConfig.rayOffsetY
-
-	-- Viiva piirretään suoraan alaspäin.
-	local endX = startX
-	local endY = startY + rayConfig.rayDropDistance
-
-	-- Suoritetaan raycast, eli katsotaan osukko viiva fysiikkakehoihin.
-	local foundPlatform = newRay({
-    rayType = "platform",
-    startX = startX,
-    startY = startY,
-    endX = endX,
-    endY = endY,
-    mode = "sorted",
-    character = character
-})
-
-	return foundPlatform
-end
-
-local function checkPlayerinRange( character, direction )
-
-	-- Viiva alkaa hahmon edestä tai takaa riippuen suunnasta.
-	local startX = character.x
-	local startY = character.y
-
-	-- Viiva piirretään suoraan alaspäin.
-	local endX = startX + ( rayConfig.attackRange * direction )
-	local endY = startY
-
-	-- Suoritetaan raycast, eli katsotaan osukko viiva fysiikkakehoihin.
-	local inRange = newRay({
-    rayType = "player",
-    startX = startX,
-    startY = startY,
-    endX = endX,
-    endY = endY,
-    mode = "sorted",
-    character = character
-})
-
-	return inRange
-end
-
-function wizard.new(parent, reference)
-	local x, y
-	local scale = 0.5
-	local state = "idle" -- idle | move | attack | dead
-
+function wizard.new(parent, reference, playerRef)
+	if playerRef then characterData.playerRef = playerRef end
 
 	if reference then
-		x, y = reference.x, reference.y
+		characterData.x, characterData.y = reference.x, reference.y
 		display.remove(reference)
 	else
         return false
 	end
 
-    local body = display.newSprite(sheet, animation)
-    body.x, body.y, body.xScale, body.yScale = x, y, scale, scale
-    body.id = "wizard"
-    parent:insert( body )
-    body._parent = parent
+    local wizard = display.newSprite(sheet, animation)
+	parent:insert( wizard )
+	wizard._parent = parent
 
-	body:setSequence("idle")
-	body.state = states.idle
-	physics.addBody(body, "dynamic", {
-		radius = body.width * 0.15,
-		friction = 0.3,
-		density = 0.5,
-		bounce = 0
-	} )
-
-	body.lookDir = 1 -- -1 = left, 1 = right
-	body.isFixedRotation = true
-	body.speed = 60
-	body.currentHP = 2
-	body.maxHP = 2
-
-	local cooldown, lastAttack = 1000, nil
-
---------------------AI Funktiot-----------------------------
-	local function setState(newState)
-	    if body.state == newState then return false end
-	    body.state = newState
-
-	    if newState == states.idle or newState == states.attacking then
-	        body:setLinearVelocity( 0, 0 )
-	    end
-
-	    return true
+	-- Noudetaan characterDatan sisältö ja liitetään ne objektiin
+	for k, v in pairs(characterData) do
+		wizard[k] = v
 	end
 
 
-    function body:move( prevState )
+	physics.addBody( wizard, "dynamic",
+	    {
+	        box = { halfWidth = 4, halfHeight = 8, y = -10, x = 0 },
+			userData = "body"
+	    },
+
+	    {
+	        radius = 3,
+			userData = "foot"
+	    }
+	)
+	wizard.isFixedRotation = true
+
+
+    function wizard:move( prevState )
+		wizard.lookDir = (wizard.xScale * 2)
+
 		self:setLinearVelocity( self.xScale * self.speed, 0 )
 
-		if body.state ~= prevState then --Ladataan liikeanimaatio
-			body:setSequence("move")
-			body:play()
+		if wizard.state ~= prevState then --Ladataan liikeanimaatio
+			wizard:setSequence("move")
+			wizard:play()
 		end
 
     end
 
-	local attackTimer = nil
-    function body:attack()
+    function wizard:attack()
 	    if attackTimer then return end  -- HARD guard
 
-	    body:setSequence("attack")
-	    body:play()
+	    wizard:setSequence("attack")
+	    wizard:play()
 
 	    local x = self.x + self.width/2.6 * self.xScale
 	    local y = self.y + 5
 
-	    local effectIn = emitterModule.new(body._parent, x, y, "attackEffectIn")
+	    local effectIn = emitterModule.new(wizard._parent, x, y, "attackEffectIn")
 
 	    local duration = (effectIn.duration * 2.3) * 1000
 
 	    attackTimer = timer.performWithDelay(duration, function()
 	        removeObj(effectIn)
 
-	        local effectOut = emitterModule.new(body._parent, x, y, "attackEffectOut")
-	        local projectile = projectileModule.new(body, x, y, removeObj)
-			projectile.angle = body.lookDir == -1 and 0 or 180
+	        local effectOut = emitterModule.new(wizard._parent, x, y, "attackEffectOut")
+	        local projectile = projectileModule.new(wizard, x, y, removeObj)
+			projectile.angle = wizard.lookDir == -1 and 0 or 180
 
 	        timer.performWithDelay(1000, function()
 	            removeObj(effectOut)
@@ -235,48 +148,66 @@ function wizard.new(parent, reference)
 	end
 
 
-    function body:cast()
+    function wizard:cast()
     end
 
 
     -- Päivitetään vihollisen logiikkaa joka frame
-    function body.update()
-		body.lookDir = (body.xScale * 2)
-		if body.state == states.attacking then return end
+	function wizard:enterFrame( event )
+	    -- print(self, event.time)
+		local idle, move, attack = "idle", "move", "attack"
 
-		if lastAttack then
-			if ( system.getTimer() - lastAttack ) < cooldown then
-				return
-			end
+		if wizard.state == attack then return end
+
+		-- Hyökkäyksen cooldown
+		if self.lastAttackTime then
+			if ( system.getTimer() - self.lastAttackTime ) < self.attackCooldown then return end
 		end
 
-		-- Otetaan tämänhetkinen state talteen ennen mahdollisia muutoksia
-		local prevState = body.state
-        local playerInRange = checkPlayerinRange( body, body.xScale )
+		wizard.playerSeen = raycastModule.newRay( wizard, wizard.lookDir, "player")
 
-		if playerInRange then
-		    if setState(states.attacking) then
-		        body:attack()
-		    end
-		    return
-		end
 
-        local platformAhead = checkGroundAhead( body, body.xScale )
 
-		if not platformAhead then
-			setState( states.idle )
-			-- TODO: Lisää viive
-			body.xScale = ( body.xScale * -1)
-		else
-			setState( states.moving )
-		end
-
-		body:move( prevState )
 	end
 
+    -- function wizard.update()
+	-- 	if wizard.state == states.attacking then return end
 
-    Runtime:addEventListener( "enterFrame", body.update )
-    return body
+	-- 	-- if lastAttack then
+	-- 	-- 	if ( system.getTimer() - lastAttack ) < cooldown then
+	-- 	-- 		return
+	-- 	-- 	end
+	-- 	-- end
+
+	-- 	-- -- Otetaan tämänhetkinen state talteen ennen mahdollisia muutoksia
+	-- 	-- local prevState = wizard.state
+
+	-- 	wizard.playerInRange = raycastModule.newRay( wizard, wizard.lookDir, "platform")
+
+	-- 	-- if self.playerInRange then
+	-- 	-- 	    if setState(states.attacking) then
+	-- 	-- 		        wizard:attack()
+	-- 	-- 		    end
+	-- 	-- 		    return
+	-- 	-- 		end
+
+	-- 	wizard.playerSeen = raycastModule.newRay( wizard, wizard.lookDir, "player")
+	-- 	-- 		if not self.platformAhead then
+	-- 	-- 				setState( states.idle )
+	-- 	-- 				-- TODO: Lisää viive
+	-- 	-- 	wizard.xScale = ( wizard.xScale * -1)
+	-- 	-- else
+	-- 		-- setState( states.moving )
+	-- 	-- end
+
+	-- 	-- wizard:move( prevState )
+	-- end
+
+	-- timer.performWithDelay(500, function()	print( wizard.platformAhead ) end, 100 )
+
+
+    Runtime:addEventListener( "enterFrame", wizard )
+    return wizard
 end
 
 

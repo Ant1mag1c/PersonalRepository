@@ -22,8 +22,6 @@ local animation = {
 	{ name = "attack", start = 28, count = 6, time = 500, loopCount = 1 }
 }
 
-----------------------------------------------------------------------------------
-
 function player.new(parent, reference)
 	local x, y
 	local scale = 0.5
@@ -42,24 +40,21 @@ function player.new(parent, reference)
 	newPlayer.id = "player"
 	parent:insert(newPlayer)
 
-physics.addBody(newPlayer, "dynamic",
-    {
-        box = { halfWidth = 4, halfHeight = 8, y = -10, x = 0 },
-		userData = "body"
+	physics.addBody(newPlayer, "dynamic",
+	    {
+	        box = { halfWidth = 4, halfHeight = 8, y = -10, x = 0 },
+			userData = "body"
 
-    },
+	    },
 
-    {
-        radius = 3,
-		userData = "foot"
-    }
-)
+	    {
+	        radius = 3,
+			userData = "foot"
+	    }
+	)
 
 	newPlayer.isFixedRotation = true
 
-	----------------------------------------------------------------------------------
-	-- INTERNAL STATE
-	----------------------------------------------------------------------------------
 
 	local state = "idle" -- idle | move | attack | dead
 	local lookDir = -1   -- -1 = left, 1 = right
@@ -70,10 +65,6 @@ physics.addBody(newPlayer, "dynamic",
 	local ropeTouchCount = 0
 	local onStairs = false
 
-
-	----------------------------------------------------------------------------------
-	-- PLAYER STATS
-	----------------------------------------------------------------------------------
 
 	newPlayer.moveSpeed = 100
 	newPlayer.currentHP = 2
@@ -105,10 +96,6 @@ physics.addBody(newPlayer, "dynamic",
 			newPlayer:play()
 		end
 	end
-
-	----------------------------------------------------------------------------------
-	-- DAMAGE
-	----------------------------------------------------------------------------------
 
 	function newPlayer:takeDamage(amount)
 		if self.isDead or self.isImmortal then return end
@@ -190,10 +177,10 @@ physics.addBody(newPlayer, "dynamic",
 
 	function newPlayer:attack(dir)
 		if state == "attack" or state == "dead" then return end
+		setState("attack")
 
 		lookDir = dir
 		self.xScale = -dir * scale
-		setState("attack")
 	end
 
 	----------------------------------------------------------------------------------

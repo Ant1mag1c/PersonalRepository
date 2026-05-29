@@ -1,98 +1,128 @@
+-- controls.lua
 local controls = {}
 
--- Julistetaan muuttujat, joita käytetään tässä moduulissa. Nämä muuttujat ovat paikallisia, eli ne eivät ole näkyvissä muissa moduuleissa.
--- Niille annetaan arvot vasta, kun kontrollit startataan. Kun muuttujat ovat tiedoston alussa, niin ne ovat näkyvissä koko tiedostossa.
-local callbackMovement = nil
--- local callbackKey = nil
-
-local direction
-local hasStarted = false
-local isPressed = {}
+local callbackMovement
 local target
+local hasStarted = false
 
--- Ladataan userdata tiedosto, jossa on käyttäjän/pelin asetukset esim. käytettävistä/sallituista kontrollinäppäimistä.
+-- Track keys currently held
+local isPressed = {}
 
-local keyActions = {
-	s = { action = function() target.vy = 1 end, dir = "down" },
-	w = { action = function() target.vy = -1 end, dir = "up" },
-	d = { action = function() target.vx = 1 end, dir = "right" },
-	a = { action = function() target.vx = -1 end, dir = "left" },
+-- Track attack hold direction (“left”, “right”, “up”, “down”)
+local heldAttackDir = nil
 
-	left = { action = function() target:attackMelee("left") end, dir = "left" },
-	right = { action = function() target:attackMelee("right") end, dir = "right" },
-	up = { action = function() target:attackMelee("up") end, dir = "up" },
-	down = { action = function() target:attackMelee("down") end, dir = "down" },
-
-	space = { action = function() target:block() end, dir = "down" },
+-- Movement keys (deterministic order)
+local moveKeys = {
+    w = true, s = true, a = true, d = true
 }
 
--- Funktio, joka kutsutaan joka frame. Tässä funktiossa tarkistetaan, ovatko tietyt liikkumisnäppäimet painettuna ja kutsutaan callbackMovement funktiota.
+-- Key bindings
+local keyActions = {
+    -- Movement
+    w = { type = "move", vx = 0, vy = -1, dir = "up" },
+    s = { type = "move", vx = 0, vy = 1,  dir = "down" },
+    a = { type = "move", vx = -1,vy = 0, dir = "left" },
+    d = { type = "move", vx = 1, vy = 0, dir = "right" },
+
+    -- Attacks
+    left  = { type = "attack", action = function(t) t:attackMelee("left") end },
+    right = { type = "attack", action = function(t) t:attackMelee("right") end },
+    up    = { type = "attack", action = function(t) t:attackMelee("up") end },
+    down  = { type = "attack", action = function(t) t:attackMelee("down") end },
+
+    space = { type = "attack", action = function(t) t:block() end },
+}
+
+---------------------------------------------------------------------
+
 local function monitorControls()
-	target.vx, target.vy = 0, 0
+    local vx, vy = 0, 0
 
-	if not target.isAttacking then
-		for k,v in pairs( isPressed ) do
-			if v.action then
-				v.action()
-				target.lookingDir = v.dir and v.dir or nil
-			end
-		end
+    ---------------------------------------------------------
+    -- MOVEMENT (only when not attacking)
+    ---------------------------------------------------------
+    if not target.isAttacking then
+        if isPressed["w"] then vy = vy - 1 end
+        if isPressed["s"] then vy = vy + 1 end
+        if isPressed["a"] then vx = vx - 1 end
+        if isPressed["d"] then vx = vx + 1 end
 
-		-- Looking up or down needs to be forced for nimation to behave properly
-		if isPressed["w"] or isPressed["s"] then
-			target.lookingDir = isPressed["w"] and "up" or isPressed["s"] and "down"
-		end
-	end
+        -- Update facing direction
+        if vy ~= 0 then
+            target.lookingDir = vy < 0 and "up" or "down"
+        elseif vx ~= 0 then
+            target.lookingDir = vx < 0 and "left" or "right"
+        end
 
-	-- During attack player can't move
-	if not target.isAttacking then
-		callbackMovement(target.vx, target.vy)
-	else
-		target:hold()
-	end
+        callbackMovement(vx, vy)
+    else
+        target:hold()
+    end
+
+    ---------------------------------------------------------
+    -- AUTO-ATTACK (trigger again after animation ends)
+    ---------------------------------------------------------
+    if heldAttackDir and not target.isAttacking then
+        local bind = keyActions[heldAttackDir]
+        if bind then bind.action(target) end
+    end
 end
 
+---------------------------------------------------------------------
 
--- Funktio, joka kutsutaan aina kun mikä tahansa nappi painetaan pohjaan tai se päästetään ylös.
 local function onKeyEvent(event)
-	local mapped = keyActions[event.keyName]
-	-- print(event.keyName, mapped, event.phase)
-	if mapped then
-		if event.phase == "down" then
-			isPressed[event.keyName] = mapped
-		elseif event.phase == "up" then
-			isPressed[event.keyName] = nil
-		end
-	end
+    local key = event.keyName
+    local binding = keyActions[key]
+    if not binding then return false end
 
-	return false
+    if event.phase == "down" then
+        isPressed[key] = true
+
+        if binding.type == "attack" then
+            heldAttackDir = key
+
+            if not target.isAttacking then
+                binding.action(target)
+            end
+        end
+
+    elseif event.phase == "up" then
+        isPressed[key] = nil
+
+        if binding.type == "attack" and heldAttackDir == key then
+            heldAttackDir = nil
+        end
+    end
+
+    return false
 end
 
-function controls.start(player, callBack)
-	if not hasStarted then
-		hasStarted = true
-		target = player
-		callbackMovement = callBack
+---------------------------------------------------------------------
 
-		Runtime:addEventListener("enterFrame", monitorControls)
-		Runtime:addEventListener("key", onKeyEvent)
-	end
+function controls.start(player, movementCallback)
+    if hasStarted then return end
+    hasStarted = true
+
+    target = player
+    callbackMovement = movementCallback
+
+    Runtime:addEventListener("enterFrame", monitorControls)
+    Runtime:addEventListener("key", onKeyEvent)
 end
 
 function controls.stop()
-	if hasStarted then
-		hasStarted = false
+    if not hasStarted then return end
+    hasStarted = false
 
-		-- Nollataan isPressed taulukko käymällä kaikki sen sisältämät arvot läpi ja asettamalla ne falseksi.
-		-- Tämä varmistaa, että seuraavan kerran kun kontrollit startataan, niin vanhat näppäimet eivät ole "jäänet päälle".
-		for k, v in pairs( isPressed ) do
-			isPressed[k] = false
-		end
+    isPressed = {}
+    heldAttackDir = nil
 
-		-- Poistetaan event listenerit, niin että monitorControls ja onKeyEvent funktioita ei enää kutsuta.
-		Runtime:removeEventListener( "enterFrame", monitorControls )
-		Runtime:removeEventListener( "key", onKeyEvent )
-	end
+    Runtime:removeEventListener("enterFrame", monitorControls)
+    Runtime:removeEventListener("key", onKeyEvent)
+end
+
+function controls.isHoldingAttack()
+    return heldAttackDir
 end
 
 return controls

@@ -44,7 +44,7 @@ local calc = require( "Scripts.calc" )
 
 
 local player, hpCounter
-local level, map, gameOver
+local level, map, gameOver, levelBorder
 local movePlayer, onKeyEvent
 local menuGroup, sceneGroup, levelGroup
 
@@ -259,7 +259,7 @@ local function onLocalCollision( self, event )
 					timer.pause(dragon.fireTimer)
 
 					for i = 1, #projectileList do
-						print( projectileList[i].stop )
+						-- print( projectileList[i].stop )
 						timer.performWithDelay(1, function() display.remove(projectileList[i] ) end )
 					end
 
@@ -418,6 +418,7 @@ function scene:create( event )
 		local mapData = json.decodeFile(system.pathForFile("Maps/" .. level .. ".json", system.ResourceDirectory))
 		-- Lisätään ladatun kentän tiedot ulkoiseen ponytiled moduuliin, jotta se osaa luoda kentän.
 		map = tiled.new(mapData, "Maps")
+
 		sceneGroup:insert( map ) -- Lisätään kenttä sceneGroupiin, jotta se poistuu automaattisesti, kun scene poistuu.
 
 		-- Haetaan kartasta "level" niminen layer, johon kaikki kentän elementit on lisätty. Tätä voidaan käyttää
@@ -436,6 +437,18 @@ function scene:create( event )
 				enemy[i] = enemyScript.new( levelGroup, enemyRef[i] )
 				enemy[i].enemyType = enemyRef[i].enemyType
 			end
+		end
+
+		-- Luodaan kentän rajat "static" tiilien avulla
+		local allTiles = map.getAllTiles("bodyType", "static")
+
+		levelBorder = {left = 100, right = 0}
+
+		for i, v in pairs(allTiles) do
+			local bl, br = levelBorder.left, levelBorder.right
+
+			levelBorder.left = v.x < bl and v.x or bl
+			levelBorder.right = v.x > br and v.x or br
 		end
 
 		local boundData = map.getAllTiles( "tileType", "border" )

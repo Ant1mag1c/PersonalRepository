@@ -32,7 +32,6 @@ local defaultData =
     vyPrev = 0,
 
     lookingDir = "down",
-    lastDir = "down",
     sequence = "idledown",
     isAttacking = false,
     attackPower = nil,
@@ -120,33 +119,46 @@ local function newCharacter(isPlayer, x, y)
     local function spriteListener(event)
         if event.phase == "ended" and body.isAttacking then
             body.isAttacking = false
-            body:setSequence("idle" .. body.lookingDir)
+
+            -- Reset animation state
+            local idle = "idle" .. body.lookingDir
+            body.sequence = idle
+            body:setSequence(idle)
             body:play()
+
         end
     end
 
-    function body.move( vx, vy )
-        local directionChanged = body.lastDir ~= body.lookingDir
-        local fromIdle = body.sequence == "idle" .. body.lastDir
 
+    function body.move(vx, vy)
+        if body.isAttacking then
+            body:setLinearVelocity(0, 0)
+            return
+        end
+
+        -- Normalize 8-direction movement
         if vx ~= 0 or vy ~= 0 then
-            -- Normalize diagonal movement
-    		local len = math.sqrt(vx*vx + vy*vy)
-    		vx, vy = (vx/len)*body.speed, (vy/len)*body.speed
+            local len = math.sqrt(vx*vx + vy*vy)
+            vx, vy = (vx/len) * body.speed, (vy/len) * body.speed
+        end
 
-            if directionChanged or fromIdle then
-                body:setSequence("walk" .. body.lookingDir)
-            end
-    	else
-    		vx, vy = 0, 0
-            body:setSequence("idle" .. body.lookingDir)
-    	end
+        -- Pick animation
+        local state
+        if vx == 0 and vy == 0 then
+            state = "idle" .. body.lookingDir
+        else
+            state = "walk" .. body.lookingDir
+        end
 
-        body:play()
+        if body.sequence ~= state then
+            body.sequence = state
+            body:setSequence(state)
+            body:play()
+        end
+
         body:setLinearVelocity(vx, vy)
-        body.lastDir = body.lookingDir
-        return true
     end
+
 
     function body.attackRanged(self)
         print("attackRanged")
@@ -155,6 +167,7 @@ local function newCharacter(isPlayer, x, y)
 
     function body.block(self)
         print("block")
+        self.isAttacking = true
     end
 
     function body.hold(self)

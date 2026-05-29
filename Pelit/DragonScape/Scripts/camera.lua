@@ -3,6 +3,7 @@ local camera = {}
 
 local hasStarted = false
 local cameraTarget
+local targetOriginal
 local cameraGroups
 
 local halfWidth = display.actualContentWidth * 0.5
@@ -49,6 +50,7 @@ function camera.start( target, groups )
 			cameraGroups[i] = { groups[i][1], groups[i][2] }
 		end
 
+		targetOriginal = cameraTarget
 		Runtime:addEventListener( "enterFrame", update )
 	end
 end
@@ -57,6 +59,7 @@ function camera.stop()
 	if hasStarted then
 		hasStarted = false
 
+		cameraTarget = targetOriginal
 		Runtime:removeEventListener( "enterFrame", update )
 	end
 end

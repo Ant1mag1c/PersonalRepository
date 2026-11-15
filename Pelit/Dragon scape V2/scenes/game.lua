@@ -69,10 +69,7 @@ end
 local function keyPressed( action, phase )
 	-- print( "action", action, "phase", phase )
 
-	if action == "jump" then
-		player:jump( phase == "down" )
-
-	elseif action == "menu" then
+	if action == "menu" then
 		if phase == "down" then
 			if ui.menuGroup then
 				if ui.menuType == "pause" then
@@ -104,12 +101,9 @@ local function onCollision( self, event )
 	end
 
 	if phase == "began" then
-
-
 		if myPart == "leg" and id == "platform"  then
 			player:resetJumpCount()
 			player.isClimbing = false
-			print("landed")
 
 		elseif id == "rope" then
 			if self.y < other.y and not self.isClimbing then
@@ -209,11 +203,13 @@ function scene:create( event )
 	player.collision = onCollision
 	player:addEventListener( "collision" )
 
-	local enemyRefs = map.getAllTiles("isEnemy", true)
+	local nemyList = map:findObjects("enemy")
 
-	for i = 1, #enemyRefs do
-		enemyRefs[i] = wizardModule.new(levelGroup, enemyRefs[i], player)
-		enemy[i] = enemyRefs[i]
+	table.print(enemyRefs)
+
+	for i = 1, #nemyList do
+		nemyList[i] = wizardModule.new(levelGroup, nemyList[i], player)
+		enemy[i] = nemyList[i]
 	end
 
 	counterHP = ui.newCounterHP({

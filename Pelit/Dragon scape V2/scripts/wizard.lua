@@ -2,7 +2,6 @@ local effects = require("data.effects")
 local emitterModule = require("scripts.emitter")
 local projectileModule = require("scripts.projectileModule")
 local raycastModule = require("scripts.raycast")
-local json = require( "json" )
 local player
 
 local characterData = {
@@ -155,9 +154,8 @@ function wizard.new(parent, reference, playerRef)
     -- Päivitetään vihollisen logiikkaa joka frame
 	function wizard:enterFrame( event )
 	    -- print(self, event.time)
-		local idle, move, attack = "idle", "move", "attack"
 
-		if wizard.state == attack then return end
+		if wizard.state == "attack" then return end
 
 		-- Hyökkäyksen cooldown
 		if self.lastAttackTime then
@@ -165,7 +163,6 @@ function wizard.new(parent, reference, playerRef)
 		end
 
 		wizard.playerSeen = raycastModule.newRay( wizard, wizard.lookDir, "player")
-
 
 
 	end

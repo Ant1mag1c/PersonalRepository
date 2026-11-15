@@ -252,6 +252,30 @@
                  "width":9,
                  "x":131,
                  "y":112.583333333333
+                }, 
+                {
+                 "gid":886,
+                 "height":7,
+                 "id":9,
+                 "name":"enemy",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"id",
+                         "type":"string",
+                         "value":"enemy"
+                        }, 
+                        {
+                         "name":"isEnemy",
+                         "type":"bool",
+                         "value":false
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":7,
+                 "x":234,
+                 "y":156.5
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -291,7 +315,7 @@
          "y":0
         }],
  "nextlayerid":10,
- "nextobjectid":9,
+ "nextobjectid":11,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.12.2-2-geb83ddb9",

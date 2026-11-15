@@ -32,6 +32,9 @@ local function monitorMovement()
 		player:attack(-1)
 	elseif isPressed["attackRight"] then
 		player:attack(1)
+	elseif isPressed["jump"] then
+		player:jump( true )
+
 	end
 
 	callbackMovement(vx, vy)

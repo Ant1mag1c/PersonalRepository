@@ -50,7 +50,7 @@ function player.new(parent, reference)
 
 	local jumpCount = 0
 	local maxJumpCount = 1
-	local jumpForce = -0.0045
+	local jumpForce = -0.0052
 	local ropeTouchCount = 0
 	local touchedRope
 

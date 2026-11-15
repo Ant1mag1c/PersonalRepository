@@ -16,7 +16,7 @@ local loadsave = require( "scripts.loadsave" )
 local camera = require( "scripts.camera" )
 local effects = require("data.effects")
 
-local background, levelGroup, foreground
+local background, levelGroup, foreground, objectGroup
 
 local physics = require( "physics" )
 physics.start()
@@ -57,6 +57,12 @@ local function menuOpen( menuType )
 end
 
 local function movePlayer( vx, vy )
+	local _, currentVy = player:getLinearVelocity()
+
+	if currentVy ~= 0 and vy ~= 0 and player.ropeTouched and not player.isClimbing then
+		player.isClimbing = true
+	end
+
 	player:move( vx, vy )
 end
 
@@ -79,6 +85,10 @@ local function keyPressed( action, phase )
 	end
 end
 
+local function onEnterFrame()
+
+end
+
 local function onCollision( self, event )
 	-- print( "collided with", event.other.id, "phase", event.phase )
 	local phase = event.phase
@@ -94,17 +104,33 @@ local function onCollision( self, event )
 	end
 
 	if phase == "began" then
-		if event.other.isStairs then
-			player.moveSpeed = 50
-		end
 
-		if myPart == "leg" and id == "platform" or id == "rope" then
+
+		if myPart == "leg" and id == "platform"  then
 			player:resetJumpCount()
+			player.isClimbing = false
+			print("landed")
 
-			if id == "rope" then
-				player:touchRope( true )
+		elseif id == "rope" then
+			if self.y < other.y and not self.isClimbing then
+				timer.performWithDelay( 1, function ()
+					if other.platform then
+						-- print("REMOVING OLD PLATFORM")
+						display.remove(other.platform)
+						other.platform = nil
+					end
+
+					local platformY = ( other.y - other.height * 0.5 ) + 2
+
+					local platform = display.newRect( levelGroup, other.x, platformY, 20, 2 ); platform.alpha = 0
+					physics.addBody( platform, "static", {bounce=0} )
+					other.platform = platform
+				end )
+
 			end
 
+			local tx = other.x
+			player:touchRope( true, other )
 
 		elseif id == "heart" or id == "coin" then
 			event.other:collect()
@@ -170,14 +196,16 @@ function scene:create( event )
 	map.x = display.contentCenterX - map.designedWidth/2
 	map.y = display.contentCenterY - map.designedHeight/2
 
-	background = map:findLayer( "background" )
+	background = map:findLayer( "foreground" )
 	levelGroup = map:findLayer( "level" )
-	foreground = map:findLayer( "foreground" )
+	objectGroup = map:findLayer( "objects" )
+	foreground = map:findLayer( "background" )
 
 	------------------------------------------------------------------------------
 	-- Luodaan dynaamiset hahmot ja objektit:
-	player = map.getFirstTile( "id", "player" )
+	player = map:findObject( "player" )
 	player = playerModule.new( levelGroup, player )
+
 	player.collision = onCollision
 	player:addEventListener( "collision" )
 
@@ -187,49 +215,6 @@ function scene:create( event )
 		enemyRefs[i] = wizardModule.new(levelGroup, enemyRefs[i], player)
 		enemy[i] = enemyRefs[i]
 	end
-
-	local stairsTiles = map.getAllTiles("isStairs", true)
-
-	for i = 1, #stairsTiles do
-		local tile = stairsTiles[i]
-
-		local w = tile.width
-		local h = tile.height
-
-		physics.addBody(tile, "static", {
-			shape = {
-			-- chain = {
-				-- bottom-left
-				-w * 0.5,  h * 0.5,
-				-- bottom-right
-				 w * 0.5,  h * 0.5,
-				-- top-right
-				 w * 0.5, -h * 0.5
-			},
-			friction = 1.5,
-			-- isSensor = true
-		})
-	end
-
-	-- Haetaan kaikki viholliset kentästä.
-	-- local enemies = map.getAllTiles( "isEnemy" )
-	-- for i = 1, #enemies do
-	-- 	local thisEnemy = enemies[i]
-	-- 	if thisEnemy.id == "hat" then
-	-- 		enemy[#enemy + 1] = hatModule.new( levelGroup, enemies[i] )
-	-- 		enemy[#enemy]:startAI( player )
-	-- 	end
-	-- end
-
-
-	-- local hearts = map.getAllTiles( "id", "heart" )
-	-- for i = 1, #hearts do
-	-- 	heartModule.new( levelGroup, hearts[i] )
-	-- end
-
-
-	-- local flag = map.getFirstTile( "id", "goal" )
-	-- goalModule.new( levelGroup, flag )
 
 	counterHP = ui.newCounterHP({
 		parent = sceneGroup,
@@ -266,6 +251,7 @@ function scene:create( event )
 		{ background, 1 },
 		{ levelGroup, 1 },
 		{ foreground, 1 },
+		{ objectGroup, 1 },
 	} )
 end
 
@@ -319,7 +305,30 @@ scene:addEventListener( "create", scene )
 scene:addEventListener( "show", scene )
 scene:addEventListener( "hide", scene )
 scene:addEventListener( "destroy", scene )
+
+Runtime:addEventListener("enterFrame", onEnterFrame)
 --------------------------------------------------------------------------------------
 
 -- Lopuksi palautetaan scene, jolloin tiedosto toimii Lua-moduulina.
 return scene
+
+--------------------------------------------------------------------------------------
+----- 	Haetaan kaikki viholliset kentästä.
+	-- 	local enemies = map.getAllTiles( "isEnemy" )
+	-- 	for i = 1, #enemies do
+	-- 		local thisEnemy = enemies[i]
+	-- 		if thisEnemy.id == "hat" then
+	-- 			enemy[#enemy + 1] = hatModule.new( levelGroup, enemies[i] )
+	-- 			enemy[#enemy]:startAI( player )
+	-- 		end
+	-- 	end
+
+
+	-- 	local hearts = map.getAllTiles( "id", "heart" )
+	-- 	for i = 1, #hearts do
+	-- 		heartModule.new( levelGroup, hearts[i] )
+	-- 	end
+
+
+	-- 	local flag = map.getFirstTile( "id", "goal" )
+	-- 	goalModule.new( levelGroup, flag )

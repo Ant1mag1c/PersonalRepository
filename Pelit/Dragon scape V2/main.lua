@@ -46,8 +46,7 @@ composer.gotoScene( "scenes.game", {
 	effect = "fade",
 	time = 0, -- Ladataan kenttä heti.
 	params = {
-		-- level = "tutorial.json"
-		level = "test.json"
-		-- level = "beta-map.json"
+		-- level = "outside.json"
+		level = "castle.json"
 	}
 })

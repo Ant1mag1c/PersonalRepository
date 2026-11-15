@@ -45,7 +45,7 @@ local function update()
 	local py = math.floor(camY * cameraScale + 0.5)
 
 	local toX = px - halfWidth
-	local toY = py - halfHeight
+	local toY = py - halfHeight * 1.25
 
 	-- move groups
 	for i = 1, #cameraGroups do

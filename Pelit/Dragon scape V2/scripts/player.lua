@@ -1,26 +1,15 @@
 local player = {}
 
 local physics = require("physics")
-
-----------------------------------------------------------------------------------
-
 local sfxJump = audio.loadSound("assets/audio/sfx/jump.wav")
 local sfxHurt = audio.loadSound("assets/audio/sfx/hurt.wav")
 
-local sheet = graphics.newImageSheet(
-	"assets/images/characters/player.png",
-	{
-		width = 64,
-		height = 64,
-		numFrames = 36
-	}
-)
-
-local animation = {
-	{ name = "idle",   start = 1,  count = 1, time = 250, loopCount = 0 },
-	{ name = "move",   start = 1,  count = 9, time = 250, loopCount = 0 },
-	{ name = "attack", start = 28, count = 6, time = 500, loopCount = 1 }
-}
+local animation
+local sheet = graphics.newImageSheet( "assets/images/characters/player.png", {
+	width = 64,
+	height = 64,
+	numFrames = 36
+} )
 
 function player.new(parent, reference)
 	local x, y
@@ -30,7 +19,7 @@ function player.new(parent, reference)
 		x, y = reference.x, reference.y
 		display.remove(reference)
 	else
-		return false
+		x, y = 100,150
 	end
 
 	local newPlayer = display.newSprite(sheet, animation)
@@ -38,40 +27,43 @@ function player.new(parent, reference)
 	newPlayer.anchorY, newPlayer.anchorX = 0.75, 0.55
 	newPlayer.xScale, newPlayer.yScale = scale, scale
 	newPlayer.id = "player"
+
 	parent:insert(newPlayer)
 
-	physics.addBody(newPlayer, "dynamic",
-	    {
-	        box = { halfWidth = 4, halfHeight = 8, y = -10, x = 0 },
+	local bodies = {
+		{
+	        box = { halfWidth = 3, halfHeight = 8, y = -10, x = -1 },
 			userData = "body"
-
 	    },
 
-	    {
-	        radius = 3,
+		{
+			radius = 2,
 			userData = "foot"
 	    }
-	)
+	}
 
+	physics.addBody(newPlayer, "dynamic", bodies[1], bodies[2] )
 	newPlayer.isFixedRotation = true
-
 
 	local state = "idle" -- idle | move | attack | dead
 	local lookDir = -1   -- -1 = left, 1 = right
 
 	local jumpCount = 0
 	local maxJumpCount = 1
-	local jumpForce = -0.0065
+	local jumpForce = -0.0045
 	local ropeTouchCount = 0
-	local onStairs = false
+	local touchedRope
 
 
-	newPlayer.moveSpeed = 100
+	newPlayer.moveSpeed = 60
 	newPlayer.currentHP = 2
 	newPlayer.maxHP = 2
 	newPlayer.isDead = false
-	newPlayer.timerImmortal = nil
 
+	newPlayer.ropeTouched = false
+	newPlayer.isClimbing = false
+
+	newPlayer.timerImmortal = nil
 	newPlayer.isImmortal = true
 	newPlayer.isInvisible = false
 
@@ -93,6 +85,18 @@ function player.new(parent, reference)
 
 		elseif state == "attack" then
 			newPlayer:setSequence("attack")
+			newPlayer:play()
+
+		elseif state == "climb" then
+			newPlayer:setSequence("climb")
+			newPlayer:play()
+
+		elseif state == "climbIdle" then
+			newPlayer:setSequence("climbIdle")
+			newPlayer:play()
+
+		elseif state == "jump" then
+			newPlayer:setSequence("jump")
 			newPlayer:play()
 		end
 	end
@@ -123,7 +127,12 @@ function player.new(parent, reference)
 	end
 
 	function newPlayer:move(vx, vy)
+		local onAir = jumpCount == maxJumpCount
 		local lookNow = vx == 1 and 1 or vx == -1 and -1 or nil
+		local _, currentVy = self:getLinearVelocity()
+		local touchingRope = ropeTouchCount > 0
+		local jumpReset = jumpCount ~= maxJumpCount
+		local climbing = self.isClimbing
 
 		if state == "attack" or state == "dead" then
 			local _, currentVy = self:getLinearVelocity()
@@ -132,47 +141,76 @@ function player.new(parent, reference)
 		end
 
 		-- Jos pelaaja kääntyy
-		if lookNow and lookNow ~= lookDir then
+		if lookNow and lookNow ~= lookDir and not self.isClimbing then
 			lookDir = lookNow
 			newPlayer.xScale = -lookNow * scale
 		end
 
+		-- Animation handling
+		if onAir then setState("jump") end
+		if not climbing and not onAir then
+			if vx == 0 then
+				setState("idle")
+			else
+				 setState("move")
 
-		if vx == 0 then
-			setState("idle")
-		else
-			setState("move")
+			end
 		end
-
-		local currentVx, currentVy = self:getLinearVelocity()
-		local touchingRope = ropeTouchCount > 0
 
 		-- Rope logic
 		if touchingRope then
 			if vy == 0 then
-				currentVy = 0
+				if climbing then
+					currentVy = 0
+					self:setLinearVelocity(0, 0)
+					self.gravityScale = 0
+					setState("climbIdle")
+				end
 			else
+				setState("climb")
+				self.x = touchedRope.x
+
 				currentVy = vy * self.moveSpeed
+
+				local platform = touchedRope.platform
+
+				if platform then
+					display.remove(platform)
+					touchedRope.platform = nil
+				end
 			end
 		end
+
+		if climbing and not jumpReset then self:resetJumpCount() end
+		if vx ~= 0 and climbing then vx = 0 end
+
 
 		self:setLinearVelocity(vx * self.moveSpeed, currentVy)
 	end
 
-	function newPlayer:touchRope(didTouchBegin)
+	function newPlayer:touchRope(didTouchBegin, ref)
 		if didTouchBegin then
 			ropeTouchCount = ropeTouchCount + 1
 		else
 			ropeTouchCount = math.max(ropeTouchCount - 1, 0)
 		end
 
-		-- Disable gravity while on rope
-		if ropeTouchCount > 0 then
-			self.gravityScale = 0
-			self:setLinearVelocity(0, 0)
-		else
-			self.gravityScale = 1
+		if not touchedRope then
+			touchedRope = ref
 		end
+
+
+		if ropeTouchCount > 0 then
+			self.ropeTouched = true
+		else
+			self.ropeTouched = false
+			self.isClimbing = false
+			self.gravityScale = 1
+			touchedRope = nil
+		end
+
+
+		-- print("RopeTouched/Climbing/TX: ", self.ropeTouched, self.isClimbing)
 	end
 
 	function newPlayer:attack(dir)
@@ -188,18 +226,31 @@ function player.new(parent, reference)
 	----------------------------------------------------------------------------------
 
 	function newPlayer:jump(didJumpBegin)
-		if state == "dead" then return end
-		if not didJumpBegin then return end
-		if jumpCount >= maxJumpCount then return end
+    if state == "dead" then return end
+    if not didJumpBegin then return end
+	if jumpCount >= maxJumpCount then return end
 
-		jumpCount = jumpCount + 1
 
-		audio.play(sfxJump, { channel = audio.findFreeChannel(2) })
+	setState("jump")
 
-		local vx, _ = self:getLinearVelocity()
-		self:setLinearVelocity(vx, 0)
-		self:applyLinearImpulse(0, jumpForce, self.x, self.y)
-	end
+	if self.isClimbing then
+        self.isClimbing = false
+        self.gravityScale = 1
+        self:resetJumpCount()
+    end
+
+
+
+    jumpCount = jumpCount + 1
+	-- print("Count", jumpCount)
+
+
+    audio.play(sfxJump, { channel = audio.findFreeChannel(2) })
+
+    local vx, _ = self:getLinearVelocity()
+    self:setLinearVelocity(vx, 0)
+    self:applyLinearImpulse(0, jumpForce, self.x, self.y)
+end
 
 	function newPlayer:resetJumpCount()
 		jumpCount = 0
@@ -234,5 +285,16 @@ function player.new(parent, reference)
 	setState("idle")
 	return newPlayer
 end
+
+local animOffset = 400
+
+animation = {
+	{ name = "idle",   start = 2,  count = 1, time = animOffset*0.8, loopCount = 0 },
+	{ name = "move",   start = 2,  count = 8, time = animOffset, loopCount = 0 },
+	{ name = "climb",   start = 10,  count = 6, time = animOffset*1.2, loopCount = 0 },
+	{ name = "climbIdle",   start = 12,  count = 1, time = animOffset, loopCount = 0 },
+	{ name = "attack", start = 28, count = 6, time = animOffset*1.5, loopCount = 1 },
+	{ name = "jump", start = 23, count = 1, time = animOffset, loopCount = 1 }
+}
 
 return player

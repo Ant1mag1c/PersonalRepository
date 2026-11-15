@@ -20,7 +20,7 @@ local offset = 0.6
 local halfWidth  = display.actualContentWidth  * offset
 local halfHeight = display.actualContentHeight * offset
 
-------------------------------------------------
+-----------------------------------------------
 -- INTERNAL UPDATE
 ------------------------------------------------
 local function update()

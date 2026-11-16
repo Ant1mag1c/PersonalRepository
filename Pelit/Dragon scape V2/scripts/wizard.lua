@@ -2,13 +2,11 @@ local effects = require("data.effects")
 local emitterModule = require("scripts.emitter")
 local projectileModule = require("scripts.projectileModule")
 local raycastModule = require("scripts.raycast")
+local animation = require("data.animation")
 local player
 
 local characterData = {
-	id = "enemy",
-	x = 0,
-	y = 0,
-	anchorY = 0.8,
+
 	xScale = 0.5,
 	yScale = 0.5,
 	stateNow = "idle",
@@ -39,36 +37,19 @@ end
 
 }
 
-local wizard = {}
+local enemy = {}
 
-local sheet = graphics.newImageSheet( "assets/images/characters/wizard.png",
-	{
-		width = 64,
-		height = 64,
-		numFrames = 27
-	}
+
+local sequence = animation.sequences
+local sheet = graphics.newImageSheet(
+	animation.sheets["enemy"],
+	animation.data["enemy"]
 )
 
 
-local animation = {
-	{ name = "idle",   frames= { 1 }, time = characterData.nimateTime, loopCount = 0 },
-	{ name = "move",   start = 2,  count = 8, time = characterData.animateTime, loopCount = 0 },
-	{ name = "cast", start = 10, count = 7, time = characterData.animateTime, loopCount = 3 },
-	{ name = "attack", frames= { 23 }, time = characterData.animateTime, loopCount = 1 },
-}
 
-
--- local function removeObj( targetObj )
--- 	if targetObj.id then
--- 		-- print( "removing object: ", targetObj.id )
--- 		targetObj:removeSelf(); targetObj = nil
--- 	else
--- 		print("invalid id")
--- 	end
--- end
-
-function wizard.new(parent, reference, playerRef)
-	if playerRef then characterData.playerRef = playerRef end
+function enemy.new( parent, reference )
+	local x, y = reference.x, reference.y
 
 	if reference then
 		characterData.x, characterData.y = reference.x, reference.y
@@ -77,135 +58,71 @@ function wizard.new(parent, reference, playerRef)
         return false
 	end
 
-    local wizard = display.newSprite(sheet, animation)
-	parent:insert( wizard )
-	wizard._parent = parent
+    local newEnemy = display.newSprite(sheet, sequence)
+	parent:insert( newEnemy )
 
-	-- Noudetaan characterDatan sisältö ja liitetään ne objektiin
-	for k, v in pairs(characterData) do
-		wizard[k] = v
-	end
+	newEnemy.x, newEnemy.y = x, y
+	newEnemy.xScale, newEnemy.yScale = 0.5, 0.5
+	newEnemy.anchorY = 0.8
 
 
-	physics.addBody( wizard, "dynamic",
-	    {
-	        box = { halfWidth = 4, halfHeight = 8, y = -10, x = 0 },
-			userData = "body"
+	local bodies = {
+		{
+	        box = { halfWidth = 6, halfHeight = 8, y = -10, x = 0 },
+			userData = "body",
+			density = 8
 	    },
 
-	    {
-	        radius = 3,
+		{
+			radius = 2,
 			userData = "foot"
 	    }
-	)
-	wizard.isFixedRotation = true
+	}
+
+	physics.addBody( newEnemy, "dynamic", bodies[1], bodies[2])
+	newEnemy.isFixedRotation = true
+
+	local state = "idle"
 
 
-    function wizard:move( prevState )
-		wizard.lookDir = (wizard.xScale * 2)
+	local function setState(newState)
+		if state == newState then return end
 
-		self:setLinearVelocity( self.xScale * self.speed, 0 )
+		-- Check that newState exists in data
+		for i = 1, #animation.sequences do
+			local name = animation.sequences[i].name
 
-		if wizard.state ~= prevState then --Ladataan liikeanimaatio
-			wizard:setSequence("move")
-			wizard:play()
+			if not newState == name then print("WARNING Invalide sequence") return false end
 		end
+		state = newState
 
+		newEnemy:setSequence(newState)
+		newEnemy:play()
+	end
+
+    function newEnemy:move( )
     end
 
-    function wizard:attack()
-	    if attackTimer then return end  -- HARD guard
-
-	    wizard:setSequence("attack")
-	    wizard:play()
-
-	    local x = self.x + self.width/2.6 * self.xScale
-	    local y = self.y + 5
-
-	    local effectIn = emitterModule.new(wizard._parent, x, y, "attackEffectIn")
-
-	    local duration = (effectIn.duration * 2.3) * 1000
-
-	    attackTimer = timer.performWithDelay(duration, function()
-	        removeObj(effectIn)
-
-	        local effectOut = emitterModule.new(wizard._parent, x, y, "attackEffectOut")
-	        local projectile = projectileModule.new(wizard, x, y, removeObj)
-			projectile.angle = wizard.lookDir == -1 and 0 or 180
-
-	        timer.performWithDelay(1000, function()
-	            removeObj(effectOut)
-	            attackTimer = nil
-	            setState(states.idle)
-				lastAttack = system.getTimer()
-
-				self:setSequence("idle")
-				self:play()
-				print("idle")
-	        end )
-	    end)
+    function newEnemy:attack()
 	end
 
 
-    function wizard:cast()
+    function newEnemy:cast()
     end
 
 
     -- Päivitetään vihollisen logiikkaa joka frame
-	function wizard:enterFrame( event )
-	    -- print(self, event.time)
-
-		if wizard.state == "attack" then return end
-
-		-- Hyökkäyksen cooldown
-		if self.lastAttackTime then
-			if ( system.getTimer() - self.lastAttackTime ) < self.attackCooldown then return end
-		end
-
-		wizard.playerSeen = raycastModule.newRay( wizard, wizard.lookDir, "player")
-
-
+	function newEnemy:enterFrame( event )
+		-- if ( system.getTimer() - self.lastAttackTime ) < self.attackCooldown then return end
 	end
 
-    -- function wizard.update()
-	-- 	if wizard.state == states.attacking then return end
+	-- setState("cast")
+	-- setState("move")
+	setState("idle")
 
-	-- 	-- if lastAttack then
-	-- 	-- 	if ( system.getTimer() - lastAttack ) < cooldown then
-	-- 	-- 		return
-	-- 	-- 	end
-	-- 	-- end
-
-	-- 	-- -- Otetaan tämänhetkinen state talteen ennen mahdollisia muutoksia
-	-- 	-- local prevState = wizard.state
-
-	-- 	wizard.playerInRange = raycastModule.newRay( wizard, wizard.lookDir, "platform")
-
-	-- 	-- if self.playerInRange then
-	-- 	-- 	    if setState(states.attacking) then
-	-- 	-- 		        wizard:attack()
-	-- 	-- 		    end
-	-- 	-- 		    return
-	-- 	-- 		end
-
-	-- 	wizard.playerSeen = raycastModule.newRay( wizard, wizard.lookDir, "player")
-	-- 	-- 		if not self.platformAhead then
-	-- 	-- 				setState( states.idle )
-	-- 	-- 				-- TODO: Lisää viive
-	-- 	-- 	wizard.xScale = ( wizard.xScale * -1)
-	-- 	-- else
-	-- 		-- setState( states.moving )
-	-- 	-- end
-
-	-- 	-- wizard:move( prevState )
-	-- end
-
-	-- timer.performWithDelay(500, function()	print( wizard.platformAhead ) end, 100 )
-
-
-    Runtime:addEventListener( "enterFrame", wizard )
-    return wizard
+	Runtime:addEventListener( "enterFrame", newEnemy )
+    return newEnemy
 end
 
 
-return wizard
+return enemy

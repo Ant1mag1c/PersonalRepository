@@ -250,12 +250,12 @@
                  "type":"",
                  "visible":true,
                  "width":9,
-                 "x":131,
-                 "y":112.583333333333
+                 "x":217.25,
+                 "y":172.833333333333
                 }, 
                 {
                  "gid":886,
-                 "height":7,
+                 "height":8.25,
                  "id":9,
                  "name":"enemy",
                  "opacity":1,
@@ -273,9 +273,9 @@
                  "rotation":0,
                  "type":"",
                  "visible":true,
-                 "width":7,
-                 "x":234,
-                 "y":156.5
+                 "width":8.25,
+                 "x":235.25,
+                 "y":171.75
                 }],
          "opacity":1,
          "type":"objectgroup",

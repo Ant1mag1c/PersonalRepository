@@ -4,12 +4,15 @@ local physics = require("physics")
 local sfxJump = audio.loadSound("assets/audio/sfx/jump.wav")
 local sfxHurt = audio.loadSound("assets/audio/sfx/hurt.wav")
 
-local animation
-local sheet = graphics.newImageSheet( "assets/images/characters/player.png", {
-	width = 64,
-	height = 64,
-	numFrames = 36
-} )
+local animation = require("data.animation")
+local sequence = animation.sequences
+
+local sheet = graphics.newImageSheet(
+	animation.sheets["player"],
+	animation.data["player"]
+)
+
+
 
 function player.new(parent, reference)
 	local x, y
@@ -22,7 +25,7 @@ function player.new(parent, reference)
 		x, y = 100,150
 	end
 
-	local newPlayer = display.newSprite(sheet, animation)
+	local newPlayer = display.newSprite(sheet, sequence)
 	newPlayer.x, newPlayer.y = x, y
 	newPlayer.anchorY, newPlayer.anchorX = 0.75, 0.55
 	newPlayer.xScale, newPlayer.yScale = scale, scale
@@ -285,16 +288,5 @@ end
 	setState("idle")
 	return newPlayer
 end
-
-local animOffset = 400
-
-animation = {
-	{ name = "idle",   start = 2,  count = 1, time = animOffset*0.8, loopCount = 0 },
-	{ name = "move",   start = 2,  count = 8, time = animOffset, loopCount = 0 },
-	{ name = "climb",   start = 10,  count = 6, time = animOffset*1.2, loopCount = 0 },
-	{ name = "climbIdle",   start = 12,  count = 1, time = animOffset, loopCount = 0 },
-	{ name = "attack", start = 28, count = 6, time = animOffset*1.5, loopCount = 1 },
-	{ name = "jump", start = 23, count = 1, time = animOffset, loopCount = 1 }
-}
 
 return player

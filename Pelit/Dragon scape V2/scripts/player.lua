@@ -5,7 +5,7 @@ local sfxJump = audio.loadSound("assets/audio/sfx/jump.wav")
 local sfxHurt = audio.loadSound("assets/audio/sfx/hurt.wav")
 
 local animation = require("data.animation")
-local sequence = animation.sequences
+local sequence = animation.sequences["player"]
 
 local sheet = graphics.newImageSheet(
 	animation.sheets["player"],

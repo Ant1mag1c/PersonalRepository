@@ -1,46 +1,15 @@
 local effects = require("data.effects")
 local emitterModule = require("scripts.emitter")
 local projectileModule = require("scripts.projectileModule")
-local raycastModule = require("scripts.raycast")
+local raycast = require("scripts.raycast")
 local animation = require("data.animation")
 local player
 
-local characterData = {
-
-	xScale = 0.5,
-	yScale = 0.5,
-	stateNow = "idle",
-	prevState = "idle",
-	lookDir = 1,
-	speed = 60,
-	currentHP = 2,
-	maxHP = 2,
-	attackCooldown = 1000,
-
-	playerSeen = false,
-	lastAttackTime = nil,
-	attackTimer = nil,
-	animateTime = 600,
-	playerRef = nil,
-
-	-- Helper functions
-	loadAnim = function( self, sequence ) self:setSequence(sequence); self:play() end,
-	removeObj = function( targetObj ) targetObj:removeSelf(); targetObj = nil end,
-	setState = function(self, state) if self.stateNow ~= state then
-        self.stateNow = state
-		if state ~= "move" then self:setLinearVelocity( 0 ) end
-        print("State changed to:", state)
-    end
-
-end
-
-
-}
 
 local enemy = {}
 
 
-local sequence = animation.sequences
+local sequence = animation.sequences["enemy"]
 local sheet = graphics.newImageSheet(
 	animation.sheets["enemy"],
 	animation.data["enemy"]
@@ -52,7 +21,6 @@ function enemy.new( parent, reference )
 	local x, y = reference.x, reference.y
 
 	if reference then
-		characterData.x, characterData.y = reference.x, reference.y
 		display.remove(reference)
 	else
         return false
@@ -64,13 +32,14 @@ function enemy.new( parent, reference )
 	newEnemy.x, newEnemy.y = x, y
 	newEnemy.xScale, newEnemy.yScale = 0.5, 0.5
 	newEnemy.anchorY = 0.8
-
+	newEnemy.id = "enemy"
+	newEnemy.lookDir = 1
 
 	local bodies = {
 		{
 	        box = { halfWidth = 6, halfHeight = 8, y = -10, x = 0 },
 			userData = "body",
-			density = 8
+			density = 10
 	    },
 
 		{
@@ -83,6 +52,13 @@ function enemy.new( parent, reference )
 	newEnemy.isFixedRotation = true
 
 	local state = "idle"
+	local lookDir = 1
+	local speed = 20
+	local health = 1
+
+	local playerSeen = false
+	local floorAhead = false
+
 
 
 	local function setState(newState)
@@ -98,9 +74,16 @@ function enemy.new( parent, reference )
 
 		newEnemy:setSequence(newState)
 		newEnemy:play()
+
+		-- print("New state: ", newState)
 	end
 
-    function newEnemy:move( )
+    function newEnemy:move( dir )
+		if state == "move" then return end
+
+		setState("move")
+
+		self:setLinearVelocity(lookDir * speed, 0)
     end
 
     function newEnemy:attack()
@@ -113,12 +96,38 @@ function enemy.new( parent, reference )
 
     -- Päivitetään vihollisen logiikkaa joka frame
 	function newEnemy:enterFrame( event )
-		-- if ( system.getTimer() - self.lastAttackTime ) < self.attackCooldown then return end
+		local floorRay = raycast.newRay( self, "platform")
+		local attackRay = raycast.newRay( self, "attack")
+		local wallRay = raycast.newRay( self, "wall")
+
+		if not floorRay or wallRay then
+			if state ~= "idle" then
+				setState("idle")
+
+				self:setLinearVelocity(0, 0)
+
+
+				-- Delay before turning around after near edge
+				timer.performWithDelay( 300, function ()
+					self.xScale = -self.xScale
+					lookDir = self.xScale == 0.5 and 1 or -1
+
+					self.lookDir = lookDir
+
+					-- Delay before starting to move again
+					timer.performWithDelay( 200, function()
+						self:move(lookDir)
+					end )
+
+				end )
+			end
+		end
 	end
 
 	-- setState("cast")
 	-- setState("move")
-	setState("idle")
+
+	newEnemy:move(lookDir)
 
 	Runtime:addEventListener( "enterFrame", newEnemy )
     return newEnemy

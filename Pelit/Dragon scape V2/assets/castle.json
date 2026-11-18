@@ -230,8 +230,8 @@
                  "rotation":0,
                  "type":"",
                  "visible":true,
-                 "width":9.59636,
-                 "x":323.747274545455,
+                 "width":5.05090545454544,
+                 "x":325.20182,
                  "y":85.4564227272727
                 }, 
                 {
@@ -250,8 +250,8 @@
                  "type":"",
                  "visible":true,
                  "width":9,
-                 "x":211.909090909091,
-                 "y":117.424242424242
+                 "x":288.416666666667,
+                 "y":171.738636363636
                 }, 
                 {
                  "gid":886,
@@ -274,8 +274,8 @@
                  "type":"",
                  "visible":true,
                  "width":8.25,
-                 "x":243.636363636364,
-                 "y":119.829545454545
+                 "x":228.318181818182,
+                 "y":118.693181818181
                 }, 
                 {
                  "height":3.75,
@@ -313,56 +313,21 @@
                 {
                  "gid":131,
                  "height":16,
-                 "id":12,
-                 "name":"Crate",
-                 "opacity":1,
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":16,
-                 "x":286.25,
-                 "y":121.25
-                }, 
-                {
-                 "gid":131,
-                 "height":16,
                  "id":13,
-                 "name":"Crate",
-                 "opacity":1,
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":16,
-                 "x":286.1875,
-                 "y":105.75
-                }, 
-                {
-                 "height":30.75,
-                 "id":14,
-                 "name":"Wall",
+                 "name":"obstacle",
                  "opacity":1,
                  "properties":[
                         {
-                         "name":"alpha",
-                         "type":"int",
-                         "value":0
-                        }, 
-                        {
-                         "name":"bodyType",
-                         "type":"string",
-                         "value":"static"
-                        }, 
-                        {
                          "name":"id",
                          "type":"string",
-                         "value":"wall"
+                         "value":"obstacle"
                         }],
                  "rotation":0,
                  "type":"",
                  "visible":true,
-                 "width":16.375,
-                 "x":286.4375,
-                 "y":90.125
+                 "width":16,
+                 "x":433.1875,
+                 "y":176.375
                 }],
          "opacity":1,
          "type":"objectgroup",

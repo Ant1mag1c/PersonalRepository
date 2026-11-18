@@ -5,6 +5,9 @@ local raycast = require("scripts.raycast")
 local animation = require("data.animation")
 local player
 
+local devMode = true
+
+if devMode then print("enemy debug true") end
 
 local enemy = {}
 
@@ -37,7 +40,7 @@ function enemy.new( parent, reference )
 
 	local bodies = {
 		{
-	        box = { halfWidth = 6, halfHeight = 8, y = -10, x = 0 },
+	        box = { halfWidth = 8, halfHeight = 8, y = -10, x = 0 },
 			userData = "body",
 			density = 10
 	    },
@@ -58,6 +61,7 @@ function enemy.new( parent, reference )
 
 	local playerSeen = false
 	local floorAhead = false
+	local onCooldown = false
 
 
 
@@ -78,7 +82,7 @@ function enemy.new( parent, reference )
 		-- print("New state: ", newState)
 	end
 
-    function newEnemy:move( dir )
+    function newEnemy:move()
 		if state == "move" then return end
 
 		setState("move")
@@ -90,47 +94,79 @@ function enemy.new( parent, reference )
 	end
 
 
-    function newEnemy:cast()
-    end
-
-
     -- Päivitetään vihollisen logiikkaa joka frame
-	function newEnemy:enterFrame( event )
-		local floorRay = raycast.newRay( self, "platform")
-		local attackRay = raycast.newRay( self, "attack")
-		local wallRay = raycast.newRay( self, "wall")
+	local function update( event )
+		local self = newEnemy
 
-		if not floorRay or wallRay then
-			if state ~= "idle" then
-				setState("idle")
+		if onCooldown then return end
+
+		local floorAhead = raycast.newRay( self, "platform")
+		local playerSeen = raycast.newRay( self, "attack")
+		local wallAhead = raycast.newRay( self, "wall")
+
+
+		local mustTurn = not floorAhead or wallAhead
+
+		local delayTurn = devMode and 200 or 500
+		local delayMove = devMode and 200 or 400
+
+		if state == "idle" and not mustTurn then
+			self:move()
+		end
+
+
+		if playerSeen then
+			if state ~= "attack" then
+				setState("attack")
 
 				self:setLinearVelocity(0, 0)
 
+			end
 
-				-- Delay before turning around after near edge
-				timer.performWithDelay( 300, function ()
-					self.xScale = -self.xScale
-					lookDir = self.xScale == 0.5 and 1 or -1
+		else
+			if mustTurn then
+				if state ~= "idle" then
+					setState("idle")
 
-					self.lookDir = lookDir
+					self:setLinearVelocity(0, 0)
 
-					-- Delay before starting to move again
-					timer.performWithDelay( 200, function()
-						self:move(lookDir)
+					-- Delay before turning around after near edge
+					timer.performWithDelay( delayTurn, function ()
+						self.xScale = -self.xScale
+						lookDir = self.xScale == 0.5 and 1 or -1
+
+						self.lookDir = lookDir
+
+						-- Delay before starting to move again
+						timer.performWithDelay( delayMove, function()
+							self:move(lookDir)
+						end )
+
 					end )
-
-				end )
+				end
 			end
 		end
 	end
 
-	-- setState("cast")
-	-- setState("move")
+	local function spriteListener(event)
+		if event.phase == "ended" and state == "attack" then
+			onCooldown = true
 
-	newEnemy:move(lookDir)
+			-- Hold attack animation for a breaf moment
+			timer.performWithDelay( 300, function() setState( "idle" ) end )
 
-	Runtime:addEventListener( "enterFrame", newEnemy )
-    return newEnemy
+			-- Allow enemy to performs next action
+			timer.performWithDelay( 1800, function() onCooldown = false end )
+
+		end
+	end
+
+	newEnemy:addEventListener("sprite", spriteListener)
+	Runtime:addEventListener( "enterFrame", update )
+
+	newEnemy:move()
+
+	return newEnemy
 end
 
 

@@ -10,15 +10,21 @@ function m.newRay( from, rayType )
 	local fromX, fromY = from.x, from.y - 10
 	local toX, toY
 	local line = false
+	local targetID = nil
+	local secondID = nil
+
 
 	-- Handle ray parameters according to rayType
 	if from.id == "enemy" then
 		local lookDir = from.lookDir
 		local offset = 5
+		local attackRange = 60
+		local wallRange = 5
 
 		fromX = fromX + (offset * lookDir)
 
 		if rayType == "platform" then
+			targetID = "platform"
 			local lenght = 20
 			-- line = true
 
@@ -26,14 +32,16 @@ function m.newRay( from, rayType )
 
 
 		elseif rayType == "attack" then
-			local lenght = 20
-			-- line = true
+			targetID = "player"
+			local lenght = attackRange
+			line = true
 
 			toX, toY = fromX + (lenght * lookDir), fromY
-			rayType = "player"
 
 		elseif rayType == "wall" then
-			local lenght = 5
+			targetID = "wall"
+			secondID = "obstacle"
+			local lenght = wallRange
 			-- line = true
 
 			toX, toY = fromX + (lenght * lookDir), fromY
@@ -47,7 +55,7 @@ function m.newRay( from, rayType )
 
 	-- Debug line
 	if line then
-		local color = hits and hits[1] and hitId == rayType
+		local color = hits and hits[1] and ( hitId == targetID or hitId == secondID )
 			and { 0, 1, 0 }
 			or { 1, 0, 0 }
 
@@ -58,7 +66,7 @@ function m.newRay( from, rayType )
 	end
 
 	-- Return true if hit matches rayType. Remember: only one value returned
-	return hits and hitId == rayType or false
+	return hits and hitId == targetID or hits and hitId == secondID or false
 end
 
 

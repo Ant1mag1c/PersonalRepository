@@ -7,7 +7,7 @@ return {
     sequences = {
         player = {
             { name = "idle",   start = 1,  count = 1, time = playTime*0.8, loopCount = 0 },
-            { name = "attack", start = 28, count = 6, time = playTime*1.5, loopCount = 1 },
+            { name = "attack", start = 28, count = 6, time = playTime*1.2, loopCount = 1 },
             { name = "jump", start = 23, count = 1, time = playTime, loopCount = 1 },
             { name = "move",   start = 2,  count = 8, time = playTime, loopCount = 0 },
             { name = "climb",   start = 10,  count = 6, time = playTime*1.2, loopCount = 0 },
@@ -17,7 +17,7 @@ return {
         enemy = {
             { name = "idle",   start = 1,  count = 1, time = playTime*0.8, loopCount = 0 },
             { name = "move",   start = 2,  count = 8, time = playTime, loopCount = 0 },
-            { name = "cast", start = 10, count = 6, time = playTime, loopCount = 1 },
+            { name = "attack", start = 10, count = 6, time = playTime*1.3, loopCount = 1 },
         }
     },
 

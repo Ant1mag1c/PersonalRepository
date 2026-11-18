@@ -203,13 +203,21 @@ function scene:create( event )
 	player.collision = onCollision
 	player:addEventListener( "collision" )
 
-	local nemyList = map:findObjects("enemy")
+	-- Generate enemies
+	local enemyRefs = map:findObjects("enemy")
 
-	table.print(enemyRefs)
+	for i = 1, #enemyRefs do
+		enemyRefs[i] = wizardModule.new(levelGroup, enemyRefs[i], player)
+		enemy[i] = enemyRefs[i]
+	end
 
-	for i = 1, #nemyList do
-		nemyList[i] = wizardModule.new(levelGroup, nemyList[i], player)
-		enemy[i] = nemyList[i]
+	-- Generate phys bodies for objects
+	local obstacles = map:findObjects("obstacle")
+
+	for i = 1, #obstacles do
+		local ref = obstacles[i]
+
+		physics.addBody( ref, "static", { box = { halfWidth = 10, halfHeight = 8, y = 0, x = 0 } } )
 	end
 
 	counterHP = ui.newCounterHP({

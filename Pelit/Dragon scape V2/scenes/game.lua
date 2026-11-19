@@ -10,6 +10,7 @@ local json = require( "json" )
 local playerModule = require( "scripts.player" )
 local heartModule = require( "scripts.heart" )
 local wizardModule = require( "scripts.wizard" )
+local projectileModule = require("scripts.projectileModule")
 -- local goalModule = require( "scripts.goal" )
 local controls = require( "scripts.controls" )
 local loadsave = require( "scripts.loadsave" )
@@ -21,7 +22,7 @@ local background, levelGroup, foreground, objectGroup
 local physics = require( "physics" )
 physics.start()
 physics.setGravity( 0, 9.8 )
--- physics.setDrawMode( "hybrid" )  -- Vaihtoehdot: "normal", "debug", "hybrid"
+physics.setDrawMode( "hybrid" )  -- Vaihtoehdot: "normal", "debug", "hybrid"
 
 --------------------------------------------------------------------------------------
 -- scene event -funktioiden ulkopuolella oleva koodi suoritetaan vain kerran, ellei
@@ -101,7 +102,7 @@ local function onCollision( self, event )
 	end
 
 	if phase == "began" then
-		if myPart == "leg" and id == "platform"  then
+		if myPart == "leg" and (id == "platform" or id == "obstacle" or id == "enemy")  then
 			player:resetJumpCount()
 			player.isClimbing = false
 
@@ -109,16 +110,16 @@ local function onCollision( self, event )
 			if self.y < other.y and not self.isClimbing then
 				timer.performWithDelay( 1, function ()
 					if other.platform then
-						-- print("REMOVING OLD PLATFORM")
-						display.remove(other.platform)
-						other.platform = nil
+						print("REMOVING OLD PLATFORM")
+						display.remove(other.platform.body)
+						other.platform.body = nil
 					end
 
-					local platformY = ( other.y - other.height * 0.5 ) + 2
+					-- local platformY = ( other.y - other.height * 0.5 ) + 2
 
-					local platform = display.newRect( levelGroup, other.x, platformY, 20, 2 ); platform.alpha = 0
-					physics.addBody( platform, "static", {bounce=0} )
-					other.platform = platform
+					-- local platform = display.newRect( levelGroup, other.x, platformY, 20, 2 ); platform.alpha = 0
+					-- physics.addBody( platform, "static", {bounce=0} )
+					-- other.platform = platform
 				end )
 
 			end
@@ -203,6 +204,36 @@ function scene:create( event )
 	player.collision = onCollision
 	player:addEventListener( "collision" )
 
+	-- Handle ropes/stairs
+	local ropes = map.getAllTiles("name", "rope")
+
+	for i = 1, #ropes do
+		local ref = ropes[i]
+		local tag = ref.tag
+		ref.id = "rope"
+
+		local yOffset = tag and tag == "top" and 8
+		local params = { halfWidth = 2, halfHeight = 8, y = yOffset or 0, x = 0 }
+		local filter = { categoryBits = 4, maskBits = 0xFFFF }
+
+		physics.addBody( ref, "static", {
+			box = params,
+			filter = filter,
+			isSensor = true
+		} )
+
+		local platformY = ref.y + 3
+
+		if tag then
+			local platform = display.newRect( levelGroup, ref.x, platformY, 20, 2 ); platform.alpha = 0
+			physics.addBody( platform, "static", {bounce=0} )
+			ref.platform = {
+				body = platform,
+				y = platformY
+			}
+		end
+	end
+
 	-- Generate enemies
 	local enemyRefs = map:findObjects("enemy")
 
@@ -218,6 +249,16 @@ function scene:create( event )
 		local ref = obstacles[i]
 
 		physics.addBody( ref, "static", { box = { halfWidth = 10, halfHeight = 8, y = 0, x = 0 } } )
+	end
+
+	-- Debug bullets
+	local projectiles = map:findObjects("bullet")
+
+	for i = 1, #projectiles do
+		local ref = projectiles[i]
+		local newProjectile = projectileModule:new( ref, player )
+
+		display.remove(ref); projectiles[i] = nil
 	end
 
 	counterHP = ui.newCounterHP({

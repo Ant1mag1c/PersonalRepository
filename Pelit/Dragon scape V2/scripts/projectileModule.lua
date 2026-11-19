@@ -7,44 +7,48 @@ local speed, maxTravel, direction = 50, 120, nil
 
 local t = {}
 
-local function update()
-	if math.abs(body.x - startX) > maxTravel then
-		body.remove()
-	end
-end
 
 
-function t.new( enemyRef, x, y, func )
-    direction = enemyRef.lookDir
-	callback = func
-    startX, startY = x, y
+function t:new( from, to )
+	local offset = from.id == "enemy" and 10 or 0
+	local fromX, fromY = from.x, from.y - offset
+	local speed = 30
 
-    body = emitterModule.new( enemyRef._parent, x, y, "fireball" )
+    body = emitterModule.new( from.parent, fromX, fromY, "fireball" )
 	body.id = "projectile"
-	physics.addBody(body, "dynamic", {
-		radius = 12,
-		isSensor = true,
-	} )
+	body.rotation = math.deg(math.atan2( to.y - from.y, to.x - from.x ))
+
+	physics.addBody(body, "dynamic", { radius = 4, isSensor = true, filter = {
+        categoryBits = 4,
+        maskBits = 0xFFFF
+    } } )
 
 	body.gravityScale = 0
-	body:setLinearVelocity(direction*speed, 0)
 
-    Runtime:addEventListener( "enterFrame", update )
+	-- Send bullet toward target
+	local rad = math.rad(body.rotation)
+	local vx = math.cos(rad) * speed
+	local vy = math.sin(rad) * speed
 
-	function body.remove( playerHit )
-		if not playerHit then
-			transition.to(body, {
-				time = 10,
-			    startColorAlpha = 0,
-			    finishColorAlpha = 0,
-				onComplete = callback(body)
-			})
-		else
-			callback(body)
+	body:setLinearVelocity(vx, vy)
+
+
+
+	local function onCollision( event )
+		if event.phase == "began" then
+			-- print( "collided with", event.other.id, "phase", event.phase )
+			local other = event.other.id
+
+			if other == "player" or other == "platform" or other == "obstacle" then
+				display.remove(body)
+				-- print( "Projectile killed" )
+			end
 		end
-
-		Runtime:removeEventListener( "enterFrame", update )
 	end
+
+
+	self.collision = onCollision
+	body:addEventListener( "collision", onCollision )
 
 	return body
 end

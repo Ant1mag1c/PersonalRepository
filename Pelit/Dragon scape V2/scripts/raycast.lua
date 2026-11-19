@@ -17,7 +17,7 @@ function m.newRay( from, rayType )
 	-- Handle ray parameters according to rayType
 	if from.id == "enemy" then
 		local lookDir = from.lookDir
-		local offset = 5
+		local offset = 4
 		local attackRange = 60
 		local wallRange = 5
 
@@ -50,7 +50,12 @@ function m.newRay( from, rayType )
 	elseif from.id == "player" then
 	end
 
-	local hits = physics.rayCast( fromX, fromY, toX, toY, "closest" )
+	local rayFilter = {
+		categoryBits = 0xFFFF - 4,
+    	maskBits = 0xFFFF
+	}
+
+	local hits = physics.rayCast( fromX, fromY, toX, toY, "closest", rayFilter )
 	local hitId = hits and hits[1].object.id
 
 	-- Debug line
@@ -65,8 +70,8 @@ function m.newRay( from, rayType )
 		timer.performWithDelay( 2, function () display.remove(line); line = nil end )
 	end
 
-	-- Return true if hit matches rayType. Remember: only one value returned
-	return hits and hitId == targetID or hits and hitId == secondID or false
+	-- Return hitted object and also if it was required target
+	return hits and hitId == targetID or hits and hitId == secondID or false, hits and hits[1].object
 end
 
 

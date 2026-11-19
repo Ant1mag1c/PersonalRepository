@@ -175,7 +175,7 @@ return
         finishParticleSize = 3,
         finishParticleSizeVariance = 10,
 
-        angle = 0,
+        angle = 180,
         angleVariance = 1,
 
         speed = 20,

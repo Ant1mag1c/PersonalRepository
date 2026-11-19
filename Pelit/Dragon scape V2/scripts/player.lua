@@ -35,7 +35,7 @@ function player.new(parent, reference)
 
 	local bodies = {
 		{
-	        box = { halfWidth = 3, halfHeight = 8, y = -10, x = 0 },
+	        box = { halfWidth = 3, halfHeight = 9, y = -8, x = 0 },
 			userData = "body"
 	    },
 

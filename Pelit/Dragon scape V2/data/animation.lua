@@ -17,7 +17,8 @@ return {
         enemy = {
             { name = "idle",   start = 1,  count = 1, time = playTime*0.8, loopCount = 0 },
             { name = "move",   start = 2,  count = 8, time = playTime, loopCount = 0 },
-            { name = "attack", start = 10, count = 6, time = playTime*1.3, loopCount = 1 },
+            { name = "attack", start = 10, count = 6, time = playTime*1.5, loopCount = 1 },
+            { name = "attackReverse", frames = {16, 15, 14, 13, 12, 11}, time = playTime*1.5, loopCount = 1 },
         }
     },
 

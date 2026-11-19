@@ -40,9 +40,9 @@ function enemy.new( parent, reference )
 
 	local bodies = {
 		{
-	        box = { halfWidth = 8, halfHeight = 8, y = -10, x = 0 },
+	        box = { halfWidth = 4, halfHeight = 8, y = -10, x = 0 },
 			userData = "body",
-			density = 10
+			density = 50
 	    },
 
 		{
@@ -59,11 +59,11 @@ function enemy.new( parent, reference )
 	local speed = 20
 	local health = 1
 
-	local playerSeen = false
-	local floorAhead = false
 	local onCooldown = false
-
-
+	local cdList = { }
+	-- local startTime, duration
+	-- local cdRuntime
+	-- local cdCallback
 
 	local function setState(newState)
 		if state == newState then return end
@@ -91,6 +91,43 @@ function enemy.new( parent, reference )
     end
 
     function newEnemy:attack()
+		local newProjectile = projectileModule:new( self, player )
+	end
+
+	local function hasTimePassed(startTime, duration)
+		return ( system.getTimer() - startTime ) >= duration
+	end
+
+	local function hold( duration, callback )
+		if duration and callback then
+			onCooldown = true
+
+			local newTable = {
+				startTime = system.getTimer(),
+				duration = duration,
+				callback = callback
+			}
+
+			table.insert(cdList, newTable)
+		end
+
+		if onCooldown then
+			for i = #cdList, 1, -1 do
+				local t = cdList[i]
+
+				local timePassed = hasTimePassed(t.startTime, t.duration)
+
+				if timePassed then
+					t.callback()
+					table.remove(cdList, i)
+				end
+			end
+
+			if #cdList == 0 then
+				onCooldown = false
+			end
+		end
+
 	end
 
 
@@ -98,17 +135,19 @@ function enemy.new( parent, reference )
 	local function update( event )
 		local self = newEnemy
 
-		if onCooldown then return end
-
 		local floorAhead = raycast.newRay( self, "platform")
-		local playerSeen = raycast.newRay( self, "attack")
+		local playerSeen, ref = raycast.newRay( self, "attack")
 		local wallAhead = raycast.newRay( self, "wall")
-
-
 		local mustTurn = not floorAhead or wallAhead
 
-		local delayTurn = devMode and 200 or 500
-		local delayMove = devMode and 200 or 400
+		local timeBeforeTurn = devMode and 200 or 1000
+		local timeBeforeMove = devMode and 200 or 400
+
+
+		if onCooldown then
+			hold()
+			return
+		end
 
 		if state == "idle" and not mustTurn then
 			self:move()
@@ -118,9 +157,15 @@ function enemy.new( parent, reference )
 		if playerSeen then
 			if state ~= "attack" then
 				setState("attack")
-
 				self:setLinearVelocity(0, 0)
 
+				if not ref or ref.id ~= "player" then
+					print("WARNING: Player reference not given")
+				end
+
+				player = ref
+
+				newEnemy:attack()
 			end
 
 		else
@@ -131,33 +176,35 @@ function enemy.new( parent, reference )
 					self:setLinearVelocity(0, 0)
 
 					-- Delay before turning around after near edge
-					timer.performWithDelay( delayTurn, function ()
+					hold( timeBeforeTurn, function ()
 						self.xScale = -self.xScale
 						lookDir = self.xScale == 0.5 and 1 or -1
 
 						self.lookDir = lookDir
-
-						-- Delay before starting to move again
-						timer.performWithDelay( delayMove, function()
-							self:move(lookDir)
-						end )
-
 					end )
+
+					hold( ( timeBeforeTurn + timeBeforeMove ), function() self:move() end)
 				end
 			end
 		end
 	end
 
 	local function spriteListener(event)
-		if event.phase == "ended" and state == "attack" then
-			onCooldown = true
+		local p = event.phase
+		if p == "ended" then print( event.target.sequence ) end
+
+		if p == "ended" and event.target.sequence == "attackReverse" then
+			setState("idle")
+		end
+
+		if p == "ended" and state == "attack" then
+
+			hold(300, function()
+				setState("attackReverse")
+			end )
 
 			-- Hold attack animation for a breaf moment
-			timer.performWithDelay( 300, function() setState( "idle" ) end )
-
-			-- Allow enemy to performs next action
-			timer.performWithDelay( 1800, function() onCooldown = false end )
-
+			hold(1800, function() return end )
 		end
 	end
 

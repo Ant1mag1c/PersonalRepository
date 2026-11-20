@@ -10,6 +10,7 @@ local t = {}
 
 
 function t:new( from, to )
+	local isLinearShot = from.id == "enemy"
 	local offset = from.id == "enemy" and 10 or 0
 	local fromX, fromY = from.x, from.y - offset
 	local speed = 30
@@ -29,6 +30,11 @@ function t:new( from, to )
 	local rad = math.rad(body.rotation)
 	local vx = math.cos(rad) * speed
 	local vy = math.sin(rad) * speed
+
+	if isLinearShot then
+		vx = from.lookDir * speed
+		vy = 0
+	end
 
 	body:setLinearVelocity(vx, vy)
 

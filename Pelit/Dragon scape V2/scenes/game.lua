@@ -22,7 +22,7 @@ local background, levelGroup, foreground, objectGroup
 local physics = require( "physics" )
 physics.start()
 physics.setGravity( 0, 9.8 )
-physics.setDrawMode( "hybrid" )  -- Vaihtoehdot: "normal", "debug", "hybrid"
+-- physics.setDrawMode( "hybrid" )  -- Vaihtoehdot: "normal", "debug", "hybrid"
 
 --------------------------------------------------------------------------------------
 -- scene event -funktioiden ulkopuolella oleva koodi suoritetaan vain kerran, ellei
@@ -100,6 +100,7 @@ local function onCollision( self, event )
 		if myPart == "leg" and (id == "platform" or id == "obstacle" or id == "enemy")  then
 			player:resetJumpCount()
 			player.isClimbing = false
+			player.onGround = true
 
 		elseif id == "rope" then
 			player:touchRope( true, other )
@@ -135,9 +136,9 @@ local function onCollision( self, event )
 	elseif phase == "ended" then
 		if id == "rope" then
 			player:touchRope( false )
-			if not self.isClimbing then
-				player.touchedRope = nil
-			end
+
+		elseif myPart == "leg" and (id == "platform" or id == "obstacle" or id == "enemy")  then
+			player.onGround = false
 		end
 
 	end

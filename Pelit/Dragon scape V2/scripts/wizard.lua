@@ -61,9 +61,6 @@ function enemy.new( parent, reference )
 
 	local onCooldown = false
 	local cdList = { }
-	-- local startTime, duration
-	-- local cdRuntime
-	-- local cdCallback
 
 	local function setState(newState)
 		if state == newState then return end

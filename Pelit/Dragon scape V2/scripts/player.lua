@@ -55,8 +55,6 @@ function player.new(parent, reference)
 	local maxJumpCount = 1
 	local jumpForce = -0.0052
 	local ropeTouchCount = 0
-	local touchedRope
-
 
 	newPlayer.moveSpeed = 60
 	newPlayer.currentHP = 2
@@ -130,6 +128,7 @@ function player.new(parent, reference)
 	end
 
 	function newPlayer:move(vx, vy)
+		local touchedRope = self.touchedRope
 		local onAir = jumpCount == maxJumpCount
 		local lookNow = vx == 1 and 1 or vx == -1 and -1 or nil
 		local _, currentVy = self:getLinearVelocity()
@@ -169,18 +168,23 @@ function player.new(parent, reference)
 					self.gravityScale = 0
 					setState("climbIdle")
 				end
-			else
+
+			elseif vy ~= 0 then
+				local playerOnGround = currentVy == 0 and vy == 1 and (touchedRope and not touchedRope.tag)
+				-- print( currentVy == 0, vy == 1, touchedRope and touchedRope.tag )
+				if playerOnGround then
+					self.isClimbing = false
+					return
+				end
+
+				self.isClimbing = true
+
 				setState("climb")
 				self.x = touchedRope.x
 
 				currentVy = vy * self.moveSpeed
 
-				local platform = touchedRope.platform
-
-				if platform then
-					display.remove(platform)
-					touchedRope.platform = nil
-				end
+				-- If player is on touching ground then stop climbing
 			end
 		end
 
@@ -194,14 +198,10 @@ function player.new(parent, reference)
 	function newPlayer:touchRope(didTouchBegin, ref)
 		if didTouchBegin then
 			ropeTouchCount = ropeTouchCount + 1
+
 		else
 			ropeTouchCount = math.max(ropeTouchCount - 1, 0)
 		end
-
-		if not touchedRope then
-			touchedRope = ref
-		end
-
 
 		if ropeTouchCount > 0 then
 			self.ropeTouched = true
@@ -209,7 +209,6 @@ function player.new(parent, reference)
 			self.ropeTouched = false
 			self.isClimbing = false
 			self.gravityScale = 1
-			touchedRope = nil
 		end
 
 

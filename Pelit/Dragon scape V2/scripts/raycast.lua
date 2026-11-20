@@ -25,6 +25,7 @@ function m.newRay( from, rayType )
 
 		if rayType == "platform" then
 			targetID = "platform"
+			secondID = "rope"
 			local lenght = 20
 			-- line = true
 
@@ -50,13 +51,10 @@ function m.newRay( from, rayType )
 	elseif from.id == "player" then
 	end
 
-	local rayFilter = {
-		categoryBits = 0xFFFF - 4,
-    	maskBits = 0xFFFF
-	}
-
-	local hits = physics.rayCast( fromX, fromY, toX, toY, "closest", rayFilter )
+	local hits = physics.rayCast( fromX, fromY, toX, toY, "closest" )
 	local hitId = hits and hits[1].object.id
+
+	-- print(hitId)
 
 	-- Debug line
 	if line then

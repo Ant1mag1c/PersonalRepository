@@ -60,10 +60,6 @@ end
 local function movePlayer( vx, vy )
 	local _, currentVy = player:getLinearVelocity()
 
-	if currentVy ~= 0 and vy ~= 0 and player.ropeTouched and not player.isClimbing then
-		player.isClimbing = true
-	end
-
 	player:move( vx, vy )
 end
 
@@ -84,7 +80,7 @@ local function keyPressed( action, phase )
 end
 
 local function onEnterFrame()
-
+	print("Tr:", player.touchedRope)
 end
 
 local function onCollision( self, event )
@@ -107,25 +103,8 @@ local function onCollision( self, event )
 			player.isClimbing = false
 
 		elseif id == "rope" then
-			if self.y < other.y and not self.isClimbing then
-				timer.performWithDelay( 1, function ()
-					if other.platform then
-						print("REMOVING OLD PLATFORM")
-						display.remove(other.platform.body)
-						other.platform.body = nil
-					end
-
-					-- local platformY = ( other.y - other.height * 0.5 ) + 2
-
-					-- local platform = display.newRect( levelGroup, other.x, platformY, 20, 2 ); platform.alpha = 0
-					-- physics.addBody( platform, "static", {bounce=0} )
-					-- other.platform = platform
-				end )
-
-			end
-
-			local tx = other.x
 			player:touchRope( true, other )
+			player.touchedRope = other
 
 		elseif id == "heart" or id == "coin" then
 			event.other:collect()
@@ -159,16 +138,28 @@ local function onCollision( self, event )
 		end
 
 	elseif phase == "ended" then
-		if event.other.isStairs then
-			player.moveSpeed = 100
-		end
-
 		if id == "rope" then
 			player:touchRope( false )
+			if not self.isClimbing then
+				player.touchedRope = nil
+			end
 		end
 
 	end
 end
+
+local function onPreCollision(self, event)
+	-- print(self.isClimbing)
+
+	local other = event.other
+	if other.id == "rope" and other.tag == "top" and self.isClimbing then
+		event.contact.isEnabled = false
+	end
+
+
+end
+
+
 
 --------------------------------------------------------------------------------------
 -- scene event -funktiot:
@@ -203,42 +194,37 @@ function scene:create( event )
 
 	player.collision = onCollision
 	player:addEventListener( "collision" )
+	player.preCollision = onPreCollision
+	player:addEventListener("preCollision")
 
 	-- Handle ropes/stairs
 	local ropes = map.getAllTiles("name", "rope")
 
 	for i = 1, #ropes do
 		local ref = ropes[i]
-		local tag = ref.tag
-		ref.id = "rope"
+		ropes[i].id = "rope"
 
-		local yOffset = tag and tag == "top" and 8
-		local params = { halfWidth = 2, halfHeight = 8, y = yOffset or 0, x = 0 }
-		local filter = { categoryBits = 4, maskBits = 0xFFFF }
+		local isTop = ref.tag and ref.tag == "top" or false
+
+		local hw = isTop and 8 or 2
+		local y = isTop and 10 or 0
+
+		local params = { halfWidth = hw, halfHeight = 9, y = y, x = 0 }
+		local isSensor = not isTop and true or false
 
 		physics.addBody( ref, "static", {
 			box = params,
 			filter = filter,
-			isSensor = true
+			isSensor = isSensor
 		} )
 
-		local platformY = ref.y + 3
-
-		if tag then
-			local platform = display.newRect( levelGroup, ref.x, platformY, 20, 2 ); platform.alpha = 0
-			physics.addBody( platform, "static", {bounce=0} )
-			ref.platform = {
-				body = platform,
-				y = platformY
-			}
-		end
 	end
 
 	-- Generate enemies
 	local enemyRefs = map:findObjects("enemy")
 
 	for i = 1, #enemyRefs do
-		enemyRefs[i] = wizardModule.new(levelGroup, enemyRefs[i], player)
+		enemyRefs[i] = wizardModule.new(levelGroup, enemyRefs[i])
 		enemy[i] = enemyRefs[i]
 	end
 

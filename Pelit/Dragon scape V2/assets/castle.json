@@ -151,8 +151,8 @@
                  "type":"",
                  "visible":true,
                  "width":9,
-                 "x":165.613636363636,
-                 "y":169.78409090909
+                 "x":284.363636363636,
+                 "y":170.28409090909
                 }, 
                 {
                  "gid":886,
@@ -175,8 +175,8 @@
                  "type":"",
                  "visible":true,
                  "width":8.25,
-                 "x":117.280303030303,
-                 "y":120.079545454545
+                 "x":219.280303030303,
+                 "y":172.579545454545
                 }, 
                 {
                  "height":3.75,
@@ -1111,42 +1111,42 @@
                  "id":731,
                  "properties":[
                         {
+                         "name":"isTopLayer",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
                          "name":"name",
                          "type":"string",
                          "value":"rope"
-                        }, 
-                        {
-                         "name":"tag",
-                         "type":"string",
-                         "value":"top"
                         }]
                 }, 
                 {
                  "id":732,
                  "properties":[
                         {
+                         "name":"isTopLayer",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
                          "name":"name",
                          "type":"string",
                          "value":"rope"
-                        }, 
-                        {
-                         "name":"tag",
-                         "type":"string",
-                         "value":"top"
                         }]
                 }, 
                 {
                  "id":733,
                  "properties":[
                         {
+                         "name":"isTopLayer",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
                          "name":"name",
                          "type":"string",
                          "value":"rope"
-                        }, 
-                        {
-                         "name":"tag",
-                         "type":"string",
-                         "value":"top"
                         }]
                 }, 
                 {

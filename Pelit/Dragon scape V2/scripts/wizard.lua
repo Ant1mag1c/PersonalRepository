@@ -191,7 +191,6 @@ function enemy.new( parent, reference )
 
 	local function spriteListener(event)
 		local p = event.phase
-		if p == "ended" then print( event.target.sequence ) end
 
 		if p == "ended" and event.target.sequence == "attackReverse" then
 			setState("idle")

@@ -80,7 +80,6 @@ local function keyPressed( action, phase )
 end
 
 local function onEnterFrame()
-	print("Tr:", player.touchedRope)
 end
 
 local function onCollision( self, event )
@@ -106,9 +105,6 @@ local function onCollision( self, event )
 			player:touchRope( true, other )
 			player.touchedRope = other
 
-		elseif id == "heart" or id == "coin" then
-			event.other:collect()
-
 			if id == "heart" then
 				player:addHP( 1 )
 				counterHP:update( player.currentHP )
@@ -120,22 +116,21 @@ local function onCollision( self, event )
 			controls.stop()
 			menuOpen( "complete" )
 
-		elseif id == "spikes" or id == "projectile" and not self.isImmortal or event.other.isEnemy then
-			local isProjectile = (id == "projectile")
+		elseif not self.isImmortal and		( id == "projectile" or id == "spikes" ) then
 			local damage = 1
 
-			if isProjectile then
-				other.remove()
-			end
-
-			player:takeDamage( damage, isBorder )
+			player:takeDamage( damage )
 			counterHP:update( player.currentHP )
+
+			display.remove(other)
+			other = nil
 
 			if player.isDead then
 				controls.stop()
 				menuOpen( "gameover" )
 			end
 		end
+
 
 	elseif phase == "ended" then
 		if id == "rope" then
@@ -149,14 +144,19 @@ local function onCollision( self, event )
 end
 
 local function onPreCollision(self, event)
-	-- print(self.isClimbing)
-
-	local other = event.other
-	if other.id == "rope" and other.tag == "top" and self.isClimbing then
-		event.contact.isEnabled = false
+	if not event and event.contact then return end
+	-- print("preCollided with ", event.other.id)
+	if player.isDead then
+		return
 	end
 
+	local other = event.other
 
+	if other.id == "rope" and other.isTopLayer then
+		if self.isClimbing or self.onAir then
+			event.contact.isEnabled = false
+		end
+	end
 end
 
 
@@ -204,12 +204,12 @@ function scene:create( event )
 		local ref = ropes[i]
 		ropes[i].id = "rope"
 
-		local isTop = ref.tag and ref.tag == "top" or false
+		local isTop = ref.isTopLayer or false
 
 		local hw = isTop and 8 or 2
 		local y = isTop and 10 or 0
 
-		local params = { halfWidth = hw, halfHeight = 9, y = y, x = 0 }
+		local params = { halfWidth = hw, halfHeight = 8, y = y, x = 0 }
 		local isSensor = not isTop and true or false
 
 		physics.addBody( ref, "static", {

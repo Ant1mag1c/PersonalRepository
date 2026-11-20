@@ -63,9 +63,10 @@ function player.new(parent, reference)
 
 	newPlayer.ropeTouched = false
 	newPlayer.isClimbing = false
+	newPlayer.onAir = false
 
 	newPlayer.timerImmortal = nil
-	newPlayer.isImmortal = true
+	newPlayer.isImmortal = false
 	newPlayer.isInvisible = false
 
 	local immortalTime = 500
@@ -136,6 +137,7 @@ function player.new(parent, reference)
 		local jumpReset = jumpCount ~= maxJumpCount
 		local climbing = self.isClimbing
 
+
 		if state == "attack" or state == "dead" then
 			local _, currentVy = self:getLinearVelocity()
 			self:setLinearVelocity(0, currentVy)
@@ -170,21 +172,13 @@ function player.new(parent, reference)
 				end
 
 			elseif vy ~= 0 then
-				local playerOnGround = currentVy == 0 and vy == 1 and (touchedRope and not touchedRope.tag)
-				-- print( currentVy == 0, vy == 1, touchedRope and touchedRope.tag )
-				if playerOnGround then
-					self.isClimbing = false
-					return
-				end
-
+				if not touchedRope then return end
 				self.isClimbing = true
 
 				setState("climb")
 				self.x = touchedRope.x
 
 				currentVy = vy * self.moveSpeed
-
-				-- If player is on touching ground then stop climbing
 			end
 		end
 
@@ -192,10 +186,11 @@ function player.new(parent, reference)
 		if vx ~= 0 and climbing then vx = 0 end
 
 
+		self.onAir = onAir
 		self:setLinearVelocity(vx * self.moveSpeed, currentVy)
 	end
 
-	function newPlayer:touchRope(didTouchBegin, ref)
+	function newPlayer:touchRope(didTouchBegin)
 		if didTouchBegin then
 			ropeTouchCount = ropeTouchCount + 1
 
@@ -210,6 +205,7 @@ function player.new(parent, reference)
 			self.isClimbing = false
 			self.gravityScale = 1
 		end
+
 
 
 		-- print("RopeTouched/Climbing/TX: ", self.ropeTouched, self.isClimbing)

@@ -1,3 +1,5 @@
+local debug = require("com.debug")
+
 local controls = {}
 
 local callbackMovement
@@ -34,7 +36,8 @@ local function monitorMovement()
 		player:attack(1)
 	elseif isPressed["jump"] then
 		player:jump( true )
-
+	elseif isPressed["debug"] then
+		debug.call()
 	end
 
 	callbackMovement(vx, vy)

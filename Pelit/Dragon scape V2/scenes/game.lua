@@ -16,6 +16,7 @@ local controls = require( "scripts.controls" )
 local loadsave = require( "scripts.loadsave" )
 local camera = require( "scripts.camera" )
 local effects = require("data.effects")
+local debug = require("com.debug")
 
 local background, levelGroup, foreground, objectGroup
 
@@ -147,14 +148,19 @@ end
 local function onPreCollision(self, event)
 	if not event and event.contact then return end
 	-- print("preCollided with ", event.other.id)
+
+	local other = event.other
+
+
 	if player.isDead then
 		return
 	end
 
-	local other = event.other
+
 
 	if other.id == "rope" and other.isTopLayer then
-		if self.isClimbing or self.onAir then
+		print(self.y > other.y)
+		if self.onAir or self.isClimbing then
 			event.contact.isEnabled = false
 		end
 	end
@@ -328,6 +334,15 @@ function scene:destroy( event )
 end
 
 
+-- Run debugScene
+timer.performWithDelay( 10, function ()
+	debug.add( player, "onAir")
+	debug.add( player, "onGround")
+	debug.add( player, "isClimbing")
+	debug.add( player, "ropeTouched")
+end )
+
+
 --------------------------------------------------------------------------------------
 -- Scene event -kuuntelijat:
 -- Voit valita mitä tapahtumia haluat kuunnella. Jos et esimerkiksi koskaan
@@ -344,23 +359,3 @@ Runtime:addEventListener("enterFrame", onEnterFrame)
 -- Lopuksi palautetaan scene, jolloin tiedosto toimii Lua-moduulina.
 return scene
 
---------------------------------------------------------------------------------------
------ 	Haetaan kaikki viholliset kentästä.
-	-- 	local enemies = map.getAllTiles( "isEnemy" )
-	-- 	for i = 1, #enemies do
-	-- 		local thisEnemy = enemies[i]
-	-- 		if thisEnemy.id == "hat" then
-	-- 			enemy[#enemy + 1] = hatModule.new( levelGroup, enemies[i] )
-	-- 			enemy[#enemy]:startAI( player )
-	-- 		end
-	-- 	end
-
-
-	-- 	local hearts = map.getAllTiles( "id", "heart" )
-	-- 	for i = 1, #hearts do
-	-- 		heartModule.new( levelGroup, hearts[i] )
-	-- 	end
-
-
-	-- 	local flag = map.getFirstTile( "id", "goal" )
-	-- 	goalModule.new( levelGroup, flag )

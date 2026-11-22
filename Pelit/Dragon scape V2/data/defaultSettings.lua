@@ -13,6 +13,7 @@ return {
 		["menu"] = { "escape" },
 		["attackLeft"] = { "left" },
 		["attackRight"] = { "right" },
+		["debug"] = { "enter" },
 
 		-- ["attack"] = { "ctrl" },
 	},

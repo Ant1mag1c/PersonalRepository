@@ -1,214 +1,216 @@
 local effects = require("data.effects")
 local emitterModule = require("scripts.emitter")
 local projectileModule = require("scripts.projectileModule")
-local raycastModule = require("scripts.raycast")
-local json = require( "json" )
+local raycast = require("scripts.raycast")
+local animation = require("data.animation")
 local player
 
-local characterData = {
-	id = "enemy",
-	x = 0,
-	y = 0,
-	anchorY = 0.8,
-	xScale = 0.5,
-	yScale = 0.5,
-	stateNow = "idle",
-	prevState = "idle",
-	lookDir = 1,
-	speed = 60,
-	currentHP = 2,
-	maxHP = 2,
-	attackCooldown = 1000,
+local devMode = true
 
-	playerSeen = false,
-	lastAttackTime = nil,
-	attackTimer = nil,
-	animateTime = 600,
-	playerRef = nil,
+if devMode then print("enemy debug true") end
 
-	-- Helper functions
-	loadAnim = function( self, sequence ) self:setSequence(sequence); self:play() end,
-	removeObj = function( targetObj ) targetObj:removeSelf(); targetObj = nil end,
-	setState = function(self, state) if self.stateNow ~= state then
-        self.stateNow = state
-		if state ~= "move" then self:setLinearVelocity( 0 ) end
-        print("State changed to:", state)
-    end
-
-end
+local enemy = {}
 
 
-}
-
-local wizard = {}
-
-local sheet = graphics.newImageSheet( "assets/images/characters/wizard.png",
-	{
-		width = 64,
-		height = 64,
-		numFrames = 27
-	}
+local sequence = animation.sequences["enemy"]
+local sheet = graphics.newImageSheet(
+	animation.sheets["enemy"],
+	animation.data["enemy"]
 )
 
 
-local animation = {
-	{ name = "idle",   frames= { 1 }, time = characterData.nimateTime, loopCount = 0 },
-	{ name = "move",   start = 2,  count = 8, time = characterData.animateTime, loopCount = 0 },
-	{ name = "cast", start = 10, count = 7, time = characterData.animateTime, loopCount = 3 },
-	{ name = "attack", frames= { 23 }, time = characterData.animateTime, loopCount = 1 },
-}
 
-
--- local function removeObj( targetObj )
--- 	if targetObj.id then
--- 		-- print( "removing object: ", targetObj.id )
--- 		targetObj:removeSelf(); targetObj = nil
--- 	else
--- 		print("invalid id")
--- 	end
--- end
-
-function wizard.new(parent, reference, playerRef)
-	if playerRef then characterData.playerRef = playerRef end
+function enemy.new( parent, reference )
+	local x, y = reference.x, reference.y
 
 	if reference then
-		characterData.x, characterData.y = reference.x, reference.y
 		display.remove(reference)
 	else
         return false
 	end
 
-    local wizard = display.newSprite(sheet, animation)
-	parent:insert( wizard )
-	wizard._parent = parent
+    local newEnemy = display.newSprite(sheet, sequence)
+	parent:insert( newEnemy )
 
-	-- Noudetaan characterDatan sisältö ja liitetään ne objektiin
-	for k, v in pairs(characterData) do
-		wizard[k] = v
-	end
+	newEnemy.x, newEnemy.y = x, y
+	newEnemy.xScale, newEnemy.yScale = 0.5, 0.5
+	newEnemy.anchorY = 0.8
+	newEnemy.id = "enemy"
+	newEnemy.lookDir = 1
 
-
-	physics.addBody( wizard, "dynamic",
-	    {
+	local bodies = {
+		{
 	        box = { halfWidth = 4, halfHeight = 8, y = -10, x = 0 },
-			userData = "body"
+			userData = "body",
+			density = 50
 	    },
 
-	    {
-	        radius = 3,
+		{
+			radius = 2,
 			userData = "foot"
 	    }
-	)
-	wizard.isFixedRotation = true
+	}
 
+	physics.addBody( newEnemy, "dynamic", bodies[1], bodies[2])
+	newEnemy.isFixedRotation = true
 
-    function wizard:move( prevState )
-		wizard.lookDir = (wizard.xScale * 2)
+	local state = "idle"
+	local lookDir = 1
+	local speed = 20
+	local health = 1
 
-		self:setLinearVelocity( self.xScale * self.speed, 0 )
+	local onCooldown = false
+	local cdList = { }
 
-		if wizard.state ~= prevState then --Ladataan liikeanimaatio
-			wizard:setSequence("move")
-			wizard:play()
+	local function setState(newState)
+		if state == newState then return end
+
+		-- Check that newState exists in data
+		for i = 1, #animation.sequences do
+			local name = animation.sequences[i].name
+
+			if not newState == name then print("WARNING Invalide sequence") return false end
 		end
+		state = newState
 
-    end
+		newEnemy:setSequence(newState)
+		newEnemy:play()
 
-    function wizard:attack()
-	    if attackTimer then return end  -- HARD guard
-
-	    wizard:setSequence("attack")
-	    wizard:play()
-
-	    local x = self.x + self.width/2.6 * self.xScale
-	    local y = self.y + 5
-
-	    local effectIn = emitterModule.new(wizard._parent, x, y, "attackEffectIn")
-
-	    local duration = (effectIn.duration * 2.3) * 1000
-
-	    attackTimer = timer.performWithDelay(duration, function()
-	        removeObj(effectIn)
-
-	        local effectOut = emitterModule.new(wizard._parent, x, y, "attackEffectOut")
-	        local projectile = projectileModule.new(wizard, x, y, removeObj)
-			projectile.angle = wizard.lookDir == -1 and 0 or 180
-
-	        timer.performWithDelay(1000, function()
-	            removeObj(effectOut)
-	            attackTimer = nil
-	            setState(states.idle)
-				lastAttack = system.getTimer()
-
-				self:setSequence("idle")
-				self:play()
-				print("idle")
-	        end )
-	    end)
+		-- print("New state: ", newState)
 	end
 
+    function newEnemy:move()
+		if state == "move" then return end
 
-    function wizard:cast()
+		setState("move")
+
+		self:setLinearVelocity(lookDir * speed, 0)
     end
+
+    function newEnemy:attack()
+		local newProjectile = projectileModule:new( self, player )
+	end
+
+	local function hasTimePassed(startTime, duration)
+		return ( system.getTimer() - startTime ) >= duration
+	end
+
+	local function hold( duration, callback )
+		if duration and callback then
+			onCooldown = true
+
+			local newTable = {
+				startTime = system.getTimer(),
+				duration = duration,
+				callback = callback
+			}
+
+			table.insert(cdList, newTable)
+		end
+
+		if onCooldown then
+			for i = #cdList, 1, -1 do
+				local t = cdList[i]
+
+				local timePassed = hasTimePassed(t.startTime, t.duration)
+
+				if timePassed then
+					t.callback()
+					table.remove(cdList, i)
+				end
+			end
+
+			if #cdList == 0 then
+				onCooldown = false
+			end
+		end
+
+	end
 
 
     -- Päivitetään vihollisen logiikkaa joka frame
-	function wizard:enterFrame( event )
-	    -- print(self, event.time)
-		local idle, move, attack = "idle", "move", "attack"
+	local function update( event )
+		local self = newEnemy
 
-		if wizard.state == attack then return end
+		local floorAhead = raycast.newRay( self, "platform")
+		local playerSeen, ref = raycast.newRay( self, "attack")
+		local wallAhead = raycast.newRay( self, "wall")
+		local mustTurn = not floorAhead or wallAhead
 
-		-- Hyökkäyksen cooldown
-		if self.lastAttackTime then
-			if ( system.getTimer() - self.lastAttackTime ) < self.attackCooldown then return end
+		local timeBeforeTurn = devMode and 200 or 1000
+		local timeBeforeMove = devMode and 200 or 400
+
+
+		if onCooldown then
+			hold()
+			return
 		end
 
-		wizard.playerSeen = raycastModule.newRay( wizard, wizard.lookDir, "player")
+		if state == "idle" and not mustTurn then
+			self:move()
+		end
 
 
+		if playerSeen then
+			if state ~= "attack" then
+				setState("attack")
+				self:setLinearVelocity(0, 0)
 
+				if not ref or ref.id ~= "player" then
+					print("WARNING: Player reference not given")
+				end
+
+				player = ref
+
+				newEnemy:attack()
+			end
+
+		else
+			if mustTurn then
+				if state ~= "idle" then
+					setState("idle")
+
+					self:setLinearVelocity(0, 0)
+
+					-- Delay before turning around after near edge
+					hold( timeBeforeTurn, function ()
+						self.xScale = -self.xScale
+						lookDir = self.xScale == 0.5 and 1 or -1
+
+						self.lookDir = lookDir
+					end )
+
+					hold( ( timeBeforeTurn + timeBeforeMove ), function() self:move() end)
+				end
+			end
+		end
 	end
 
-    -- function wizard.update()
-	-- 	if wizard.state == states.attacking then return end
+	local function spriteListener(event)
+		local p = event.phase
 
-	-- 	-- if lastAttack then
-	-- 	-- 	if ( system.getTimer() - lastAttack ) < cooldown then
-	-- 	-- 		return
-	-- 	-- 	end
-	-- 	-- end
+		if p == "ended" and event.target.sequence == "attackReverse" then
+			setState("idle")
+		end
 
-	-- 	-- -- Otetaan tämänhetkinen state talteen ennen mahdollisia muutoksia
-	-- 	-- local prevState = wizard.state
+		if p == "ended" and state == "attack" then
 
-	-- 	wizard.playerInRange = raycastModule.newRay( wizard, wizard.lookDir, "platform")
+			hold(300, function()
+				setState("attackReverse")
+			end )
 
-	-- 	-- if self.playerInRange then
-	-- 	-- 	    if setState(states.attacking) then
-	-- 	-- 		        wizard:attack()
-	-- 	-- 		    end
-	-- 	-- 		    return
-	-- 	-- 		end
+			-- Hold attack animation for a breaf moment
+			hold(1800, function() return end )
+		end
+	end
 
-	-- 	wizard.playerSeen = raycastModule.newRay( wizard, wizard.lookDir, "player")
-	-- 	-- 		if not self.platformAhead then
-	-- 	-- 				setState( states.idle )
-	-- 	-- 				-- TODO: Lisää viive
-	-- 	-- 	wizard.xScale = ( wizard.xScale * -1)
-	-- 	-- else
-	-- 		-- setState( states.moving )
-	-- 	-- end
+	newEnemy:addEventListener("sprite", spriteListener)
+	Runtime:addEventListener( "enterFrame", update )
 
-	-- 	-- wizard:move( prevState )
-	-- end
+	newEnemy:move()
 
-	-- timer.performWithDelay(500, function()	print( wizard.platformAhead ) end, 100 )
-
-
-    Runtime:addEventListener( "enterFrame", wizard )
-    return wizard
+	return newEnemy
 end
 
 
-return wizard
+return enemy

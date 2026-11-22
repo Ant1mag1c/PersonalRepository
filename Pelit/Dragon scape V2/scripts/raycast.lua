@@ -1,84 +1,77 @@
 local m = {}
 
-local settings = {
-	platform = {
-		index = 1,
-		targetID = "platform",
-		startX = 5,
-		startY = 5,
-		endX = 5,
-		endY = 13,
-		-- debugLine = true,
-	},
 
-	player = {
-		index = 2,
-		targetID = "player",
-		startX = 0,
-		startY = -8,
-		endX = 40, --Attack range
-		endY = -8,
-		debugLine = true,
-	},
-
-	enemy = {
-		startX = 0,
-		startY = 0,
-		endX = 0,
-		endY = 0,
-	},
-
-}
-
-local lines = {}
-
-function m.newRay( character, direction, targetID  )
-	local data = settings[targetID]
-
-	if not data then return false end
-	local x1 = character.x + data.startX
-	local x2 = character.x + data.endX * direction or 1
-	local y1 = character.y + data.startY
-	local y2 = character.y + data.endY
-
-	local hits = physics.rayCast( x1, y1, x2, y2, "closest" )
-
-
- 	if data.debugLine then
-		local index = data.index
-		local rayColor = hits and { 1,0,0 } or { 0,1,0 }
-
-		local thisLine = display.newLine( character._parent, x1, y1, x2, y2 )
-		thisLine:setStrokeColor( unpack(rayColor) )
-		thisLine.strokeWidth = 2
-
-		lines[index] = thisLine
-
-		timer.performWithDelay(5, function()
-		    if thisLine and thisLine.removeSelf then
-		        display.remove(thisLine)
-		    end
-		    if lines[index] == thisLine then
-		        lines[index] = nil
-		    end
-		end )
-
+function m.newRay( from, rayType )
+	if not from or not from.id or not rayType then
+		return false
 	end
 
 
-	-- Tarkistetaan löytyykö osumista targetID ja lopetetaan loop siihen
-    if hits then
-	    for i = 1, #hits do
-	        local hitObject = hits[i].object
-            local isStairs = hitObject.id == "platform" and hitObject.isStairs == true
+	local fromX, fromY = from.x, from.y - 10
+	local toX, toY
+	local line = false
+	local targetID = nil
+	local secondID = nil
 
-	        if hitObject.id == targetID and not isStairs then
-                return true
-            end
-	    end
+
+	-- Handle ray parameters according to rayType
+	if from.id == "enemy" then
+		local lookDir = from.lookDir
+		local offset = 4
+		local attackRange = 60
+		local wallRange = 5
+
+		fromX = fromX + (offset * lookDir)
+
+		if rayType == "platform" then
+			targetID = "platform"
+			secondID = "rope"
+			local lenght = 20
+			-- line = true
+
+			toX, toY = fromX, (fromY + lenght)
+
+
+		elseif rayType == "attack" then
+			targetID = "player"
+			local lenght = attackRange
+			line = true
+
+			toX, toY = fromX + (lenght * lookDir), fromY
+
+		elseif rayType == "wall" then
+			targetID = "wall"
+			secondID = "obstacle"
+			local lenght = wallRange
+			-- line = true
+
+			toX, toY = fromX + (lenght * lookDir), fromY
+		end
+
+	elseif from.id == "player" then
 	end
 
-    return false
+	local hits = physics.rayCast( fromX, fromY, toX, toY, "closest" )
+	local hitId = hits and hits[1].object.id
+
+	-- print(hitId)
+
+	-- Debug line
+	if line then
+		local color = hits and hits[1] and ( hitId == targetID or hitId == secondID )
+			and { 0, 1, 0 }
+			or { 1, 0, 0 }
+
+		line = display.newLine( from.parent, fromX, fromY, toX, toY )
+		line:setStrokeColor( unpack(color) )
+
+		timer.performWithDelay( 2, function () display.remove(line); line = nil end )
+	end
+
+	-- Return hitted object and also if it was required target
+	return hits and hitId == targetID or hits and hitId == secondID or false, hits and hits[1].object
 end
+
+
 
 return m

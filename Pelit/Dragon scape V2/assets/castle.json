@@ -10,7 +10,7 @@
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 296, 297, 297, 297, 297, 297, 297, 297, 297, 297, 297, 297, 297, 0, 0, 0, 0,
             500, 500, 500, 503, 500, 500, 500, 503, 500, 500, 500, 503, 500, 500, 500, 503, 500, 500, 500, 503, 500, 500, 500, 503, 503, 503, 503, 503, 503, 503,
             517, 517, 517, 520, 517, 517, 517, 520, 517, 517, 517, 520, 517, 517, 517, 520, 517, 517, 517, 520, 517, 517, 517, 520, 520, 520, 520, 520, 520, 520,
-            534, 534, 534, 537, 534, 534, 534, 332, 333, 333, 333, 334, 534, 534, 534, 537, 534, 534, 534, 537, 534, 534, 534, 537, 537, 537, 537, 537, 537, 537,
+            534, 534, 534, 537, 534, 534, 534, 332, 333, 333, 333, 334, 534, 332, 333, 333, 333, 333, 334, 537, 534, 534, 534, 537, 537, 537, 537, 537, 537, 537,
             500, 500, 500, 503, 500, 500, 500, 503, 500, 452, 500, 500, 452, 503, 500, 500, 500, 503, 500, 452, 500, 500, 452, 503, 500, 500, 500, 503, 500, 452,
             517, 517, 517, 520, 517, 517, 517, 520, 468, 469, 468, 468, 469, 520, 517, 517, 517, 520, 468, 469, 468, 468, 469, 520, 517, 517, 517, 520, 468, 469,
             534, 534, 534, 537, 534, 534, 534, 537, 468, 486, 468, 468, 486, 537, 534, 534, 534, 537, 468, 486, 468, 468, 486, 537, 534, 534, 534, 537, 468, 486,
@@ -39,12 +39,12 @@
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 733, 0, 0, 733, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 750, 0, 0, 750, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 734, 0, 0, 0, 0, 0, 0, 0, 0, 750, 0, 0, 750, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 751, 0, 0, 0, 0, 0, 0, 0, 0, 750, 0, 0, 750, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 751, 0, 0, 0, 0, 0, 0, 0, 0, 750, 0, 0, 750, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 768, 0, 0, 0, 0, 0, 0, 0, 0, 767, 0, 0, 767, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 733, 0, 0, 733, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 750, 0, 0, 750, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 734, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 750, 0, 0, 750, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 751, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 750, 0, 0, 750, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 751, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 750, 0, 0, 750, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 768, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 767, 0, 0, 767, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -70,42 +70,9 @@
          "name":"objects",
          "objects":[
                 {
-                 "height":53.4166666666667,
-                 "id":2,
-                 "name":"rope",
-                 "opacity":1,
-                 "properties":[
-                        {
-                         "name":"alpha",
-                         "type":"int",
-                         "value":0
-                        }, 
-                        {
-                         "name":"bodyType",
-                         "type":"string",
-                         "value":"static"
-                        }, 
-                        {
-                         "name":"id",
-                         "type":"string",
-                         "value":"rope"
-                        }, 
-                        {
-                         "name":"isSensor",
-                         "type":"bool",
-                         "value":true
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":9.59636363636361,
-                 "x":130.82303030303,
-                 "y":121.431818181818
-                }, 
-                {
                  "height":3.75,
                  "id":4,
-                 "name":"",
+                 "name":"floor",
                  "opacity":1,
                  "properties":[
                         {
@@ -131,14 +98,14 @@
                  "rotation":0,
                  "type":"",
                  "visible":true,
-                 "width":50.53125,
-                 "x":140.46875,
+                 "width":45.84375,
+                 "x":145.15625,
                  "y":122.125
                 }, 
                 {
                  "height":3.75,
                  "id":5,
-                 "name":"",
+                 "name":"floor",
                  "opacity":1,
                  "properties":[
                         {
@@ -164,75 +131,9 @@
                  "rotation":0,
                  "type":"",
                  "visible":true,
-                 "width":17.7813,
+                 "width":12.7188,
                  "x":113.222986363636,
                  "y":122.119318181818
-                }, 
-                {
-                 "height":90.5417,
-                 "id":6,
-                 "name":"rope",
-                 "opacity":1,
-                 "properties":[
-                        {
-                         "name":"alpha",
-                         "type":"int",
-                         "value":0
-                        }, 
-                        {
-                         "name":"bodyType",
-                         "type":"string",
-                         "value":"static"
-                        }, 
-                        {
-                         "name":"id",
-                         "type":"string",
-                         "value":"rope"
-                        }, 
-                        {
-                         "name":"isSensor",
-                         "type":"bool",
-                         "value":true
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":9.59636,
-                 "x":275.20182,
-                 "y":84.66665
-                }, 
-                {
-                 "height":90.5417,
-                 "id":7,
-                 "name":"rope",
-                 "opacity":1,
-                 "properties":[
-                        {
-                         "name":"alpha",
-                         "type":"int",
-                         "value":0
-                        }, 
-                        {
-                         "name":"bodyType",
-                         "type":"string",
-                         "value":"static"
-                        }, 
-                        {
-                         "name":"id",
-                         "type":"string",
-                         "value":"rope"
-                        }, 
-                        {
-                         "name":"isSensor",
-                         "type":"bool",
-                         "value":true
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":9.59636,
-                 "x":323.747274545455,
-                 "y":85.4564227272727
                 }, 
                 {
                  "gid":885,
@@ -250,8 +151,84 @@
                  "type":"",
                  "visible":true,
                  "width":9,
-                 "x":131,
-                 "y":112.583333333333
+                 "x":158.113636363636,
+                 "y":121.03409090909
+                }, 
+                {
+                 "gid":886,
+                 "height":8.25,
+                 "id":9,
+                 "name":"enemy",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"id",
+                         "type":"string",
+                         "value":"enemy"
+                        }, 
+                        {
+                         "name":"isEnemy",
+                         "type":"bool",
+                         "value":false
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":8.25,
+                 "x":184.530303030303,
+                 "y":174.329545454545
+                }, 
+                {
+                 "height":3.75,
+                 "id":11,
+                 "name":"floor",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"alpha",
+                         "type":"int",
+                         "value":0
+                        }, 
+                        {
+                         "name":"bodyType",
+                         "type":"string",
+                         "value":"static"
+                        }, 
+                        {
+                         "name":"id",
+                         "type":"string",
+                         "value":"platform"
+                        }, 
+                        {
+                         "name":"isSensor",
+                         "type":"bool",
+                         "value":false
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":94.2699363636363,
+                 "x":208.120713636364,
+                 "y":123.875
+                }, 
+                {
+                 "gid":131,
+                 "height":16,
+                 "id":13,
+                 "name":"obstacle",
+                 "opacity":1,
+                 "properties":[
+                        {
+                         "name":"id",
+                         "type":"string",
+                         "value":"obstacle"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":199.1875,
+                 "y":175.375
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -291,7 +268,7 @@
          "y":0
         }],
  "nextlayerid":10,
- "nextobjectid":9,
+ "nextobjectid":20,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.12.2-2-geb83ddb9",
@@ -1129,20 +1106,116 @@
                          "type":"string",
                          "value":"platform"
                         }]
+                }, 
+                {
+                 "id":731,
+                 "properties":[
+                        {
+                         "name":"isTopLayer",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"name",
+                         "type":"string",
+                         "value":"rope"
+                        }]
+                }, 
+                {
+                 "id":732,
+                 "properties":[
+                        {
+                         "name":"isTopLayer",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"name",
+                         "type":"string",
+                         "value":"rope"
+                        }]
+                }, 
+                {
+                 "id":733,
+                 "properties":[
+                        {
+                         "name":"isTopLayer",
+                         "type":"bool",
+                         "value":true
+                        }, 
+                        {
+                         "name":"name",
+                         "type":"string",
+                         "value":"rope"
+                        }]
+                }, 
+                {
+                 "id":748,
+                 "properties":[
+                        {
+                         "name":"name",
+                         "type":"string",
+                         "value":"rope"
+                        }]
+                }, 
+                {
+                 "id":749,
+                 "properties":[
+                        {
+                         "name":"name",
+                         "type":"string",
+                         "value":"rope"
+                        }]
+                }, 
+                {
+                 "id":750,
+                 "properties":[
+                        {
+                         "name":"name",
+                         "type":"string",
+                         "value":"rope"
+                        }]
+                }, 
+                {
+                 "id":765,
+                 "properties":[
+                        {
+                         "name":"name",
+                         "type":"string",
+                         "value":"rope"
+                        }]
+                }, 
+                {
+                 "id":766,
+                 "properties":[
+                        {
+                         "name":"name",
+                         "type":"string",
+                         "value":"rope"
+                        }]
+                }, 
+                {
+                 "id":767,
+                 "properties":[
+                        {
+                         "name":"name",
+                         "type":"string",
+                         "value":"rope"
+                        }]
                 }],
          "tilewidth":16,
          "transparentcolor":"#ff00ff"
         }, 
         {
-         "columns":3,
+         "columns":4,
          "firstgid":885,
          "image":"images\/tiles\/logos.png",
          "imageheight":16,
-         "imagewidth":48,
+         "imagewidth":64,
          "margin":0,
          "name":"markers",
          "spacing":0,
-         "tilecount":3,
+         "tilecount":4,
          "tileheight":16,
          "tiles":[
                 {
@@ -1186,6 +1259,15 @@
                          "name":"isEnemy",
                          "type":"bool",
                          "value":true
+                        }]
+                }, 
+                {
+                 "id":3,
+                 "properties":[
+                        {
+                         "name":"id",
+                         "type":"string",
+                         "value":"bullet"
                         }]
                 }],
          "tilewidth":16,

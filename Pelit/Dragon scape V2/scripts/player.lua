@@ -4,12 +4,15 @@ local physics = require("physics")
 local sfxJump = audio.loadSound("assets/audio/sfx/jump.wav")
 local sfxHurt = audio.loadSound("assets/audio/sfx/hurt.wav")
 
-local animation
-local sheet = graphics.newImageSheet( "assets/images/characters/player.png", {
-	width = 64,
-	height = 64,
-	numFrames = 36
-} )
+local animation = require("data.animation")
+local sequence = animation.sequences["player"]
+
+local sheet = graphics.newImageSheet(
+	animation.sheets["player"],
+	animation.data["player"]
+)
+
+
 
 function player.new(parent, reference)
 	local x, y
@@ -22,7 +25,7 @@ function player.new(parent, reference)
 		x, y = 100,150
 	end
 
-	local newPlayer = display.newSprite(sheet, animation)
+	local newPlayer = display.newSprite(sheet, sequence)
 	newPlayer.x, newPlayer.y = x, y
 	newPlayer.anchorY, newPlayer.anchorX = 0.75, 0.55
 	newPlayer.xScale, newPlayer.yScale = scale, scale
@@ -32,7 +35,7 @@ function player.new(parent, reference)
 
 	local bodies = {
 		{
-	        box = { halfWidth = 3, halfHeight = 8, y = -10, x = -1 },
+	        box = { halfWidth = 3, halfHeight = 9, y = -8, x = 0 },
 			userData = "body"
 	    },
 
@@ -45,16 +48,6 @@ function player.new(parent, reference)
 	physics.addBody(newPlayer, "dynamic", bodies[1], bodies[2] )
 	newPlayer.isFixedRotation = true
 
-	local state = "idle" -- idle | move | attack | dead
-	local lookDir = -1   -- -1 = left, 1 = right
-
-	local jumpCount = 0
-	local maxJumpCount = 1
-	local jumpForce = -0.0045
-	local ropeTouchCount = 0
-	local touchedRope
-
-
 	newPlayer.moveSpeed = 60
 	newPlayer.currentHP = 2
 	newPlayer.maxHP = 2
@@ -62,12 +55,25 @@ function player.new(parent, reference)
 
 	newPlayer.ropeTouched = false
 	newPlayer.isClimbing = false
+	newPlayer.onAir = false
+	newPlayer.onGround = false
 
 	newPlayer.timerImmortal = nil
-	newPlayer.isImmortal = true
+	newPlayer.isImmortal = false
 	newPlayer.isInvisible = false
 
+	local state = "idle" -- idle | move | attack | dead
+	local lookDir = -1   -- -1 = left, 1 = right
+
+	local jumpCount = 0
+	local maxJumpCount = 1
+	local jumpForce = -0.0052
+	local ropeTouchCount = 0
+
+	local lastAttack = 0
 	local immortalTime = 500
+	local attackCooldown = 600
+
 
 	if newPlayer.isImmortal or newPlayer.isInvisible then print( "Player debug on" ) end
 
@@ -132,6 +138,9 @@ function player.new(parent, reference)
 		local _, currentVy = self:getLinearVelocity()
 		local touchingRope = ropeTouchCount > 0
 		local jumpReset = jumpCount ~= maxJumpCount
+
+		local onGround = self.onGround
+		local touchedRope = self.touchedRope
 		local climbing = self.isClimbing
 
 		if state == "attack" or state == "dead" then
@@ -148,6 +157,11 @@ function player.new(parent, reference)
 
 		-- Animation handling
 		if onAir then setState("jump") end
+
+		if onAir and currentVy == 0 then
+			setState("idle")
+			self:resetJumpCount()
+		end
 		if not climbing and not onAir then
 			if vx == 0 then
 				setState("idle")
@@ -166,18 +180,16 @@ function player.new(parent, reference)
 					self.gravityScale = 0
 					setState("climbIdle")
 				end
-			else
+
+			elseif vy ~= 0 then
+				if not touchedRope then return end
+				if vy == 1 and onGround then self.isClimbing = false return end
+				self.isClimbing = true
+
 				setState("climb")
 				self.x = touchedRope.x
 
 				currentVy = vy * self.moveSpeed
-
-				local platform = touchedRope.platform
-
-				if platform then
-					display.remove(platform)
-					touchedRope.platform = nil
-				end
 			end
 		end
 
@@ -185,20 +197,19 @@ function player.new(parent, reference)
 		if vx ~= 0 and climbing then vx = 0 end
 
 
+		self.onAir = onAir
 		self:setLinearVelocity(vx * self.moveSpeed, currentVy)
+
+		-- print("onAir", onAir, "onGround", onGround, "touchedRope", touchedRope)
 	end
 
-	function newPlayer:touchRope(didTouchBegin, ref)
+	function newPlayer:touchRope(didTouchBegin)
 		if didTouchBegin then
 			ropeTouchCount = ropeTouchCount + 1
+
 		else
 			ropeTouchCount = math.max(ropeTouchCount - 1, 0)
 		end
-
-		if not touchedRope then
-			touchedRope = ref
-		end
-
 
 		if ropeTouchCount > 0 then
 			self.ropeTouched = true
@@ -206,8 +217,8 @@ function player.new(parent, reference)
 			self.ropeTouched = false
 			self.isClimbing = false
 			self.gravityScale = 1
-			touchedRope = nil
 		end
+
 
 
 		-- print("RopeTouched/Climbing/TX: ", self.ropeTouched, self.isClimbing)
@@ -215,6 +226,13 @@ function player.new(parent, reference)
 
 	function newPlayer:attack(dir)
 		if state == "attack" or state == "dead" then return end
+
+		if ( system.getTimer() - lastAttack ) < attackCooldown then
+			return
+		end
+
+		lastAttack = system.getTimer()
+
 		setState("attack")
 
 		lookDir = dir
@@ -242,7 +260,6 @@ function player.new(parent, reference)
 
 
     jumpCount = jumpCount + 1
-	-- print("Count", jumpCount)
 
 
     audio.play(sfxJump, { channel = audio.findFreeChannel(2) })
@@ -285,16 +302,5 @@ end
 	setState("idle")
 	return newPlayer
 end
-
-local animOffset = 400
-
-animation = {
-	{ name = "idle",   start = 2,  count = 1, time = animOffset*0.8, loopCount = 0 },
-	{ name = "move",   start = 2,  count = 8, time = animOffset, loopCount = 0 },
-	{ name = "climb",   start = 10,  count = 6, time = animOffset*1.2, loopCount = 0 },
-	{ name = "climbIdle",   start = 12,  count = 1, time = animOffset, loopCount = 0 },
-	{ name = "attack", start = 28, count = 6, time = animOffset*1.5, loopCount = 1 },
-	{ name = "jump", start = 23, count = 1, time = animOffset, loopCount = 1 }
-}
 
 return player

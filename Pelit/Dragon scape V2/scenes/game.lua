@@ -10,11 +10,13 @@ local json = require( "json" )
 local playerModule = require( "scripts.player" )
 local heartModule = require( "scripts.heart" )
 local wizardModule = require( "scripts.wizard" )
+local projectileModule = require("scripts.projectileModule")
 -- local goalModule = require( "scripts.goal" )
 local controls = require( "scripts.controls" )
 local loadsave = require( "scripts.loadsave" )
 local camera = require( "scripts.camera" )
 local effects = require("data.effects")
+local debug = require("com.debug")
 
 local background, levelGroup, foreground, objectGroup
 
@@ -59,20 +61,13 @@ end
 local function movePlayer( vx, vy )
 	local _, currentVy = player:getLinearVelocity()
 
-	if currentVy ~= 0 and vy ~= 0 and player.ropeTouched and not player.isClimbing then
-		player.isClimbing = true
-	end
-
 	player:move( vx, vy )
 end
 
 local function keyPressed( action, phase )
 	-- print( "action", action, "phase", phase )
 
-	if action == "jump" then
-		player:jump( phase == "down" )
-
-	elseif action == "menu" then
+	if action == "menu" then
 		if phase == "down" then
 			if ui.menuGroup then
 				if ui.menuType == "pause" then
@@ -86,7 +81,6 @@ local function keyPressed( action, phase )
 end
 
 local function onEnterFrame()
-
 end
 
 local function onCollision( self, event )
@@ -104,36 +98,14 @@ local function onCollision( self, event )
 	end
 
 	if phase == "began" then
-
-
-		if myPart == "leg" and id == "platform"  then
+		if myPart == "leg" and (id == "platform" or id == "obstacle" or id == "enemy")  then
 			player:resetJumpCount()
 			player.isClimbing = false
-			print("landed")
+			player.onGround = true
 
 		elseif id == "rope" then
-			if self.y < other.y and not self.isClimbing then
-				timer.performWithDelay( 1, function ()
-					if other.platform then
-						-- print("REMOVING OLD PLATFORM")
-						display.remove(other.platform)
-						other.platform = nil
-					end
-
-					local platformY = ( other.y - other.height * 0.5 ) + 2
-
-					local platform = display.newRect( levelGroup, other.x, platformY, 20, 2 ); platform.alpha = 0
-					physics.addBody( platform, "static", {bounce=0} )
-					other.platform = platform
-				end )
-
-			end
-
-			local tx = other.x
 			player:touchRope( true, other )
-
-		elseif id == "heart" or id == "coin" then
-			event.other:collect()
+			player.touchedRope = other
 
 			if id == "heart" then
 				player:addHP( 1 )
@@ -146,16 +118,14 @@ local function onCollision( self, event )
 			controls.stop()
 			menuOpen( "complete" )
 
-		elseif id == "spikes" or id == "projectile" and not self.isImmortal or event.other.isEnemy then
-			local isProjectile = (id == "projectile")
+		elseif not self.isImmortal and		( id == "projectile" or id == "spikes" ) then
 			local damage = 1
 
-			if isProjectile then
-				other.remove()
-			end
-
-			player:takeDamage( damage, isBorder )
+			player:takeDamage( damage )
 			counterHP:update( player.currentHP )
+
+			display.remove(other)
+			other = nil
 
 			if player.isDead then
 				controls.stop()
@@ -163,17 +133,40 @@ local function onCollision( self, event )
 			end
 		end
 
-	elseif phase == "ended" then
-		if event.other.isStairs then
-			player.moveSpeed = 100
-		end
 
+	elseif phase == "ended" then
 		if id == "rope" then
 			player:touchRope( false )
+
+		elseif myPart == "leg" and (id == "platform" or id == "obstacle" or id == "enemy")  then
+			player.onGround = false
 		end
 
 	end
 end
+
+local function onPreCollision(self, event)
+	if not event and event.contact then return end
+	-- print("preCollided with ", event.other.id)
+
+	local other = event.other
+
+
+	if player.isDead then
+		return
+	end
+
+
+
+	if other.id == "rope" and other.isTopLayer then
+		print(self.y > other.y)
+		if self.onAir or self.isClimbing then
+			event.contact.isEnabled = false
+		end
+	end
+end
+
+
 
 --------------------------------------------------------------------------------------
 -- scene event -funktiot:
@@ -208,12 +201,57 @@ function scene:create( event )
 
 	player.collision = onCollision
 	player:addEventListener( "collision" )
+	player.preCollision = onPreCollision
+	player:addEventListener("preCollision")
 
-	local enemyRefs = map.getAllTiles("isEnemy", true)
+	-- Handle ropes/stairs
+	local ropes = map.getAllTiles("name", "rope")
+
+	for i = 1, #ropes do
+		local ref = ropes[i]
+		ropes[i].id = "rope"
+
+		local isTop = ref.isTopLayer or false
+
+		local hw = isTop and 8 or 2
+		local y = isTop and 10 or 0
+
+		local params = { halfWidth = hw, halfHeight = 8, y = y, x = 0 }
+		local isSensor = not isTop and true or false
+
+		physics.addBody( ref, "static", {
+			box = params,
+			filter = filter,
+			isSensor = isSensor
+		} )
+
+	end
+
+	-- Generate enemies
+	local enemyRefs = map:findObjects("enemy")
 
 	for i = 1, #enemyRefs do
-		enemyRefs[i] = wizardModule.new(levelGroup, enemyRefs[i], player)
+		enemyRefs[i] = wizardModule.new(levelGroup, enemyRefs[i])
 		enemy[i] = enemyRefs[i]
+	end
+
+	-- Generate phys bodies for objects
+	local obstacles = map:findObjects("obstacle")
+
+	for i = 1, #obstacles do
+		local ref = obstacles[i]
+
+		physics.addBody( ref, "static", { box = { halfWidth = 10, halfHeight = 8, y = 0, x = 0 } } )
+	end
+
+	-- Debug bullets
+	local projectiles = map:findObjects("bullet")
+
+	for i = 1, #projectiles do
+		local ref = projectiles[i]
+		local newProjectile = projectileModule:new( ref, player )
+
+		display.remove(ref); projectiles[i] = nil
 	end
 
 	counterHP = ui.newCounterHP({
@@ -296,6 +334,15 @@ function scene:destroy( event )
 end
 
 
+-- Run debugScene
+timer.performWithDelay( 10, function ()
+	debug.add( player, "onAir")
+	debug.add( player, "onGround")
+	debug.add( player, "isClimbing")
+	debug.add( player, "ropeTouched")
+end )
+
+
 --------------------------------------------------------------------------------------
 -- Scene event -kuuntelijat:
 -- Voit valita mitä tapahtumia haluat kuunnella. Jos et esimerkiksi koskaan
@@ -312,23 +359,3 @@ Runtime:addEventListener("enterFrame", onEnterFrame)
 -- Lopuksi palautetaan scene, jolloin tiedosto toimii Lua-moduulina.
 return scene
 
---------------------------------------------------------------------------------------
------ 	Haetaan kaikki viholliset kentästä.
-	-- 	local enemies = map.getAllTiles( "isEnemy" )
-	-- 	for i = 1, #enemies do
-	-- 		local thisEnemy = enemies[i]
-	-- 		if thisEnemy.id == "hat" then
-	-- 			enemy[#enemy + 1] = hatModule.new( levelGroup, enemies[i] )
-	-- 			enemy[#enemy]:startAI( player )
-	-- 		end
-	-- 	end
-
-
-	-- 	local hearts = map.getAllTiles( "id", "heart" )
-	-- 	for i = 1, #hearts do
-	-- 		heartModule.new( levelGroup, hearts[i] )
-	-- 	end
-
-
-	-- 	local flag = map.getFirstTile( "id", "goal" )
-	-- 	goalModule.new( levelGroup, flag )

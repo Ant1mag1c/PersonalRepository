@@ -129,16 +129,17 @@ function enemy.new( parent, reference )
 
 
     -- Päivitetään vihollisen logiikkaa joka frame
+	local timeBeforeTurn = devMode and 200 or 1000
+	local timeBeforeMove = devMode and 200 or 400
+
 	local function update( event )
 		local self = newEnemy
+
 
 		local floorAhead = raycast.newRay( self, "platform")
 		local playerSeen, ref = raycast.newRay( self, "attack")
 		local wallAhead = raycast.newRay( self, "wall")
 		local mustTurn = not floorAhead or wallAhead
-
-		local timeBeforeTurn = devMode and 200 or 1000
-		local timeBeforeMove = devMode and 200 or 400
 
 
 		if onCooldown then
@@ -160,28 +161,26 @@ function enemy.new( parent, reference )
 					print("WARNING: Player reference not given")
 				end
 
-				player = ref
+				if not player then player = ref end
 
 				newEnemy:attack()
 			end
 
-		else
-			if mustTurn then
-				if state ~= "idle" then
-					setState("idle")
+		elseif mustTurn then
+			if state ~= "idle" then
+				setState("idle")
 
-					self:setLinearVelocity(0, 0)
+				self:setLinearVelocity(0, 0)
 
-					-- Delay before turning around after near edge
-					hold( timeBeforeTurn, function ()
-						self.xScale = -self.xScale
-						lookDir = self.xScale == 0.5 and 1 or -1
+				-- Delay before turning around after near edge
+				hold( timeBeforeTurn, function ()
+					self.xScale = -self.xScale
+					lookDir = self.xScale == 0.5 and 1 or -1
 
-						self.lookDir = lookDir
-					end )
+					self.lookDir = lookDir
+				end )
 
-					hold( ( timeBeforeTurn + timeBeforeMove ), function() self:move() end)
-				end
+				hold( ( timeBeforeTurn + timeBeforeMove ), function() self:move() end)
 			end
 		end
 	end
@@ -207,7 +206,7 @@ function enemy.new( parent, reference )
 	newEnemy:addEventListener("sprite", spriteListener)
 	Runtime:addEventListener( "enterFrame", update )
 
-	newEnemy:move()
+	setState("idle")
 
 	return newEnemy
 end

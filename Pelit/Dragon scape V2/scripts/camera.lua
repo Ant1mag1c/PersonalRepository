@@ -5,6 +5,7 @@ local camera = {}
 local hasStarted = false
 local cameraTarget
 local cameraGroups = {}
+local levelBorder = {}
 
 -- camera position
 local camX, camY
@@ -48,6 +49,18 @@ local function update()
 	local toX = px - halfWidth
 	local toY = py - halfHeight
 
+	local cameraLimitR = levelBorder.width + 75
+	local cameraLimitL = 0
+
+	if toX <= cameraLimitL then
+		toX = cameraLimitL
+	end
+
+	local rightOffset = halfWidth * 2
+	if toX >= (cameraLimitR - rightOffset) then
+		toX = cameraLimitR - rightOffset
+	end
+
 	-- move groups
 	for i = 1, #cameraGroups do
 		local group = cameraGroups[i].group
@@ -59,7 +72,7 @@ local function update()
 end
 
 -- groups = { { group, parallax }, { group, parallax } }
-function camera.start(target, groups)
+function camera.start(target, groups, border)
 	if hasStarted then return end
 	hasStarted = true
 
@@ -81,6 +94,8 @@ function camera.start(target, groups)
 
 	targetX = target.x
 	targetY = target.y
+
+	levelBorder = border
 
 	Runtime:addEventListener("enterFrame", update)
 end

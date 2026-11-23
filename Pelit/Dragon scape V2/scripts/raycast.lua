@@ -51,16 +51,28 @@ function m.newRay( from, rayType )
 	elseif from.id == "player" then
 	end
 
-	local hits = physics.rayCast( fromX, fromY, toX, toY, "closest" )
-	local hitId = hits and hits[1].object.id
+	local hits = physics.rayCast( fromX, fromY, toX, toY, "unsorted" )
+
+	local hitID = nil
+
+	if hits then
+		for i = 1, #hits do
+			local id = hits[i].object.id
+
+			if id == targetID or id == secondID then
+
+				hitID = id == targetID and targetID or secondID
+				break
+
+			end
+		end
+	end
 
 	-- print(hitId)
 
 	-- Debug line
 	if line then
-		local color = hits and hits[1] and ( hitId == targetID or hitId == secondID )
-			and { 0, 1, 0 }
-			or { 1, 0, 0 }
+		local color = hitID and { 0, 1, 0 } or { 1, 0, 0 }
 
 		line = display.newLine( from.parent, fromX, fromY, toX, toY )
 		line:setStrokeColor( unpack(color) )
@@ -69,7 +81,7 @@ function m.newRay( from, rayType )
 	end
 
 	-- Return hitted object and also if it was required target
-	return hits and hitId == targetID or hits and hitId == secondID or false, hits and hits[1].object
+	return hitID or false, hits and hits[1].object
 end
 
 

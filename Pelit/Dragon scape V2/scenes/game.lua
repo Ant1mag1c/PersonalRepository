@@ -23,7 +23,7 @@ local background, levelGroup, foreground, objectGroup
 local physics = require( "physics" )
 physics.start()
 physics.setGravity( 0, 9.8 )
--- physics.setDrawMode( "hybrid" )  -- Vaihtoehdot: "normal", "debug", "hybrid"
+physics.setDrawMode( "hybrid" )  -- Vaihtoehdot: "normal", "debug", "hybrid"
 
 --------------------------------------------------------------------------------------
 -- scene event -funktioiden ulkopuolella oleva koodi suoritetaan vain kerran, ellei
@@ -159,7 +159,6 @@ local function onPreCollision(self, event)
 
 
 	if other.id == "rope" and other.isTopLayer then
-		print(self.y > other.y)
 		if self.onAir or self.isClimbing then
 			event.contact.isEnabled = false
 		end
@@ -221,7 +220,6 @@ function scene:create( event )
 
 		physics.addBody( ref, "static", {
 			box = params,
-			filter = filter,
 			isSensor = isSensor
 		} )
 
@@ -270,8 +268,8 @@ function scene:create( event )
 	)
 
 	levelBorder.fill = { 0, 0 }
-	-- levelBorder.strokeWidth = 4
-	-- levelBorder:setStrokeColor( 1, 0, 0 )
+	levelBorder.strokeWidth = 4
+	levelBorder:setStrokeColor( 1, 0, 0 )
 	levelBorder.id = "levelBorder"
 
 	physics.addBody( levelBorder, "static", {
@@ -290,7 +288,7 @@ function scene:create( event )
 		{ levelGroup, 1 },
 		{ foreground, 1 },
 		{ objectGroup, 1 },
-	} )
+	}, levelBorder )
 end
 
 -- show: kutsutaan kun scene on luotu mutta ei vielä näytetty.

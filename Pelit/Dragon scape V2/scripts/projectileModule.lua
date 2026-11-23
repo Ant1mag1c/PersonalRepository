@@ -42,12 +42,12 @@ function t:new( from, to )
 
 	local function onCollision( event )
 		if event.phase == "began" then
-			-- print( "collided with", event.other.id, "phase", event.phase )
+			print( "collided with", event.other.id, "phase", event.phase )
 			local other = event.other.id
 
-			if other == "player" or other == "platform" or other == "obstacle" then
+			if other == "player" or other == "obstacle" or other == "levelBorder" then
 				display.remove(body)
-				-- print( "Projectile killed" )
+				body = nil
 			end
 		end
 	end
